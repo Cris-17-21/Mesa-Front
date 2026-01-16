@@ -1,0 +1,29 @@
+<div class="login-container">
+  <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-card">
+    <h2>Iniciar Sesión</h2>
+
+    <div class="form-group">
+      <label>Usuario</label>
+      <input type="text" formControlName="username" placeholder="Tu usuario">
+      <small *ngIf="loginForm.get('username')?.invalid && loginForm.get('username')?.touched" class="error">
+        El usuario es obligatorio (mínimo 3 caracteres).
+      </small>
+    </div>
+
+    <div class="form-group">
+      <label>Contraseña</label>
+      <input type="password" formControlName="password" placeholder="******">
+      <small *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched" class="error">
+        La contraseña debe tener al menos 6 caracteres.
+      </small>
+    </div>
+
+    <div *ngIf="errorMessage" class="alert-error">
+      {{ errorMessage }}
+    </div>
+
+    <button type="submit" [disabled]="loginForm.invalid || isLoading">
+      {{ isLoading ? 'Cargando...' : 'Entrar' }}
+    </button>
+  </form>
+</div>
