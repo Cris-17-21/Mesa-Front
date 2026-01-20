@@ -1,28 +1,39 @@
 <div class="dashboard-layout">
-  <aside class="sidebar">
-    <h2>Admin Panel</h2>
-    <nav>
-      <a routerLink="/dashboard" class="active">Inicio</a>
-      <a routerLink="/users">Gestión de Usuarios</a>
-    </nav>
-    <button (click)="logout()" class="btn-logout">Cerrar Sesión</button>
-  </aside>
+  @if (userProfile) {
+    <app-sidebar 
+      [navigation]="userProfile.navigation" 
+      [user]="userProfile.user"
+      (logoutRequest)="logout()">
+    </app-sidebar>
+  }
 
   <main class="content">
-    <header>
-      <h1>Bienvenido, {{ userProfile?.user?.username }}</h1>
-      <p>Rol: <strong>{{ userProfile?.user?.role }}</strong></p>
+    <header class="main-header">
+      <div class="header-titles">
+        <h1>Bienvenido, {{ userProfile?.user?.nombres }}</h1>
+        <p class="subtitle">Panel de control del restaurante</p>
+      </div>
+      <div class="header-date">
+        <span class="badge">{{ today | date:'fullDate' }}</span>
+      </div>
     </header>
 
     <div class="stats-grid">
       <div class="card">
-        <h3>Usuarios Registrados</h3>
+        <span class="card-label">Usuarios Registrados</span>
         <p class="number">{{ totalUsers }}</p>
+        <div class="card-footer">Personal activo en el sistema</div>
       </div>
       
       <div class="card">
-        <h3>Última Conexión</h3>
-        <p>{{ today | date:'short' }}</p>
+        <span class="card-label">Estado del Sistema</span>
+        <p class="status-text">Operativo</p>
+        <div class="card-footer">Última sincronización: {{ today | date:'shortTime' }}</div>
+      </div>
+
+      <div class="card action-card">
+        <span class="card-label">Acceso Rápido</span>
+        <button class="btn-primary" routerLink="/maestro/zonas">Gestionar Zonas</button>
       </div>
     </div>
   </main>

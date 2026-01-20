@@ -1,46 +1,225 @@
+:root {
+  --primary-black: #1a1a1a;
+  --soft-gray: #f9f9f9;
+  --border-gray: #e0e0e0;
+  --text-muted: #666666;
+  --error-red: #d93025;
+}
+
 .login-container {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
-  background-color: #f4f7f6;
+  min-height: 100vh;
+  /* Cambiado de error-red a soft-gray para la estética acordada */
+  background-color: var(--soft-gray); 
+  font-family: 'Segoe UI', Roboto, sans-serif;
+  padding: 20px; /* Espacio de seguridad para móviles */
 }
 
 .login-card {
   background: white;
-  padding: 2rem;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  padding: 2.5rem 1.5rem; /* Ajuste para ser más compacto en móviles */
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.05);
   width: 100%;
-  max-width: 400px;
+  max-width: 380px; /* Límite para que no se estire en PC */
+  text-align: center;
+  box-sizing: border-box;
+}
+
+/* --- MEDIA QUERIES PARA RESPONSIVIDAD --- */
+
+/* Pantallas medianas (Tablets) */
+@media (min-width: 768px) {
+  .login-card {
+    padding: 3rem 2.5rem; /* Más aire en pantallas grandes */
+  }
+}
+
+/* Pantallas muy pequeñas (Móviles antiguos o pequeños) */
+@media (max-width: 350px) {
+  .login-card {
+    padding: 1.5rem 1rem;
+  }
+  .login-title {
+    font-size: 1.2rem;
+    margin-bottom: 1.5rem;
+  }
+}
+
+/* --- ESTILOS DE COMPONENTES --- */
+
+.login-title {
+  font-weight: 600;
+  color: var(--primary-black);
+  margin-bottom: 2rem;
+  font-size: 1.5rem;
 }
 
 .form-group {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.2rem;
+  text-align: left;
+  width: 100%;
 }
 
 input {
   width: 100%;
-  padding: 0.75rem;
-  margin-top: 0.5rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  box-sizing: border-box; /* Importante para que el padding no rompa el ancho */
+  padding: 0.8rem 0;
+  margin-top: 0.2rem;
+  border: none;
+  border-bottom: 2px solid var(--border-gray);
+  background: transparent;
+  transition: border-color 0.3s ease;
+  /* Importante: 16px evita que iOS haga zoom automático molesto */
+  font-size: 16px; 
+}
+
+input:focus {
+  outline: none;
+  border-bottom-color: var(--primary-black);
 }
 
 button {
   width: 100%;
-  padding: 0.75rem;
-  background-color: #007bff;
+  padding: 0.9rem;
+  margin-top: 1.5rem;
+  background-color: var(--primary-black);
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: 50px;
+  font-weight: 600;
   cursor: pointer;
+  transition: all 0.2s ease;
+  /* Altura mínima de 44px para cumplir estándares de accesibilidad táctil */
+  min-height: 48px; 
+}
+
+button:hover:not(:disabled) {
+  background-color: #333;
+  transform: translateY(-1px);
 }
 
 button:disabled {
-  background-color: #ccc;
+  background-color: #ccc; /* Gris claro para indicar que está bloqueado */
+  cursor: not-allowed;
 }
 
-.error { color: red; font-size: 0.8rem; }
-.alert-error { color: white; background: #ff4d4d; padding: 0.5rem; border-radius: 4px; margin-bottom: 1rem; text-align: center; }
+.error {
+  color: var(--error-red);
+  font-size: 0.75rem;
+  margin-top: 5px;
+  display: block;
+}:root {
+  --primary-black: #1a1a1a;
+  --soft-gray: #f9f9f9;
+  --border-gray: #e0e0e0;
+  --text-muted: #666666;
+  --error-red: #d93025;
+}
+
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  /* Cambiado de error-red a soft-gray para la estética acordada */
+  background-color: var(--soft-gray); 
+  font-family: 'Segoe UI', Roboto, sans-serif;
+  padding: 20px; /* Espacio de seguridad para móviles */
+}
+
+.login-card {
+  background: white;
+  padding: 2.5rem 1.5rem; /* Ajuste para ser más compacto en móviles */
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+  width: 100%;
+  max-width: 380px; /* Límite para que no se estire en PC */
+  text-align: center;
+  box-sizing: border-box;
+}
+
+/* --- MEDIA QUERIES PARA RESPONSIVIDAD --- */
+
+/* Pantallas medianas (Tablets) */
+@media (min-width: 768px) {
+  .login-card {
+    padding: 3rem 2.5rem; /* Más aire en pantallas grandes */
+  }
+}
+
+/* Pantallas muy pequeñas (Móviles antiguos o pequeños) */
+@media (max-width: 350px) {
+  .login-card {
+    padding: 1.5rem 1rem;
+  }
+  .login-title {
+    font-size: 1.2rem;
+    margin-bottom: 1.5rem;
+  }
+}
+
+/* --- ESTILOS DE COMPONENTES --- */
+
+.login-title {
+  font-weight: 600;
+  color: var(--primary-black);
+  margin-bottom: 2rem;
+  font-size: 1.5rem;
+}
+
+.form-group {
+  margin-bottom: 1.2rem;
+  text-align: left;
+  width: 100%;
+}
+
+input {
+  width: 100%;
+  padding: 0.8rem 0;
+  margin-top: 0.2rem;
+  border: none;
+  border-bottom: 2px solid var(--border-gray);
+  background: transparent;
+  transition: border-color 0.3s ease;
+  /* Importante: 16px evita que iOS haga zoom automático molesto */
+  font-size: 16px; 
+}
+
+input:focus {
+  outline: none;
+  border-bottom-color: var(--primary-black);
+}
+
+button {
+  width: 100%;
+  padding: 0.9rem;
+  margin-top: 1.5rem;
+  background-color: var(--primary-black);
+  color: white;
+  border: none;
+  border-radius: 50px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  /* Altura mínima de 44px para cumplir estándares de accesibilidad táctil */
+  min-height: 48px; 
+}
+
+button:hover:not(:disabled) {
+  background-color: #333;
+  transform: translateY(-1px);
+}
+
+button:disabled {
+  background-color: #ccc; /* Gris claro para indicar que está bloqueado */
+  cursor: not-allowed;
+}
+
+.error {
+  color: var(--error-red);
+  font-size: 0.75rem;
+  margin-top: 5px;
+  display: block;
+}

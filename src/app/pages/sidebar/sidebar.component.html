@@ -1,0 +1,61 @@
+<nav class="sidebar">
+  <div class="sidebar-header">
+    <div class="user-card">
+      <div class="user-avatar">
+        {{ user().username[0] | uppercase }}
+      </div>
+      <div class="user-text">
+        <span class="u-name">{{ user().nombres }}</span>
+        <span class="u-role">{{ user().role }}</span>
+      </div>
+    </div>
+  </div>
+
+  <ul class="nav-list">
+    @for (item of navigation(); track item.name) {
+      <li class="nav-item">
+        
+        @if (!item.children || item.children.length === 0) {
+          <a [routerLink]="item.urlPath" 
+             routerLinkActive="active-link" 
+             class="link-box">
+             <span class="dot"></span>
+             {{ item.name }}
+          </a>
+        } @else {
+          <div class="dropdown-wrapper">
+            <button (click)="toggleMenu(item.name)" 
+                    class="link-box btn-drop"
+                    [class.is-active]="openMenus()[item.name]">
+              <span>{{ item.name }}</span>
+              <span class="arrow" [class.rotated]="openMenus()[item.name]">▾</span>
+            </button>
+
+            @if (openMenus()[item.name]) {
+              <ul class="sub-menu">
+                @for (child of item.children; track child.name) {
+                  <li>
+                    <a [routerLink]="child.urlPath" 
+                       routerLinkActive="sub-active"
+                       class="sub-link">
+                      {{ child.name }}
+                    </a>
+                  </li>
+                }
+              </ul>
+            }
+          </div>
+        }
+
+      </li>
+    }
+  </ul>
+
+  <div class="sidebar-footer">
+    <button class="logout-btn" (click)="onLogout()">
+      <span class="logout-icon">✕</span>
+      Cerrar Sesión
+    </button>
+    <div class="version-tag">ERP Restaurante v1.0</div>
+  </div>
+</nav>

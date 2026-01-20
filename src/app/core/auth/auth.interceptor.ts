@@ -4,20 +4,25 @@ import { AuthService } from './auth.service';
 import { catchError, switchMap, throwError } from 'rxjs';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
-  
   const authService = inject(AuthService);
   const token = authService.getToken();
 
-  // Clonar peticion con el token actual
+  // 1. SI LA PETICIÓN ES AL ENDPOINT DE REFRESH, NO HACER NADA ESPECIAL
+  // Esto evita que el fallo del refresh intente refrescarse a sí mismo
+  if (req.url.includes('/auth/refresh')) {
+    return next(req);
+  }
+
   let authReq = req;
   if (token) {
-    authReq = addTokenHeader(req, token);
+    authReq = req.clone({
+      setHeaders: { Authorization: `Bearer ${token}` }
+    });
   }
 
   return next(authReq).pipe(
     catchError((error) => {
-      // 2. Si el error es 401 (Unauthorized), intentamos refrescar
-      if (error instanceof HttpErrorResponse && error.status === 401) {
+      if (error instanceof HttpErrorResponse && (error.status === 401 || error.status === 403)) {
         return handle401Error(authReq, next, authService);
       }
       return throwError(() => error);
@@ -25,30 +30,26 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   );
 };
 
-// Función auxiliar para adjuntar el Header
-const addTokenHeader = (request: HttpRequest<any>, token: string) => {
-  return request.clone({
-    setHeaders: { Authorization: `Bearer ${token}` }
-  });
-};
-
-// Lógica para refrescar el token
 const handle401Error = (request: HttpRequest<any>, next: HttpHandlerFn, authService: AuthService) => {
   const refreshToken = authService.getRefreshToken();
 
+  // 2. SI NI SIQUIERA HAY REFRESH TOKEN, LOGOUT DIRECTO
   if (!refreshToken) {
     authService.logout();
-    return throwError(() => new Error('No refresh token available'));
+    return throwError(() => new Error('No hay refresh token'));
   }
 
   return authService.refreshToken({ refreshToken }).pipe(
     switchMap((res) => {
-      // Si el refresh tiene éxito, reintentamos la petición original con el nuevo token
-      return next(addTokenHeader(request, res.accessToken));
+      return next(request.clone({
+        setHeaders: { Authorization: `Bearer ${res.accessToken}` }
+      }));
     }),
     catchError((err) => {
-      // Si el refresh falla (el refresh token también expiró), cerramos sesión
+      // 3. SI EL REFRESH FALLA, LIMPIAMOS TODO Y AL LOGIN
+      // Esto corta el bucle infinito
       authService.logout();
+      window.location.href = '/login'; // Forzamos recarga para limpiar estados
       return throwError(() => err);
     })
   );
