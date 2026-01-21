@@ -1,5 +1,5 @@
 .sidebar {
-  width: 270px;
+  width: 250px;
   height: 100vh;
   background: #ffffff;
   border-right: 1px solid #eaeaea;
@@ -7,6 +7,9 @@
   flex-direction: column;
   position: fixed;
   font-family: 'Inter', sans-serif;
+  z-index: 100;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 /* User Section */
@@ -31,7 +34,8 @@
 .u-role { font-size: 0.7rem; color: #999; }
 
 /* Links */
-.nav-list { list-style: none; padding: 0 15px; margin: 0; flex: 1; overflow-y: auto; }
+.nav-list { list-style: none; padding: 0 15px; margin: 0; flex: 1}
+.nav-item { margin-bottom: 4px; }
 .link-box {
   display: flex; align-items: center; justify-content: space-between;
   padding: 12px 16px;
@@ -42,28 +46,80 @@
   transition: 0.2s;
   border: none; background: none; width: 100%; cursor: pointer;
 }
+.link-content { display: flex; align-items: center; gap: 12px; }
 .link-box:hover { background: #f5f5f5; color: #000; }
 
-.active-link {
+.active-link  {
   background: #000 !important;
   color: #fff !important;
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  width: 85%;
 }
 
-/* Submenu */
-.sub-menu { list-style: none; padding-left: 20px; margin: 5px 0; }
+/* --- ANIMACIÓN DE APERTURA (ACORDEÓN) --- */
+
+/* Contenedor del submenú */
+.submenu-wrapper {
+  display: grid;
+  /* Estado inicial: cerrado (altura 0) */
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition: 
+    grid-template-rows 0.3s ease-out,
+    opacity 0.3s ease-out,
+    margin 0.3s ease; /* Para suavizar el espacio */
+}
+
+/* El contenido interno debe ocultarse al colapsar */
+.sub-menu {
+  overflow: hidden;
+  min-height: 0; /* Importante para el grid trick */
+  /* Estilos visuales de la lista */
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* Estado ABIERTO */
+.submenu-wrapper.is-open {
+  /* Estado final: abierto (ocupa el espacio real) */
+  grid-template-rows: 1fr;
+  opacity: 1;
+  margin-top: 5px; /* Un poco de aire cuando abre */
+}
+
+
+/* --- ANIMACIÓN DE LA FLECHA --- */
+.arrow {
+  font-size: 0.8rem;
+  transition: transform 0.3s ease; /* Misma duración que el menú */
+}
+
+.rotated {
+  transform: rotate(180deg);
+}
+
+/* --- ESTILOS DE ENLACES (Mantenemos tu diseño) --- */
 .sub-link {
   display: block;
-  padding: 8px 15px;
-  color: #777;
+  padding: 10px 15px 10px 40px; /* Indentación para jerarquía */
+  color: #95A5A6; /* --text-muted */
   text-decoration: none;
-  font-size: 0.85rem;
-  border-left: 1px solid #eee;
-  transition: 0.2s;
+  font-size: 0.9rem;
+  border-left: 2px solid transparent;
+  transition: all 0.2s;
 }
-.sub-link:hover, .sub-active {
-  color: #000;
-  border-left: 2px solid #000;
+
+.sub-link:hover {
+  color: #2C3E50; /* --primary-brand */
+  background: #F1F5F9; /* --bg-hover */
+}
+
+.sub-active {
+  color: #2C3E50;
+  font-weight: 600;
+  background: #FDF2E9;
+  border-left: 3px solid #E67E22; /* --accent-color */
 }
 
 .arrow { font-size: 0.7rem; transition: 0.3s; }
@@ -108,4 +164,56 @@
   font-size: 0.7rem;
   color: #bbb;
   letter-spacing: 1px;
+}
+
+/* --- ESTILOS RESPONSIVOS (Mobile First) --- */
+
+/* Por defecto (PC), el botón de cerrar móvil está oculto */
+.mobile-close-btn { display: none; }
+.sidebar-overlay { display: none; }
+
+/* Cuando la pantalla es menor a 768px (Tablets y Celulares) */
+@media (max-width: 768px) {
+  
+  .sidebar {
+    /* Sacamos el sidebar de la pantalla hacia la izquierda */
+    transform: translateX(-105%);
+    transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+    box-shadow: 5px 0 25px rgba(0,0,0,0.2);
+    width: 280px; /* Un poco más ancho en móvil para mejor toque */
+  }
+
+  /* Clase que activa TypeScript para mostrarlo */
+  .sidebar.mobile-open {
+    transform: translateX(0);
+  }
+
+  /* El botón X dentro del header */
+  .mobile-close-btn {
+    display: block;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    margin-left: auto; /* Empuja a la derecha */
+    padding: 0 0 0 10px;
+  }
+
+  /* El fondo oscuro detrás */
+  .sidebar-overlay {
+    display: block;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.5); /* Semi-transparente */
+    z-index: 90; /* Detrás del sidebar (que es 100) */
+    opacity: 0;
+    pointer-events: none; /* No clickeable si está invisible */
+    transition: opacity 0.3s ease;
+  }
+
+  .sidebar-overlay.show {
+    opacity: 1;
+    pointer-events: all;
+  }
 }

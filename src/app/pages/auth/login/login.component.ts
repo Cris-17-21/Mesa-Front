@@ -16,6 +16,8 @@ export class LoginComponent {
   errorMessage: string = '';
   isLoading: boolean = false;
 
+  hidePassword: boolean = true;
+
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
@@ -40,5 +42,9 @@ export class LoginComponent {
         }
       });
     }
+  }
+
+  togglePasswordVisibility(): void {
+    this.hidePassword = !this.hidePassword;
   }
 }

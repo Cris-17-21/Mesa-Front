@@ -14,19 +14,29 @@ export class SidebarComponent {
 
   navigation = input.required<NavigationItem[]>();
   user = input.required<AuthProfile['user']>();
-
   logoutRequest = output<void>();
 
-  openMenus = signal<{ [key: string]: boolean }>({});
+  isMobileMenuOpen = signal(false);
+
+  activeMenu = signal<string | null>(null);
 
   toggleMenu(itemName: string) {
-    this.openMenus.update(prev => ({
-      ...prev,
-      [itemName]: !prev[itemName]
-    }));
+    if (this.activeMenu() === itemName) {
+      this.activeMenu.set(null);
+    } else {
+      this.activeMenu.set(itemName);
+    }
   }
 
   onLogout() {
     this.logoutRequest.emit();
+  }
+
+  // PARA MOVILES
+  toggleMobileMenu() {
+    this.isMobileMenuOpen.update(v => !v);
+  }
+  onLinkClick() {
+    this.isMobileMenuOpen.set(false);
   }
 }

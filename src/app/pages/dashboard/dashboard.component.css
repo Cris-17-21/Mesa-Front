@@ -1,49 +1,61 @@
+/* --- LAYOUT BASE --- */
 .dashboard-layout {
   display: flex;
   min-height: 100vh;
-  background-color: #f9f9f9; /* Fondo gris muy sutil */
+  background-color: #F8F9FA; /* Gris un poco más moderno */
+  position: relative; /* Necesario para posicionar elementos absolutos si los hay */
+}
+
+/* El botón hamburguesa por defecto NO se ve en PC */
+.mobile-toggle-btn {
+  display: none;
 }
 
 .content {
   flex-grow: 1;
-  margin-left: 270px; /* Ancho del sidebar */
+  margin-left: 270px; /* Espacio para el Sidebar en PC */
   padding: 40px;
-  transition: all 0.3s ease;
+  transition: margin-left 0.3s ease, padding 0.3s ease;
+  width: 100%; /* Asegura que ocupe el espacio restante */
 }
 
-/* Header Estilo ERP */
+/* --- HEADER --- */
 .main-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 40px;
+  align-items: center; /* Centrado vertical mejorado */
+  margin-bottom: 35px;
 }
 
 .main-header h1 {
   font-size: 1.8rem;
   font-weight: 700;
-  color: #000;
+  color: #2C3E50; /* Usando el azul oscuro de tu paleta */
   margin: 0;
 }
 
 .subtitle {
-  color: #666;
+  color: #7F8C8D;
   font-size: 0.9rem;
-  margin-top: 5px;
+  margin-top: 4px;
 }
 
 .badge {
-  background: #eee;
-  padding: 6px 12px;
+  background: #fff;
+  border: 1px solid #EAECEE;
+  color: #555;
+  padding: 8px 16px;
   border-radius: 20px;
-  font-size: 0.8rem;
-  font-weight: 500;
+  font-size: 0.85rem;
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
 }
 
-/* Grilla de Tarjetas */
+/* --- CARDS GRID --- */
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  /* Grid inteligente: rellena columnas automáticamente */
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 24px;
 }
 
@@ -51,53 +63,113 @@
   background: #fff;
   padding: 24px;
   border-radius: 16px;
-  border: 1px solid #eee;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+  border: 1px solid #EEF2F7;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.03);
   display: flex;
   flex-direction: column;
+  transition: transform 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-3px); /* Efecto sutil al pasar el mouse */
 }
 
 .card-label {
-  font-size: 0.8rem;
-  font-weight: 600;
+  font-size: 0.75rem;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: #888;
-  margin-bottom: 15px;
+  letter-spacing: 1px;
+  color: #95A5A6;
+  margin-bottom: 12px;
 }
 
 .number {
-  font-size: 2.8rem;
+  font-size: 3rem;
   font-weight: 800;
-  color: #000;
+  color: #2C3E50;
   margin: 0;
+  line-height: 1;
 }
 
 .status-text {
   font-size: 1.5rem;
-  font-weight: 600;
-  color: #000;
+  font-weight: 700;
 }
+.status-text.success { color: #27AE60; } /* Verde éxito */
 
 .card-footer {
   margin-top: auto;
-  padding-top: 15px;
-  font-size: 0.75rem;
-  color: #aaa;
+  padding-top: 20px;
+  font-size: 0.8rem;
+  color: #BDC3C7;
+  font-weight: 500;
 }
 
-/* Botón Primary Monocromático */
+/* Botón Primary */
 .btn-primary {
-  background: #000;
+  background: #2C3E50; /* Tu color de marca */
   color: #fff;
   border: none;
-  padding: 12px;
-  border-radius: 10px;
+  padding: 14px;
+  border-radius: 12px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all 0.2s;
+  width: 100%; /* En la tarjeta se ve mejor full width */
+  text-align: center;
 }
 
 .btn-primary:hover {
-  background: #333;
+  background: #1a252f;
+  box-shadow: 0 4px 12px rgba(44, 62, 80, 0.2);
+}
+
+
+/* =========================================
+   MEDIA QUERIES (RESPONSIVIDAD MÓVIL)
+   ========================================= */
+@media (max-width: 768px) {
+  
+  /* 1. Mostramos el botón hamburguesa */
+  .mobile-toggle-btn {
+    display: flex; /* Flex para centrar el icono */
+    align-items: center;
+    justify-content: center;
+    
+    position: fixed; /* Flotante */
+    top: 15px;
+    left: 15px;
+    z-index: 99; /* Por encima del contenido, pero debajo del sidebar abierto */
+    
+    background: #fff;
+    border: 1px solid #ddd;
+    color: #333;
+    width: 45px; 
+    height: 45px;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    cursor: pointer;
+  }
+
+  /* 2. Ajustamos el contenido principal */
+  .content {
+    margin-left: 0; /* Quitamos el espacio del sidebar */
+    padding: 80px 20px 30px 20px; /* Padding top grande para no chocar con el botón hamburguesa */
+  }
+
+  /* 3. Ajustes menores de tipografía y layout */
+  .main-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  
+  .badge {
+    align-self: flex-start;
+    font-size: 0.75rem;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr; /* Una sola columna en móviles muy estrechos */
+  }
 }

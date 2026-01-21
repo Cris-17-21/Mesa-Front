@@ -1,6 +1,14 @@
 <div class="dashboard-layout">
+  
   @if (userProfile) {
+    <button class="mobile-toggle-btn" (click)="sidebarRef.toggleMobileMenu()">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M3 12h18M3 6h18M3 18h18" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+
     <app-sidebar 
+      #sidebarRef 
       [navigation]="userProfile.navigation" 
       [user]="userProfile.user"
       (logoutRequest)="logout()">
@@ -10,30 +18,31 @@
   <main class="content">
     <header class="main-header">
       <div class="header-titles">
-        <h1>Bienvenido, {{ userProfile?.user?.nombres }}</h1>
-        <p class="subtitle">Panel de control del restaurante</p>
+        <h1>Hola, {{ userProfile?.user?.nombres?.split(' ')?.[0] }}</h1>
+        <p class="subtitle">Panel de control</p>
       </div>
       <div class="header-date">
-        <span class="badge">{{ today | date:'fullDate' }}</span>
+        <span class="badge">{{ today | date:'mediumDate' }}</span>
       </div>
     </header>
 
     <div class="stats-grid">
       <div class="card">
-        <span class="card-label">Usuarios Registrados</span>
+        <span class="card-label">Usuarios</span>
         <p class="number">{{ totalUsers }}</p>
-        <div class="card-footer">Personal activo en el sistema</div>
+        <div class="card-footer">Activos en sistema</div>
       </div>
       
       <div class="card">
-        <span class="card-label">Estado del Sistema</span>
-        <p class="status-text">Operativo</p>
-        <div class="card-footer">Última sincronización: {{ today | date:'shortTime' }}</div>
+        <span class="card-label">Estado</span>
+        <p class="status-text success">Operativo</p> <div class="card-footer">Sync: {{ today | date:'shortTime' }}</div>
       </div>
 
       <div class="card action-card">
         <span class="card-label">Acceso Rápido</span>
-        <button class="btn-primary" routerLink="/maestro/zonas">Gestionar Zonas</button>
+        <button class="btn-primary" routerLink="/kitchen/orders">
+           Ir a Cocina →
+        </button>
       </div>
     </div>
   </main>
