@@ -1,0 +1,79 @@
+<header class="main-header">
+
+    <div class="header-titles">
+        <h1>Gestión de Módulos</h1>
+        <p class="subtitle">Configura los módulos del restaurante</p>
+    </div>
+
+    <div class="header-actions">
+        <button class="button-add" (click)="openCreate()">
+            <i class="bi bi-plus-circle"></i>
+            <p>Nuevo Módulo</p>
+        </button>
+    </div>
+
+    <div class="table">
+        <p-table #dt2 [value]="modules" dataKey="id" [rows]="10" [rowsPerPageOptions]="[10, 25, 50]"
+            [paginator]="true" [globalFilterFields]="['name', 'description']" [tableStyle]="{ 'min-width': '50rem' }">
+            <ng-template #caption>
+                <div class="search-wrapper">
+
+                    <input type="text" class="noir-input"
+                        (input)="dt2.filterGlobal($any($event.target).value, 'contains')"
+                        placeholder="Buscar módulo..." />
+                </div>
+            </ng-template>
+            <ng-template #header>
+                <tr>
+                    <th style="width:20%">Nombre</th>
+                    <th style="width:20%;">Padre</th>
+                    <th style="width:20%;">Ruta</th>
+                    <th style="width:10%;" class="text-center">Icono</th>
+                    <th style="width:10%;">Orden</th>
+                    <th style="width:20%" class="text-center">Acciones</th>
+                </tr>
+            </ng-template>
+            <ng-template #body let-module>
+                <tr>
+                    <td>
+                        {{ module.name }}
+                    </td>
+                    <td>
+                        {{ module.parent?.name }}
+                    </td>
+                    <td>
+                        {{ module.urlPath }}
+                    </td>
+                    <td>
+                        <i [class]="module.iconName"></i>
+                    </td>
+                    <td>
+                        {{ module.displayOrder }}
+                    </td>
+                    <td>
+                        <div class="flex justify-content-center gap-2">
+                            <button class="button-action edit" (click)="openEdit(module)">
+                                <i class="bi bi-pencil-square"></i>
+                            </button>
+                            <button class="button-action delete" (click)="deleteModule(module.id)">
+                                <i class="bi bi-trash3"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+            <ng-template #emptymessage>
+                <tr>
+                    <td colspan="3">No se encontraron permisos.</td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </div>
+</header>
+
+
+<app-modal-modules 
+    [(visible)]="displayModal" 
+    [moduleToEdit]="selectedModule()" 
+    (onSave)="loadModules()">
+</app-modal-modules>

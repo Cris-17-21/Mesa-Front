@@ -1,0 +1,84 @@
+/* --- CONTENEDOR PRINCIPAL --- */
+.dashboard-layout {
+  display: flex;
+  min-height: 100vh;
+  background-color: white;
+  position: relative;
+}
+
+/* --- ÁREA DE CONTENIDO (DINÁMICA) --- */
+.content {
+  flex-grow: 1;
+  /* Importante: este margen debe coincidir con el ancho de tu sidebar */
+  margin-left: 250px; 
+  padding: 40px;
+  transition: all 0.3s ease;
+  width: 100%;
+  min-height: 100vh;
+}
+
+/* --- BOTÓN HAMBURGUESA (SOLO MÓVIL) --- */
+.mobile-toggle-btn {
+  display: none; /* Oculto en PC */
+}
+
+/* --- OVERLAY PARA CARGA --- */
+.loading-overlay {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100vh;
+  background: #fff;
+  font-family: 'Inter', sans-serif;
+  color: #2C3E50;
+  font-weight: 600;
+}
+
+/* =========================================
+   RESPONSIVIDAD (Móviles y Tablets)
+   ========================================= */
+@media (max-width: 768px) {
+  
+  .content {
+    margin-left: 0; /* El contenido ocupa todo el ancho */
+    padding: 80px 20px 40px 20px; /* Espacio extra arriba por el botón flotante */
+  }
+
+  .mobile-toggle-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    z-index: 99; /* Por debajo del sidebar (100) pero sobre el contenido */
+    
+    background: #ffffff;
+    border: 1px solid #eaeaea;
+    color: #000;
+    width: 45px;
+    height: 45px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    cursor: pointer;
+    transition: transform 0.2s active;
+  }
+
+  .mobile-toggle-btn:active {
+    transform: scale(0.95);
+  }
+
+  .mobile-toggle-btn svg {
+    width: 24px;
+    height: 24px;
+  }
+}
+
+/* Opcional: Ajuste para pantallas muy grandes */
+@media (min-width: 1600px) {
+  .content {
+    padding: 60px 10%; /* Más aire en los lados en monitores gigantes */
+  }
+}

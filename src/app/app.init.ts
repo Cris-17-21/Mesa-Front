@@ -1,31 +1,36 @@
 import { inject } from '@angular/core';
-import { catchError, of, tap } from 'rxjs';
+import { firstValueFrom, of } from 'rxjs';
+import { catchError, tap } from 'rxjs/operators';
 import { AuthService } from './core/auth/auth.service';
 import { UserService } from './services/user/user.service';
 
 export function appInitializer() {
-  // Inyectamos los servicios necesarios
   const authService = inject(AuthService);
   const userService = inject(UserService);
 
   return () => {
     const token = authService.getToken();
-    // Si hay un token, intentamos recuperar el perfil del usuario
-    if (token) {
-      return userService.getUserMe().pipe(
-        // Si el perfil se carga bien, lo guardamos o procesamos
-        tap(profile => console.log('Sesión recuperada:', profile.user?.username)),
-        
+    
+    if (!token) {
+      return Promise.resolve(null);
+    }
+
+    // Convertimos el Observable a Promesa para que Angular ESPERE
+    return firstValueFrom(
+      userService.getUserMe().pipe(
+        tap(profile => {
+          console.log('Sesión recuperada con éxito');
+          // Aquí deberías guardar el perfil en un Signal en tu AuthService o UserService
+        }),
         catchError((err) => {
-          // Si el interceptor no logró refrescar el token a tiempo
-          // simplemente limpiamos y mandamos null para que la app cargue
-          console.warn('Sesión expirada o inválida. Redirigiendo...');
-          authService.logout(); 
+          console.error('Error recuperando sesión:', err);
+          // Solo hacemos logout si el error es realmente un 401 o 403
+          if (err.status === 401 || err.status === 403) {
+            authService.logout();
+          }
           return of(null);
         })
-      );
-    }
-    // Si no hay token, la app inicia normalmente (ej: en el login)
-    return of(null);
+      )
+    );
   };
 }

@@ -1,7 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component, input, output, signal } from '@angular/core';
-import { RouterModule } from '@angular/router';
+import { Component, inject, input, output, signal } from '@angular/core';
+import { Router, RouterModule } from '@angular/router';
 import { AuthProfile, NavigationItem } from '../../models/security/navigation.model';
+import { AuthService } from '../../core/auth/auth.service';
+import { UserService } from '../../services/user/user.service';
 
 @Component({
   selector: 'app-sidebar',
@@ -12,24 +14,25 @@ import { AuthProfile, NavigationItem } from '../../models/security/navigation.mo
 })
 export class SidebarComponent {
 
+  private authService = inject(AuthService);
+  private router = inject(Router);
+
   navigation = input.required<NavigationItem[]>();
   user = input.required<AuthProfile['user']>();
+
   logoutRequest = output<void>();
-
+  
   isMobileMenuOpen = signal(false);
-
   activeMenu = signal<string | null>(null);
 
   toggleMenu(itemName: string) {
-    if (this.activeMenu() === itemName) {
-      this.activeMenu.set(null);
-    } else {
-      this.activeMenu.set(itemName);
-    }
+    this.activeMenu.update(current => current === itemName ? null : itemName);
   }
 
   onLogout() {
+    this.authService.logout();
     this.logoutRequest.emit();
+    this.router.navigate(['/login']);
   }
 
   // PARA MOVILES

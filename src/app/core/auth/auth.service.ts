@@ -13,6 +13,7 @@ export class AuthService {
   
   private API_URL = `${environment.apiUrl}/auth`;
 
+
   constructor(private http: HttpClient) {}
 
   login(credentials: LoginRequest): Observable<AuthResponse> {

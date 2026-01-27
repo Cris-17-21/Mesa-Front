@@ -1,10 +1,8 @@
-<div class="sidebar-overlay" 
-     [class.show]="isMobileMenuOpen()" 
-     (click)="toggleMobileMenu()">
+<div class="sidebar-overlay" [class.show]="isMobileMenuOpen()" (click)="toggleMobileMenu()">
 </div>
 
 <nav class="sidebar" [class.mobile-open]="isMobileMenuOpen()">
-  
+
   <div class="sidebar-header">
     <div class="user-card">
       <div class="user-avatar">
@@ -15,56 +13,54 @@
         <span class="u-role">{{ user().role }}</span>
       </div>
     </div>
-    
+
     <button class="mobile-close-btn" (click)="toggleMobileMenu()">✕</button>
   </div>
 
   <ul class="nav-list">
     @for (item of navigation(); track item.name) {
-      <li class="nav-item">
-        @if (!item.children || item.children.length === 0) {
-          <a [routerLink]="item.urlPath" 
-             routerLinkActive="active-link" 
-             class="link-box"
-             (click)="onLinkClick()">
-             <div class="link-content">
-               <span>{{ item.name }}</span>
-             </div>
-          </a>
-        } @else {
-          <div class="dropdown-wrapper">
-            <button (click)="toggleMenu(item.name)" 
-                    class="link-box btn-drop"
-                    [class.is-active-parent]="activeMenu() === item.name">
-              <div class="link-content">
-                <span>{{ item.name }}</span>
-              </div>
-              <span class="arrow" [class.rotated]="activeMenu() === item.name">▾</span>
-            </button>
-
-            <div class="submenu-wrapper" [class.is-open]="activeMenu() === item.name">
-              <ul class="sub-menu">
-                @for (child of item.children; track child.name) {
-                  <li>
-                    <a [routerLink]="child.urlPath" 
-                       routerLinkActive="sub-active"
-                       class="sub-link"
-                       (click)="onLinkClick()">
-                      {{ child.name }}
-                    </a>
-                  </li>
-                }
-              </ul>
-            </div>
+    <li class="nav-item">
+      @if (!item.children || item.children.length === 0) {
+      <a [routerLink]="item.urlPath" routerLinkActive="active-link" class="link-box" (click)="onLinkClick()">
+        <div class="link-content">
+          <i [class]="item.iconName"></i>
+          <span>{{ item.name }}</span>
+        </div>
+      </a>
+      } @else {
+      <div class="dropdown-wrapper">
+        <button (click)="toggleMenu(item.name)" class="link-box btn-drop"
+          [class.is-active-parent]="activeMenu() === item.name">
+          <div class="link-content">
+            <i [class]="item.iconName"></i>
+            <span>{{ item.name }}</span>
           </div>
-        }
-      </li>
+          <span class="arrow" [class.rotated]="activeMenu() === item.name">▾</span>
+        </button>
+
+        <div class="submenu-wrapper" [class.is-open]="activeMenu() === item.name">
+          <ul class="sub-menu">
+            @for (child of item.children; track child.name) {
+            <li>
+              <a [routerLink]="child.urlPath" routerLinkActive="sub-active" class="sub-link" (click)="onLinkClick()">
+                <i [class]="child.iconName"></i>
+                {{ child.name }}
+              </a>
+            </li>
+            }
+          </ul>
+        </div>
+      </div>
+      }
+    </li>
     }
   </ul>
 
   <div class="sidebar-footer">
     <button class="logout-btn" (click)="onLogout()">
-      <span class="logout-icon">⎋</span> Cerrar Sesión
+      <span class="logout-icon">
+        <i class="bi bi-box-arrow-in-left"></i>
+      </span> Cerrar Sesión
     </button>
     <div class="version-tag">Restaurante ERP v1.0</div>
   </div>

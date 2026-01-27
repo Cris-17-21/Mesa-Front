@@ -53,7 +53,7 @@
   background: #000 !important;
   color: #fff !important;
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  width: 85%;
+  width: 100%;
 }
 
 /* --- ANIMACIÓN DE APERTURA (ACORDEÓN) --- */
@@ -101,9 +101,11 @@
 
 /* --- ESTILOS DE ENLACES (Mantenemos tu diseño) --- */
 .sub-link {
-  display: block;
-  padding: 10px 15px 10px 40px; /* Indentación para jerarquía */
-  color: #95A5A6; /* --text-muted */
+  display: flex;
+  align-items: center;
+  gap: 20px; /* separación entre icono y texto */
+  padding: 10px 15px 10px 40px;
+  color: #95A5A6;
   text-decoration: none;
   font-size: 0.9rem;
   border-left: 2px solid transparent;

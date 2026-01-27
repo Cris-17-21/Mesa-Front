@@ -1,0 +1,53 @@
+.form-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    padding-top: 0.5rem;
+}
+
+.field-row {
+    display: flex;
+    gap: 1rem;
+}
+
+.flex-3 { flex: 3; }
+.flex-1 { flex: 1; }
+
+.submodule-box {
+    background-color: #f8f8f9;
+    padding: 1.2rem;
+    border-radius: 10px;
+    border: 1px solid #e4e4e7;
+}
+
+.input-with-icon {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.preview-icon {
+    position: absolute;
+    left: 12px;
+    color: #18181b;
+}
+
+.input-with-icon .noir-input {
+    padding-left: 40px;
+}
+
+.footer-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 1rem;
+}
+
+/* Reutilizamos las clases Noir que definimos para Permissions */
+.label-noir { font-weight: 600; font-size: 0.85rem; color: #3f3f46; margin-bottom: 4px; display: block;}
+.noir-input { width: 100%; border: 1px solid #e4e4e7; border-radius: 8px; padding: 10px; outline: none; transition: 0.2s; }
+.noir-input:focus { border-color: #18181b; box-shadow: 0 0 0 3px rgba(24, 24, 27, 0.05); }
+.input-error { border-color: #ef4444 !important; }
+.error-text { color: #ef4444; font-size: 0.75rem; margin-top: 4px; font-weight: 500; }
+.btn-save { background: #18181b; color: white; border: none; padding: 10px 24px; border-radius: 8px; cursor: pointer; }
+.btn-cancel { background: white; border: 1px solid #e4e4e7; padding: 10px 24px; border-radius: 8px; cursor: pointer; }

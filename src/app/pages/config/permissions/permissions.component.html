@@ -1,0 +1,68 @@
+<header class="main-header">
+
+    <div class="header-titles">
+        <h1>Gestión de Permisos</h1>
+        <p class="subtitle">Configura los permisos para cada rol del restaurante</p>
+    </div>
+
+    <div class="header-actions">
+        <button class="button-add" (click)="openCreate()">
+            <i class="bi bi-plus-circle"></i>
+            <p>Nuevo Permiso</p>
+        </button>
+    </div>
+
+    <div class="table">
+        <p-table #dt2 [value]="permissions" dataKey="id" [rows]="10" [rowsPerPageOptions]="[10, 25, 50]"
+            [paginator]="true" [globalFilterFields]="['name', 'description']" [tableStyle]="{ 'min-width': '50rem' }">
+            <ng-template #caption>
+                <div class="search-wrapper">
+                    <i class="bi bi-search search-icon"></i>
+
+                    <input type="text" class="noir-input"
+                        (input)="dt2.filterGlobal($any($event.target).value, 'contains')"
+                        placeholder="Buscar permiso..." />
+                </div>
+            </ng-template>
+            <ng-template #header>
+                <tr>
+                    <th style="width:35%">Nombre</th>
+                    <th style="width:45%">Descripción</th>
+                    <th style="width:20%" class="text-center">Acciones</th>
+                </tr>
+            </ng-template>
+            <ng-template #body let-permission>
+                <tr>
+                    <td>
+                        {{ permission.name }}
+                    </td>
+                    <td>
+                        {{ permission.description }}
+                    </td>
+                    <td>
+                        <div class="flex justify-content-center gap-2">
+                            <button class="button-action edit" (click)="openEdit(permission)">
+                                <i class="bi bi-pencil-square"></i>
+                            </button>
+                            <button class="button-action delete" (click)="deletePermission(permission.id)">
+                                <i class="bi bi-trash3"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+            <ng-template #emptymessage>
+                <tr>
+                    <td colspan="3">No se encontraron permisos.</td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </div>
+</header>
+
+
+<app-modal-permissions 
+    [(visible)]="displayModal" 
+    [permissionToEdit]="selectedPermission()" 
+    (onSave)="loadPermissions()">
+</app-modal-permissions>

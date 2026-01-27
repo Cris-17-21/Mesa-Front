@@ -1,0 +1,83 @@
+<p-dialog 
+    [header]="moduleToEdit ? 'Editar Módulo' : 'Nuevo Módulo'" 
+    [(visible)]="visible" 
+    [modal]="true" 
+    [draggable]="false" 
+    [resizable]="false"
+    [style]="{ width: '35rem' }"
+    (onHide)="close()">
+
+    <form [formGroup]="moduleForm" (ngSubmit)="save()" class="form-container">
+        
+        <div class="field-row">
+            <div class="field flex-3">
+                <label class="label-noir">Nombre del Módulo</label>
+                <input pInputText formControlName="name" class="noir-input" 
+                       [class.input-error]="moduleForm.get('name')?.invalid && moduleForm.get('name')?.touched"
+                       placeholder="Ej: Inventarios" />
+                <small class="error-text" *ngIf="moduleForm.get('name')?.invalid && moduleForm.get('name')?.touched">
+                    El nombre es obligatorio.
+                </small>
+            </div>
+            
+            <div class="field flex-1">
+                <label class="label-noir">Orden</label>
+                <input pInputText type="number" formControlName="displayOrder" class="noir-input" />
+            </div>
+        </div>
+
+        <div class="field">
+            <label class="label-noir">Ruta URL (Path)</label>
+            <input pInputText formControlName="urlPath" class="noir-input" placeholder="/config/inventory" />
+            <small class="error-text" *ngIf="moduleForm.get('urlPath')?.invalid && moduleForm.get('urlPath')?.touched">
+                Define una ruta válida.
+            </small>
+        </div>
+
+        <div class="field">
+            <label class="label-noir">Icono de Bootstrap</label>
+            <div class="input-with-icon">
+                <i [class]="moduleForm.get('iconName')?.value" class="preview-icon"></i>
+                <input pInputText formControlName="iconName" class="noir-input" 
+                       placeholder="bi-box-seam" />
+            </div>
+            <small class="helper-text">Usa clases de Bootstrap Icons (ej: bi-house).</small>
+        </div>
+
+        <div class="submodule-box">
+            <div class="flex align-items-center gap-3">
+                <p-toggleSwitch 
+                    [ngModel]="isSubmodule()" 
+                    [ngModelOptions]="{standalone: true}" 
+                    (onChange)="isSubmodule.set($event.checked)">
+                </p-toggleSwitch>
+                <span class="label-noir">¿Es un sub-módulo?</span>
+            </div>
+
+            <div class="field mt-3" *ngIf="isSubmodule()">
+                <label class="label-noir">Seleccionar Módulo Padre</label>
+                <p-select 
+                    [options]="potentialParents()" 
+                    formControlName="parentId" 
+                    optionLabel="name" 
+                    optionValue="id"
+                    [filter]="true" 
+                    filterBy="name"
+                    filterPlaceholder="Buscar módulo raíz..."
+                    placeholder="¿A qué padre pertenece?" 
+                    class="w-full">
+                </p-select>
+                <small class="error-text" *ngIf="moduleForm.get('parentId')?.invalid && moduleForm.get('parentId')?.touched">
+                    Debes seleccionar un padre para el sub-módulo.
+                </small>
+            </div>
+        </div>
+
+        <div class="footer-actions">
+            <button type="button" class="btn-cancel" (click)="close()">Cancelar</button>
+            <button type="submit" class="btn-save" [disabled]="loading()">
+                {{ loading() ? 'Procesando...' : 'Guardar' }}
+            </button>
+        </div>
+    </form>
+</p-dialog>

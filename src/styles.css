@@ -1,1 +1,62 @@
-/* You can add global styles to this file, and also import other style files */
+body {
+  font-family: 'Inter', sans-serif;
+  height: 100%;
+}
+
+/* 1. Botones Minimalistas */
+.p-button {
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-weight: 500;
+    font-size: 0.85rem;
+    transition: all 0.2s ease;
+    border: 1px solid #e4e4e7;
+}
+
+/* 2. Tabla Estilo "Clean White" */
+.p-datatable {
+    border: none;
+    border-radius: 8px;
+}
+
+/* Encabezados: Texto sutil, fondo blanco */
+.p-datatable .p-datatable-thead > tr > th {
+    background-color: #ffffff !important;
+    color: #71717a !important; /* Gris Zinc 500 */
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 1.25rem 1rem !important;
+    border-bottom: 1px solid #f4f4f5 !important;
+}
+
+/* Cuerpo: Filas blancas con separadores finos */
+.p-datatable .p-datatable-tbody > tr {
+    background-color: #ffffff !important;
+    color: #18181b !important;
+    transition: background 0.2s;
+}
+
+.p-datatable .p-datatable-tbody > tr:hover {
+    background-color: #fafafa !important; /* Hover casi imperceptible */
+}
+
+.p-datatable .p-datatable-tbody > tr > td {
+    padding: 1rem !important;
+    border-bottom: 1px solid #f4f4f5 !important;
+}
+
+/* 3. Inputs de Filtro (Look moderno) */
+.p-column-filter-row p-columnfilterformelement input {
+    background: #ffffff !important;
+    border: 1px solid #e4e4e7 !important;
+    border-radius: 4px;
+    color: #18181b !important;
+    padding: 0.5rem !important;
+}
+
+.p-column-filter-row p-columnfilterformelement input:focus {
+    border-color: #a1a1aa !important;
+    outline: none;
+}
