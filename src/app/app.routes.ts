@@ -33,6 +33,10 @@ export const routes: Routes = [
             loadComponent: () => import('./pages/config/modules/modules.component').then(m => m.ModulesComponent)
           }
         ]
+      },
+      {
+        path: 'compras',
+        loadChildren: () => import('./pages/compras/compras.routes').then(m => m.COMPRA_ROUTES)
       }
     ]
   },
