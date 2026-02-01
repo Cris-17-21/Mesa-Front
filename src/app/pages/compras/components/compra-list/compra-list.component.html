@@ -1,0 +1,63 @@
+<div class="card">
+    <div class="flex justify-content-between align-items-center mb-4">
+        <h2 class="m-0 text-2xl font-bold">Gestión de Compras</h2>
+        <p-button 
+            label="Nueva Compra" 
+            icon="pi pi-plus" 
+            (onClick)="createCompra()" 
+            severity="primary">
+        </p-button>
+    </div>
+
+    <p-table 
+        [value]="compras" 
+        [loading]="loading"
+        [paginator]="true" 
+        [rows]="10"
+        [showCurrentPageReport]="true"
+        currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} compras"
+        [rowsPerPageOptions]="[10, 25, 50]"
+        styleClass="p-datatable-striped p-datatable-sm"
+        responsiveLayout="scroll">
+        
+        <ng-template pTemplate="header">
+            <tr>
+                <th pSortableColumn="nroComprobante">Comprobante <p-sortIcon field="nroComprobante"></p-sortIcon></th>
+                <th pSortableColumn="proveedorNombre">Proveedor <p-sortIcon field="proveedorNombre"></p-sortIcon></th>
+                <th pSortableColumn="fecha">Fecha <p-sortIcon field="fecha"></p-sortIcon></th>
+                <th pSortableColumn="total">Total <p-sortIcon field="total"></p-sortIcon></th>
+                <th pSortableColumn="estado">Estado <p-sortIcon field="estado"></p-sortIcon></th>
+                <th style="width: 100px">Acciones</th>
+            </tr>
+        </ng-template>
+        
+        <ng-template pTemplate="body" let-compra>
+            <tr>
+                <td>{{ compra.nroComprobante }}</td>
+                <td>{{ compra.proveedorNombre || 'N/A' }}</td>
+                <td>{{ compra.fecha | date:'dd/MM/yyyy HH:mm' }}</td>
+                <td>{{ compra.total | currency:'PEN':'S/ ' }}</td>
+                <td>
+                    <p-tag [value]="compra.estado" [severity]="getSeverity(compra.estado)"></p-tag>
+                </td>
+                <td>
+                    <div class="flex gap-2">
+                        <p-button 
+                            icon="pi pi-eye" 
+                            [rounded]="true" 
+                            [text]="true" 
+                            pTooltip="Ver Detalle"
+                            tooltipPosition="top">
+                        </p-button>
+                    </div>
+                </td>
+            </tr>
+        </ng-template>
+        
+        <ng-template pTemplate="emptymessage">
+            <tr>
+                <td colspan="6" class="text-center p-4">No se encontraron compras.</td>
+            </tr>
+        </ng-template>
+    </p-table>
+</div>
