@@ -1,0 +1,74 @@
+<header class="main-header">
+    <div class="header-titles">
+        <h1>Gestión de Empresas</h1>
+        <p class="subtitle">Administra los restaurantes y sus sedes principales</p>
+    </div>
+
+    <div class="header-actions">
+        <button class="button-add" (click)="openCreate()">
+            <i class="bi bi-plus-lg"></i>
+            <span>Nuevo Restaurante</span>
+        </button>
+    </div>
+
+    <div class="table-container shadow-noir">
+        <p-table #dt [value]="empresas" dataKey="id" [rows]="10" [paginator]="true"
+            [globalFilterFields]="['razonSocial', 'ruc']" [responsiveLayout]="'scroll'" styleClass="p-datatable-sm">
+
+            <ng-template pTemplate="caption">
+                <div class="search-wrapper">
+                    <i class="bi bi-search search-icon"></i>
+
+                    <input type="text" class="noir-input"
+                        (input)="dt.filterGlobal($any($event.target).value, 'contains')"
+                        placeholder="Buscar empresa ..." />
+                </div>
+            </ng-template>
+
+            <ng-template pTemplate="header">
+                <tr>
+                    <th style="width:15%">RUC</th>
+                    <th style="width:25%">Razón Social</th>
+                    <th style="width:25%">Dirección Fiscal</th>
+                    <th style="width:15%">Teléfono</th>
+                    <th style="width:10%">Logo</th>
+                    <th style="width:10%" class="text-center">Acciones</th>
+                </tr>
+            </ng-template>
+
+            <ng-template pTemplate="body" let-empresa>
+                <tr>
+                    <td><span class="font-bold">{{ empresa.ruc }}</span></td>
+                    <td>{{ empresa.razonSocial }}</td>
+                    <td>{{ empresa.direccionFiscal }}</td>
+                    <td>{{ empresa.telefono }}</td>
+                    <td>
+                        <div class="logo-preview" *ngIf="empresa.logoUrl">
+                            <img [src]="empresa.logoUrl" alt="logo" width="30">
+                        </div>
+                        <i class="bi bi-image text-muted" *ngIf="!empresa.logoUrl"></i>
+                    </td>
+                    <td>
+                        <div class="flex justify-content-center gap-2">
+                            <button class="button-action edit" (click)="openEdit(empresa)">
+                                <i class="bi bi-pencil-square"></i>
+                            </button>
+                            <button class="button-action delete" (click)="deleteEmpresa(empresa.id)">
+                                <i class="bi bi-trash3"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="6" class="text-center p-4">No se encontraron empresas registradas.</td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </div>
+</header>
+
+<app-modal-empresa [(visible)]="displayModal" [dataToEdit]="selectedEmpresa()" (onComplete)="handleSave($event)">
+</app-modal-empresa>

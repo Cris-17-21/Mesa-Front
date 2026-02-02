@@ -1,0 +1,115 @@
+.form-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+}
+
+.permission-item {
+    display: flex;
+    flex-direction: column;
+    padding: 5px 0;
+}
+
+/* Estilos Noir para PickList */
+::ng-deep .p-picklist-list {
+    border-radius: 8px !important;
+    border-color: #e4e4e7 !important;
+}
+
+::ng-deep .p-picklist-item.p-highlight {
+    background: #18181b !important;
+    /* Negro Noir */
+    color: #ffffff !important;
+}
+
+::ng-deep .p-picklist-buttons .p-button {
+    background: #ffffff !important;
+    color: #18181b !important;
+    border: 1px solid #e4e4e7 !important;
+}
+
+::ng-deep .p-picklist-buttons .p-button:hover {
+    background: #f4f4f5 !important;
+}
+
+::ng-deep .p-picklist-item.p-highlight {
+    background: #18181b !important; 
+    color: #ffffff !important;
+    font-weight: 600;
+}
+
+::ng-deep .p-listbox .p-listbox-list .p-listbox-option.p-listbox-option-selected {
+    background-color: #fcf1e8!important;
+}
+
+.footer-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 1rem;
+}
+
+/* Reutilizando tus clases base */
+.label-noir {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #3f3f46;
+    display: block;
+}
+
+.noir-input {
+    width: 100%;
+    border: 1px solid #e4e4e7;
+    border-radius: 8px;
+    padding: 10px;
+    outline: none;
+}
+
+.btn-save {
+    background: #18181b;
+    color: white;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.btn-cancel {
+    background: white;
+    border: 1px solid #e4e4e7;
+    padding: 10px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+/* --- OPTIMIZACIÓN PARA MÓVILES (RESPONSIVE) --- */
+@media screen and (max-width: 768px) {
+
+    /* Ajustar el ancho del modal en móvil */
+    ::ng-deep .p-dialog {
+        width: 95vw !important;
+        margin: 0;
+    }
+
+    /* Forzar que las listas se apilen verticalmente */
+    ::ng-deep .p-picklist {
+        flex-direction: column;
+    }
+
+    /* Los botones de flechas ahora deben apuntar arriba/abajo */
+    ::ng-deep .p-picklist-buttons {
+        flex-direction: row !important;
+        padding: 1rem 0 !important;
+        justify-content: center;
+    }
+
+    /* Rotar iconos de las flechas en móvil para que tengan sentido */
+    ::ng-deep .p-picklist-buttons .p-button .p-button-icon {
+        transform: rotate(90deg);
+    }
+
+    ::ng-deep .p-picklist-list {
+        height: 12rem !important;
+        /* Altura reducida en móvil para que quepan ambas */
+    }
+}

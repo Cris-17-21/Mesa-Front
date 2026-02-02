@@ -1,0 +1,141 @@
+<p-dialog [header]="dataToEdit ? 'Editar Empresa' : 'Configuración de Nuevo Restaurante'" [(visible)]="visible"
+    [modal]="true" [style]="{ width: '48rem' }" [draggable]="false" [resizable]="false" (onHide)="close()">
+
+    <div class="wizard-steps-container" *ngIf="!dataToEdit">
+        <p-steps [model]="steps()" [activeIndex]="currentStep()" [readonly]="true"></p-steps>
+    </div>
+
+    <form [formGroup]="wizardForm" class="form-container">
+
+        <div *ngIf="currentStep() === 0" formGroupName="empresa" class="step-fade">
+            <h3 class="step-title">{{ dataToEdit ? 'Actualizar Información Fiscal' : '1. Información de la Empresa' }}
+            </h3>
+
+            <div class="field-row">
+                <div class="field flex-1">
+                    <label class="label-noir">RUC (11 dígitos)</label>
+                    <input pInputText formControlName="ruc" class="noir-input" maxlength="11" [readOnly]="!!dataToEdit"
+                        [class.ng-invalid]="isFieldInvalid('empresa.ruc')" />
+                    <small class="error-text" *ngIf="isFieldInvalid('empresa.ruc')">RUC inválido.</small>
+                </div>
+                <div class="field flex-2">
+                    <label class="label-noir">Razón Social</label>
+                    <input pInputText formControlName="razonSocial" class="noir-input"
+                        [class.ng-invalid]="isFieldInvalid('empresa.razonSocial')" />
+                </div>
+            </div>
+
+            <div class="field">
+                <label class="label-noir">Dirección Fiscal</label>
+                <input pInputText formControlName="direccionFiscal" class="noir-input"
+                    [class.ng-invalid]="isFieldInvalid('empresa.direccionFiscal')" />
+            </div>
+
+            <div class="field-row">
+                <div class="field flex-1">
+                    <label class="label-noir">Teléfono Corporativo</label>
+                    <input pInputText formControlName="telefono" class="noir-input" />
+                </div>
+                <div class="field flex-1">
+                    <label class="label-noir">Email de Contacto</label>
+                    <input pInputText formControlName="email" class="noir-input" />
+                </div>
+            </div>
+        </div>
+
+        <div *ngIf="!dataToEdit && currentStep() === 1" formGroupName="sucursal" class="step-fade">
+            <h3 class="step-title">2. Detalles de la Sede Principal</h3>
+            <div class="field">
+                <label class="label-noir">Nombre Comercial de la Sede</label>
+                <input pInputText formControlName="nombre" class="noir-input" placeholder="Ej: Central Moyobamba" />
+            </div>
+            <div class="field-row">
+                <div class="field flex-2">
+                    <label class="label-noir">Dirección Física</label>
+                    <input pInputText formControlName="direccion" class="noir-input" />
+                </div>
+                <div class="field flex-1">
+                    <label class="label-noir">Teléfono Sede</label>
+                    <input pInputText formControlName="telefono" class="noir-input" />
+                </div>
+            </div>
+        </div>
+
+        <div *ngIf="!dataToEdit && currentStep() === 2" formGroupName="usuario" class="step-fade">
+            <h3 class="step-title">3. Credenciales del Administrador</h3>
+            <div class="field-row">
+                <div class="field flex-1">
+                    <label class="label-noir">Nombres</label>
+                    <input pInputText formControlName="nombres" class="noir-input" />
+                </div>
+                <div class="field flex-1">
+                    <label class="label-noir">Ap. Paterno</label>
+                    <input pInputText formControlName="apellidoPaterno" class="noir-input" />
+                </div>
+                <div class="field flex-1">
+                    <label class="label-noir">Ap. Materno</label>
+                    <input pInputText formControlName="apellidoMaterno" class="noir-input" />
+                </div>
+            </div>
+
+            <div class="field-row">
+                <div class="field flex-1">
+                    <label class="label-noir">Teléfono Personal</label>
+                    <input pInputText formControlName="telefono" class="noir-input"
+                        [class.ng-invalid]="isFieldInvalid('usuario.telefono')" />
+                </div>
+                <div class="field flex-1">
+                    <label class="label-noir">Email Personal</label>
+                    <input pInputText formControlName="email" class="noir-input"
+                        [class.ng-invalid]="isFieldInvalid('usuario.email')" />
+                </div>
+            </div>
+
+            <div class="field-row">
+                <div class="field flex-1">
+                    <label class="label-noir">Tipo Doc.</label>
+                    <p-select [options]="tiposDoc" formControlName="tipoDocumento" optionLabel="label"
+                        optionValue="value" class="w-full"></p-select>
+                </div>
+                <div class="field flex-2">
+                    <label class="label-noir">N° Documento</label>
+                    <input pInputText formControlName="numeroDocumento" class="noir-input"
+                        [maxlength]="wizardForm.get('usuario.tipoDocumento')?.value === 'DNI' ? 8 : 11" />
+                </div>
+            </div>
+
+            <div class="field-row">
+                <div class="field flex-1">
+                    <label class="label-noir">Usuario (Login)</label>
+                    <input pInputText formControlName="username" class="noir-input" />
+                </div>
+                <div class="field flex-1">
+                    <label class="label-noir">Password</label>
+                    <input pInputText type="password" formControlName="password" class="noir-input" />
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-actions">
+            <button type="button" class="btn-cancel" *ngIf="dataToEdit || currentStep() === 0" (click)="close()">
+                {{ dataToEdit ? 'Cancelar' : 'Cerrar' }}
+            </button>
+
+            <button type="button" class="btn-cancel" *ngIf="!dataToEdit && currentStep() > 0" (click)="prevStep()">
+                <i class="bi bi-arrow-left"></i> Atrás
+            </button>
+
+            <div class="spacer"></div>
+
+            <button type="button" class="btn-save" *ngIf="!dataToEdit && currentStep() < 2" (click)="nextStep()">
+                Siguiente <i class="bi bi-arrow-right"></i>
+            </button>
+
+            <button type="button" class="btn-save" *ngIf="dataToEdit || currentStep() === 2" (click)="saveAll()"
+                [disabled]="loading()">
+                <i class="bi bi-check-circle" *ngIf="!loading()"></i>
+                {{ loading() ? 'Procesando...' : (dataToEdit ? 'Guardar Cambios' : 'Finalizar y Crear') }}
+            </button>
+        </div>
+    </form>
+</p-dialog>

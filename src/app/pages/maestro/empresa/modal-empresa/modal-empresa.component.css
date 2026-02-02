@@ -1,0 +1,173 @@
+/* --- CONTENEDOR Y ESTRUCTURA --- */
+.form-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding-top: 1rem;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 0.5rem;
+}
+
+.field-row {
+    display: flex;
+    gap: 1rem;
+}
+
+.flex-1 { flex: 1; }
+.flex-2 { flex: 2; }
+.flex-3 { flex: 3; }
+.spacer { flex-grow: 1; }
+
+.step-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #18181b;
+    border-bottom: 2px solid #f4f4f5;
+    padding-bottom: 0.5rem;
+    margin-bottom: 1.5rem;
+    margin-top: 0;
+}
+
+/* --- ESTILOS DE PASOS PRIMENG (NOIR) --- */
+.wizard-steps-container {
+    margin-bottom: 2rem;
+    padding: 0 1rem;
+}
+
+::ng-deep .p-steps .p-steps-item.p-highlight .p-steps-number {
+    background: #18181b !important;
+    color: #fff !important;
+    border-color: #18181b !important;
+    font-weight: 800;
+    box-shadow: 0 0 0 4px rgba(24, 24, 27, 0.1);
+}
+
+::ng-deep .p-steps .p-steps-item.p-highlight .p-steps-title {
+    color: #18181b !important;
+    font-weight: 700 !important;
+}
+
+::ng-deep .p-steps .p-steps-item .p-steps-number {
+    background: #ffffff !important;
+    border: 2px solid #e4e4e7 !important;
+    color: #a1a1aa !important;
+    width: 2.5rem;
+    height: 2.5rem;
+}
+
+/* FUERZA EL TEXTO EN NEGRITA */
+::ng-deep .p-steps .p-steps-item.p-steps-item-active .p-steps-title {
+    color: #18181b !important;
+    font-weight: 800 !important;
+}
+
+/* OPCIONAL: PINTAR LA LÍNEA QUE YA PASASTE */
+::ng-deep .p-steps .p-steps-item.p-steps-item-active::before {
+    border-top: 2px solid #18181b !important;
+}
+
+/* --- INPUTS Y VALIDACIONES --- */
+.label-noir {
+    font-weight: 600;
+    font-size: 0.8rem;
+    color: #52525b;
+    margin-bottom: 4px;
+    display: block;
+}
+
+.noir-input {
+    width: 100%;
+    border: 1px solid #e4e4e7;
+    border-radius: 8px;
+    padding: 10px;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.noir-input:focus {
+    border-color: #18181b;
+    box-shadow: 0 0 0 2px rgba(24, 24, 27, 0.05);
+}
+
+/* Estado Inválido */
+.noir-input.ng-invalid.ng-touched,
+.noir-input.ng-invalid.ng-dirty {
+    border-color: #ef4444 !important;
+}
+
+/* Texto de Error */
+.error-text {
+    color: #ef4444;
+    font-size: 0.75rem;
+    font-weight: 500;
+    margin-top: 4px;
+    display: block;
+    animation: slideDown 0.2s ease-out;
+}
+
+/* --- BOTONES --- */
+.footer-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid #f4f4f5;
+}
+
+.btn-save {
+    background: #18181b;
+    color: white;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-save:hover:not(:disabled) {
+    background: #000;
+}
+
+.btn-save:disabled {
+    background: #a1a1aa;
+    cursor: not-allowed;
+}
+
+.btn-cancel {
+    background: white;
+    color: #18181b;
+    border: 1px solid #e4e4e7;
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.btn-cancel:hover {
+    background: #f4f4f5;
+}
+
+/* --- ANIMACIONES --- */
+.step-fade {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-3px); }
+    to { opacity: 1; transform: translateY(0); }
+}

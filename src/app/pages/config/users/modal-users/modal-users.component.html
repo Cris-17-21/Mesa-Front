@@ -1,0 +1,139 @@
+<p-dialog 
+    [header]="dataToEdit ? 'Editar Usuario' : 'Registrar Nuevo Usuario'" 
+    [(visible)]="visible" 
+    [modal]="true" 
+    [style]="{ width: '50rem' }" 
+    [draggable]="false"
+    [resizable]="false"
+    (onHide)="close()">
+
+    <form [formGroup]="userForm" class="form-grid">
+        
+        <h3 class="section-title">Información de Acceso</h3>
+        <div class="field-row">
+            <div class="field flex-1">
+                <label class="label-noir">Rol de Usuario</label>
+                <p-select 
+                    [options]="rolesFiltrados()" 
+                    formControlName="role" 
+                    optionLabel="name" 
+                    optionValue="id" 
+                    placeholder="Seleccione un Rol"
+                    [class.ng-invalid]="isFieldInvalid('role')">
+                </p-select>
+                <small class="error-text" *ngIf="isFieldInvalid('role')">El rol es obligatorio.</small>
+            </div>
+            
+            <div class="field flex-1">
+                <label class="label-noir">Nombre de Usuario (Login)</label>
+                <input pInputText formControlName="username" class="noir-input" placeholder="ej: jdoe"
+                       [class.ng-invalid]="isFieldInvalid('username')" />
+                <small class="error-text" *ngIf="isFieldInvalid('username')">Requerido.</small>
+            </div>
+
+            <div class="field flex-1" *ngIf="!dataToEdit">
+                <label class="label-noir">Contraseña</label>
+                <input pInputText type="password" formControlName="password" class="noir-input" 
+                       [class.ng-invalid]="isFieldInvalid('password')" />
+                <small class="error-text" *ngIf="isFieldInvalid('password')">Mínimo 6 caracteres.</small>
+            </div>
+        </div>
+
+        <h3 class="section-title">Asignación de Entidad</h3>
+        <div class="field-row">
+            <div class="field flex-1">
+                <label class="label-noir">Empresa</label>
+                <p-select 
+                    [options]="empresas" 
+                    formControlName="empresaId" 
+                    optionLabel="razonSocial" 
+                    optionValue="id" 
+                    placeholder="Seleccione Empresa"
+                    [class.ng-invalid]="isFieldInvalid('empresaId')">
+                </p-select>
+                <small class="error-text" *ngIf="isFieldInvalid('empresaId')">Debe asignar una empresa.</small>
+            </div>
+
+            <div class="field flex-1" *ngIf="userForm.get('role')?.value !== 'ADMIN'">
+                <label class="label-noir">Sucursal</label>
+                <p-select 
+                    [options]="sucursalesPorEmpresa()" 
+                    formControlName="sucursalId" 
+                    optionLabel="nombre" 
+                    optionValue="id" 
+                    placeholder="Seleccione Sede"
+                    [class.ng-invalid]="isFieldInvalid('sucursalId')">
+                </p-select>
+                <small class="error-text" *ngIf="isFieldInvalid('sucursalId')">La sucursal es obligatoria para este rol.</small>
+            </div>
+            
+            <div class="field flex-1" *ngIf="userForm.get('role')?.value === 'ADMIN'">
+                <label class="label-noir">Sucursal</label>
+                <input pInputText [disabled]="true" placeholder="No requiere sucursal (ADMIN)" class="noir-input" style="background: #f4f4f5;" />
+            </div>
+        </div>
+
+        <h3 class="section-title">Datos del Personal</h3>
+        <div class="field-row">
+            <div class="field flex-2">
+                <label class="label-noir">Nombres</label>
+                <input pInputText formControlName="nombres" class="noir-input" 
+                       [class.ng-invalid]="isFieldInvalid('nombres')" />
+            </div>
+            <div class="field flex-1">
+                <label class="label-noir">Apellido Paterno</label>
+                <input pInputText formControlName="apellidoPaterno" class="noir-input" 
+                       [class.ng-invalid]="isFieldInvalid('apellidoPaterno')" />
+            </div>
+            <div class="field flex-1">
+                <label class="label-noir">Apellido Materno</label>
+                <input pInputText formControlName="apellidoMaterno" class="noir-input" 
+                       [class.ng-invalid]="isFieldInvalid('apellidoMaterno')" />
+            </div>
+        </div>
+
+        <div class="field-row">
+            <div class="field flex-1">
+                <label class="label-noir">Tipo Documento</label>
+                <p-select 
+                    [options]="[{label: 'DNI', value: 'DNI'}, {label: 'RUC', value: 'RUC'}]" 
+                    formControlName="tipoDocumento" 
+                    optionLabel="label" 
+                    optionValue="value">
+                </p-select>
+            </div>
+            <div class="field flex-1">
+                <label class="label-noir">N° Documento</label>
+                <input pInputText formControlName="numeroDocumento" class="noir-input"
+                       [maxlength]="userForm.get('tipoDocumento')?.value === 'DNI' ? 8 : 11"
+                       [class.ng-invalid]="isFieldInvalid('numeroDocumento')" />
+                <small class="error-text" *ngIf="isFieldInvalid('numeroDocumento')">
+                    Formato incorrecto para {{ userForm.get('tipoDocumento')?.value }}.
+                </small>
+            </div>
+            <div class="field flex-1">
+                <label class="label-noir">Teléfono</label>
+                <input pInputText formControlName="telefono" class="noir-input" 
+                       [class.ng-invalid]="isFieldInvalid('telefono')" />
+            </div>
+        </div>
+
+        <div class="field">
+            <label class="label-noir">Correo Electrónico Personal/Trabajo</label>
+            <input pInputText formControlName="email" class="noir-input" placeholder="correo@ejemplo.com"
+                   [class.ng-invalid]="isFieldInvalid('email')" />
+            <small class="error-text" *ngIf="isFieldInvalid('email')">Ingrese un email válido.</small>
+        </div>
+
+        <div class="footer-actions">
+            <button type="button" class="btn-cancel" (click)="close()">
+                Cancelar
+            </button>
+            <button type="button" class="btn-save" (click)="save()" [disabled]="loading()">
+                <i class="pi pi-user-plus" style="margin-right: 8px;" *ngIf="!loading()"></i>
+                {{ loading() ? 'Guardando...' : (dataToEdit ? 'Actualizar Usuario' : 'Crear Usuario') }}
+            </button>
+        </div>
+
+    </form>
+</p-dialog>

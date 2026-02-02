@@ -63,13 +63,22 @@ export class ModalModulesComponent implements OnInit, OnChanges {
   }
 
   loadPotentialParents() {
-    this.moduleService.getAllModulesWithoutChildren().subscribe({
+    this.moduleService.getAllModules().subscribe({
       next: (data) => {
-        // Filtramos para que un módulo no pueda ser padre de sí mismo al editar
-        const filtered = data.filter(m => m.id !== this.moduleToEdit?.id);
+        const filtered = data.filter(m => {
+          // 1. No puede ser padre de sí mismo (para evitar ciclos infinitos en edición)
+          const isNotSelf = m.id !== this.moduleToEdit?.id;
+
+          // 2. Solo módulos que NO tienen permisos asignados
+          // Verificamos si el array de permisos existe y está vacío
+          const hasNoPermissions = !m.permissions || m.permissions.length === 0;
+
+          return isNotSelf && hasNoPermissions;
+        });
+
         this.potentialParents.set(filtered);
       },
-      error: (err) => console.error('Error al cargar módulos raíz', err)
+      error: (err) => console.error('Error al cargar módulos potenciales padres', err)
     });
   }
 

@@ -1,0 +1,53 @@
+<p-dialog 
+    [header]="roleToEdit ? 'Editar Rol' : 'Nuevo Rol'" 
+    [(visible)]="visible" 
+    [modal]="true" 
+    [style]="{ width: '50rem' }" 
+    [draggable]="false"
+    (onHide)="close()">
+
+    <form [formGroup]="roleForm" (ngSubmit)="save()" class="form-container">
+        
+        <div class="field">
+            <label class="label-noir">Nombre del Rol</label>
+            <input pInputText formControlName="name" class="noir-input" placeholder="Ej: Administrador de Cocina" />
+        </div>
+
+        <div class="field">
+            <label class="label-noir">Descripción</label>
+            <textarea pInputText formControlName="description" class="noir-input" placeholder="Breve descripción de las funciones"></textarea>
+        </div>
+
+        <div class="field">
+            <label class="label-noir mb-2">Asignación de Permisos</label>
+            <p-picklist 
+                [source]="sourcePermissions()" 
+                [target]="targetPermissions()" 
+                sourceHeader="Disponibles" 
+                targetHeader="Asignados" 
+                [responsive]="true" 
+                [dragdrop]="true" 
+                [showSourceControls]="false" 
+                [showTargetControls]="false"
+                sourceFilterPlaceholder="Buscar por nombre" 
+                targetFilterPlaceholder="Buscar por nombre"
+                filterBy="name"
+                [style]="{ height: '20rem' }">
+                
+                <ng-template let-item pTemplate="item">
+                    <div class="permission-item">
+                        <span class="font-bold">{{ item.name }}</span>
+                        <small class="text-secondary">{{ item.module?.name }}</small>
+                    </div>
+                </ng-template>
+            </p-picklist>
+        </div>
+
+        <div class="footer-actions">
+            <button type="button" class="btn-cancel" (click)="close()">Cancelar</button>
+            <button type="submit" class="btn-save" [disabled]="loading()">
+                {{ loading() ? 'Guardando...' : 'Guardar Rol' }}
+            </button>
+        </div>
+    </form>
+</p-dialog>
