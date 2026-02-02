@@ -68,6 +68,10 @@ export const routes: Routes = [
             loadComponent: () => import('./pages/ventas/pedidos/pedidos.component').then(m => m.PedidosComponent)
           }
         ]
+      },
+      {
+        path: 'compras',
+        loadChildren: () => import('./pages/compras/compras.routes').then(m => m.COMPRA_ROUTES)
       }
     ]
   },
