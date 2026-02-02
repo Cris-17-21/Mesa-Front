@@ -39,4 +39,9 @@ export class SucursalService {
   deleteSucursal(id: string): Observable<void> {
     return this.http.delete<void>(`${this.API_URL}/${id}`);
   }
+
+  // GET DE SUCURSAL POR EMPRESA
+  getSucursalByEmpresaId(id: string): Observable<Sucursal[]> {
+    return this.http.get<Sucursal[]>(`${this.API_URL}/empresa/${id}`)
+  }
 }

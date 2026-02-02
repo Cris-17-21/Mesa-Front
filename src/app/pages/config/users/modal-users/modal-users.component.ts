@@ -8,6 +8,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { Role } from '../../../../models/security/role.model';
 import { Empresa } from '../../../../models/maestro/empresa.model';
 import { Sucursal } from '../../../../models/maestro/sucursal.model';
+import { SucursalService } from '../../../../services/maestro/sucursal.service';
 
 @Component({
   selector: 'app-modal-users',
@@ -18,12 +19,12 @@ import { Sucursal } from '../../../../models/maestro/sucursal.model';
 export class ModalUsersComponent {
 
   private fb = inject(FormBuilder);
+  private sucursalService = inject(SucursalService);
 
   @Input() visible = false;
   @Input() dataToEdit: any = null;
   @Input() roles: Role[] = [];
   @Input() empresas: Empresa[] = [];
-  @Input() todasLasSucursales: Sucursal[] = []; // Lista completa para filtrar
 
   @Output() visibleChange = new EventEmitter<boolean>();
   @Output() onSave = new EventEmitter<any>();
@@ -51,7 +52,7 @@ export class ModalUsersComponent {
     if (changes['visible']?.currentValue === true) {
       this.prepareModal();
     }
-    
+
     // Si cambian los roles, filtramos al SUPERADMIN
     if (changes['roles']) {
       this.rolesFiltrados.set(this.roles.filter(r => r.name !== 'SUPERADMIN'));
@@ -69,15 +70,38 @@ export class ModalUsersComponent {
   }
 
   private watchFormChanges() {
-    // 1. Escuchar cambio de Empresa para filtrar Sucursales
+    // 1. ESCUCHAR CAMBIO DE EMPRESA (Llamada al Backend)
     this.userForm.get('empresaId')?.valueChanges.subscribe(empId => {
-      const filtered = this.todasLasSucursales.filter(s => s.empresa?.id === empId);
-      this.sucursalesPorEmpresa.set(filtered);
+      const sucursalCtrl = this.userForm.get('sucursalId');
+
+      if (!empId) {
+        this.sucursalesPorEmpresa.set([]);
+        sucursalCtrl?.setValue(null);
+        return;
+      }
+
+      // Llamamos a tu nuevo método del servicio
+      this.sucursalService.getSucursalByEmpresaId(empId).subscribe({
+        next: (data) => {
+          this.sucursalesPorEmpresa.set(data);
+
+          // Lógica de edición: Si estamos editando, mantenemos el valor, 
+          // si es creación o el ID actual no existe en la nueva lista, limpiamos.
+          const currentSucursalId = sucursalCtrl?.value;
+          if (!data.find(s => s.id === currentSucursalId)) {
+            sucursalCtrl?.setValue(null);
+          }
+        },
+        error: (err) => {
+          console.error('Error al cargar sucursales por empresa', err);
+          this.sucursalesPorEmpresa.set([]);
+        }
+      });
     });
 
-    // 2. Escuchar cambio de Rol para validación de Sucursal
+    // 2. ESCUCHAR CAMBIO DE ROL (Lógica de deshabilitar sucursal)
     this.userForm.get('role')?.valueChanges.subscribe(roleValue => {
-      // Buscamos si el rol seleccionado es ADMIN por su nombre o ID
+      // Nota: Asegúrate de que roleValue sea el ID o Name según tu HTML
       const selectedRole = this.roles.find(r => r.id === roleValue || r.name === roleValue);
       const sucursalCtrl = this.userForm.get('sucursalId');
 
@@ -93,27 +117,27 @@ export class ModalUsersComponent {
     });
 
     // 3. Validación dinámica de Documento (DNI: 8, RUC: 11)
-  this.userForm.get('tipoDocumento')?.valueChanges.subscribe(tipo => {
-    const docControl = this.userForm.get('numeroDocumento');
-    docControl?.setValue(''); // Limpiamos el valor para evitar confusiones
+    this.userForm.get('tipoDocumento')?.valueChanges.subscribe(tipo => {
+      const docControl = this.userForm.get('numeroDocumento');
+      docControl?.setValue(''); // Limpiamos el valor para evitar confusiones
 
-    if (tipo === 'DNI') {
-      docControl?.setValidators([
-        Validators.required, 
-        Validators.minLength(8), 
-        Validators.maxLength(8),
-        Validators.pattern('^[0-9]*$') // Solo números
-      ]);
-    } else if (tipo === 'RUC') {
-      docControl?.setValidators([
-        Validators.required, 
-        Validators.minLength(11), 
-        Validators.maxLength(11),
-        Validators.pattern('^[0-9]*$')
-      ]);
-    }
-    docControl?.updateValueAndValidity();
-  });
+      if (tipo === 'DNI') {
+        docControl?.setValidators([
+          Validators.required,
+          Validators.minLength(8),
+          Validators.maxLength(8),
+          Validators.pattern('^[0-9]*$') // Solo números
+        ]);
+      } else if (tipo === 'RUC') {
+        docControl?.setValidators([
+          Validators.required,
+          Validators.minLength(11),
+          Validators.maxLength(11),
+          Validators.pattern('^[0-9]*$')
+        ]);
+      }
+      docControl?.updateValueAndValidity();
+    });
   }
 
   isFieldInvalid(path: string) {
