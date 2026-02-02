@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+
 import { environment } from '../../core/environment/environment';
 import { CreateUserDto, UpdateUserDto, User } from '../../models/security/user.model';
 import { AuthProfile } from '../../models/security/navigation.model';
@@ -29,19 +29,7 @@ export class UserService {
 
   //GET DE USUARIO ACTUAL
   getUserMe(): Observable<AuthProfile> {
-    return this.http.get<AuthProfile>(`${this.API_URL}/me`).pipe(
-      map(profile => {
-        // MOCK: Inject Compras module locally
-        profile.navigation.push({
-          name: 'Compras',
-          order: 5,
-          urlPath: '/compras',
-          iconName: 'pi pi-shopping-cart',
-          children: []
-        });
-        return profile;
-      })
-    );
+    return this.http.get<AuthProfile>(`${this.API_URL}/me`);
   };
 
   //POST DE USUARIO
