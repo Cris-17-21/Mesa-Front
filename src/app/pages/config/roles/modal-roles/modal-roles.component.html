@@ -1,39 +1,36 @@
-<p-dialog 
-    [header]="roleToEdit ? 'Editar Rol' : 'Nuevo Rol'" 
-    [(visible)]="visible" 
-    [modal]="true" 
-    [style]="{ width: '50rem' }" 
-    [draggable]="false"
-    (onHide)="close()">
+<p-dialog [header]="roleToEdit ? 'Editar Rol' : 'Nuevo Rol'" [(visible)]="visible" [modal]="true"
+    [style]="{ width: '50rem', maxWidth: '80vw' }" [contentStyle]="{'max-height': '80vh', 'overflow-y': 'auto'}"
+    [draggable]="false" (onHide)="close()">
 
     <form [formGroup]="roleForm" (ngSubmit)="save()" class="form-container">
-        
+
         <div class="field">
             <label class="label-noir">Nombre del Rol</label>
-            <input pInputText formControlName="name" class="noir-input" placeholder="Ej: Administrador de Cocina" />
+            <input pInputText formControlName="name" class="noir-input uppercase-input" [class.input-error]="isFieldInvalid('name')"
+                placeholder="Ej: Administrador de Cocina" />
+            <small class="error-text" *ngIf="isFieldInvalid('name')">
+                El nombre del rol es obligatorio.
+            </small>
         </div>
 
         <div class="field">
             <label class="label-noir">Descripción</label>
-            <textarea pInputText formControlName="description" class="noir-input" placeholder="Breve descripción de las funciones"></textarea>
+            <textarea pInputText formControlName="description" class="noir-input"
+                [class.input-error]="isFieldInvalid('description')"
+                placeholder="Breve descripción de las funciones"></textarea>
+            <small class="error-text" *ngIf="isFieldInvalid('description')">
+                La descripción es obligatoria.
+            </small>
         </div>
 
         <div class="field">
             <label class="label-noir mb-2">Asignación de Permisos</label>
-            <p-picklist 
-                [source]="sourcePermissions()" 
-                [target]="targetPermissions()" 
-                sourceHeader="Disponibles" 
-                targetHeader="Asignados" 
-                [responsive]="true" 
-                [dragdrop]="true" 
-                [showSourceControls]="false" 
-                [showTargetControls]="false"
-                sourceFilterPlaceholder="Buscar por nombre" 
-                targetFilterPlaceholder="Buscar por nombre"
-                filterBy="name"
-                [style]="{ height: '20rem' }">
-                
+            <p-picklist [source]="sourcePermissions()" [target]="targetPermissions()"
+                [class.picklist-error]="roleForm.touched && targetPermissions().length === 0" sourceHeader="Disponibles"
+                targetHeader="Asignados" [responsive]="true" [dragdrop]="true" [showSourceControls]="false"
+                [showTargetControls]="false" sourceFilterPlaceholder="Buscar por nombre"
+                targetFilterPlaceholder="Buscar por nombre" filterBy="name" [style]="{ height: '20rem' }">
+
                 <ng-template let-item pTemplate="item">
                     <div class="permission-item">
                         <span class="font-bold">{{ item.name }}</span>
@@ -41,13 +38,18 @@
                     </div>
                 </ng-template>
             </p-picklist>
+            <small class="error-text" *ngIf="roleForm.touched && targetPermissions().length === 0">
+                Debes asignar al menos un permiso a este rol.
+            </small>
         </div>
 
-        <div class="footer-actions">
-            <button type="button" class="btn-cancel" (click)="close()">Cancelar</button>
-            <button type="submit" class="btn-save" [disabled]="loading()">
-                {{ loading() ? 'Guardando...' : 'Guardar Rol' }}
-            </button>
-        </div>
+        <p-footer>
+            <div class="footer-actions">
+                <button type="button" class="btn-cancel" (click)="close()">Cancelar</button>
+                <button type="submit" class="btn-save" [disabled]="loading()">
+                    {{ loading() ? 'Guardando...' : 'Guardar' }}
+                </button>
+            </div>
+        </p-footer>
     </form>
 </p-dialog>

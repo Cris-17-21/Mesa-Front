@@ -1,1 +1,55 @@
-<p>modal-sucursal works!</p>
+<p-dialog 
+    [header]="dataToEdit ? 'Editar Sucursal' : 'Nueva Sucursal'" 
+    [(visible)]="visible" 
+    [modal]="true" 
+    [draggable]="false"
+    [style]="{ width: '30rem', maxWidth: '95vw' }" [contentStyle]="{'max-height': '80vh', 'overflow-y': 'auto'}"
+    (onHide)="close()">
+    
+    <form [formGroup]="sucursalForm" (ngSubmit)="save()" class="form-noir mt-2">
+        
+        <div class="field-noir">
+            <label class="label-noir">Empresa</label>
+            <p-select [options]="empresas()" 
+                      formControlName="empresa"
+                      optionLabel="razonSocial" 
+                      dataKey="id"
+                      placeholder="Seleccione Empresa"
+                      [filter]="true"
+                      [class.ng-invalid]="isInvalid('empresa')"
+                      appendTo="body"
+                      class="w-full">
+            </p-select>
+            <small class="error-text" *ngIf="isInvalid('empresa')">{{ getErrorMessage('empresa') }}</small>
+        </div>
+
+        <div class="field-noir">
+            <label class="label-noir">Nombre de Sede</label>
+            <input pInputText formControlName="nombre" placeholder="Ej. Principal" 
+                   class="noir-input" [class.invalid]="isInvalid('nombre')" />
+            <small class="error-text" *ngIf="isInvalid('nombre')">{{ getErrorMessage('nombre') }}</small>
+        </div>
+
+        <div class="field-noir">
+            <label class="label-noir">Dirección</label>
+            <input pInputText formControlName="direccion" placeholder="Calle Ejemplo 123" 
+                   class="noir-input" [class.invalid]="isInvalid('direccion')" />
+            <small class="error-text" *ngIf="isInvalid('direccion')">{{ getErrorMessage('direccion') }}</small>
+        </div>
+
+        <div class="field-noir">
+            <label class="label-noir">Teléfono</label>
+            <input pInputText formControlName="telefono" placeholder="987654321" maxlength="9" 
+                   class="noir-input" [class.invalid]="isInvalid('telefono')" />
+            <small class="error-text" *ngIf="isInvalid('telefono')">{{ getErrorMessage('telefono') }}</small>
+        </div>
+
+        <div class="footer-actions mt-4">
+            <button type="button" class="btn-cancel" (click)="close()" [disabled]="loading()">Cancelar</button>
+            <button type="submit" class="btn-save" [disabled]="loading()">
+                <i class="bi bi-check2-circle mr-2" *ngIf="!loading()"></i>
+                {{ loading() ? 'Procesando...' : (dataToEdit ? 'Actualizar' : 'Registrar') }}
+            </button>
+        </div>
+    </form>
+</p-dialog>

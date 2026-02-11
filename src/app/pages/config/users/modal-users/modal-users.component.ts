@@ -9,6 +9,7 @@ import { Role } from '../../../../models/security/role.model';
 import { Empresa } from '../../../../models/maestro/empresa.model';
 import { Sucursal } from '../../../../models/maestro/sucursal.model';
 import { SucursalService } from '../../../../services/maestro/sucursal.service';
+import { ConsultaService } from '../../../../services/auxiliar/consulta.service';
 
 @Component({
   selector: 'app-modal-users',
@@ -20,6 +21,7 @@ export class ModalUsersComponent {
 
   private fb = inject(FormBuilder);
   private sucursalService = inject(SucursalService);
+  private consultaService = inject(ConsultaService);
 
   @Input() visible = false;
   @Input() dataToEdit: any = null;
@@ -36,16 +38,16 @@ export class ModalUsersComponent {
   userForm: FormGroup = this.fb.group({
     username: ['', Validators.required],
     password: ['', [Validators.required, Validators.minLength(6)]],
+    role: ['', Validators.required],
+    empresaId: ['', Validators.required],
+    sucursalId: [{ value: '', disabled: false }, Validators.required],
+    numeroDocumento: ['', [Validators.required, Validators.pattern('^[0-9]{8}$')]], // Solo 8 números
     nombres: ['', Validators.required],
     apellidoPaterno: ['', Validators.required],
     apellidoMaterno: ['', Validators.required],
-    tipoDocumento: ['DNI', Validators.required],
-    numeroDocumento: ['', Validators.required],
-    telefono: ['', Validators.required],
+    telefono: ['', [Validators.required, Validators.pattern('^9[0-9]{8}$')]], // Inicia con 9 y tiene 9 dígitos
     email: ['', [Validators.required, Validators.email]],
-    role: ['', Validators.required], // Aquí guardaremos el name o ID según tu DTO
-    empresaId: ['', Validators.required],
-    sucursalId: [{ value: '', disabled: false }, Validators.required]
+    tipoDocumento: ['DNI'] // Por defecto
   });
 
   ngOnChanges(changes: SimpleChanges) {
@@ -70,6 +72,7 @@ export class ModalUsersComponent {
   }
 
   private watchFormChanges() {
+
     // 1. ESCUCHAR CAMBIO DE EMPRESA (Llamada al Backend)
     this.userForm.get('empresaId')?.valueChanges.subscribe(empId => {
       const sucursalCtrl = this.userForm.get('sucursalId');
@@ -158,5 +161,32 @@ export class ModalUsersComponent {
 
   close() {
     this.visibleChange.emit(false);
+  }
+
+  consultarDni() {
+    const dni = this.userForm.get('numeroDocumento')?.value;
+
+    // Validamos que tenga 8 dígitos antes de llamar a la API
+    if (!dni || dni.length !== 8) {
+      // Aquí podrías disparar un mensaje de error tipo Toast si gustas
+      return;
+    }
+
+    this.consultaService.consultaDni(dni).subscribe({
+      next: (data) => {
+        console.log(data)
+        this.userForm.patchValue({
+          nombres: data.first_name,
+          apellidoPaterno: data.first_last_name,
+          apellidoMaterno: data.second_last_name
+        });
+        this.loading.set(false);
+      },
+      error: (err) => {
+        console.error("Error consultando DNI", err);
+        this.loading.set(false);
+        // Opcional: limpiar campos si no encuentra nada
+      }
+    });
   }
 }

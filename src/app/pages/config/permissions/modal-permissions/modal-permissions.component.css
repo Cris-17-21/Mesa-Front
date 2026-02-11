@@ -79,3 +79,7 @@
 ::ng-deep .ng-dirty.p-select {
     border-color: #ef4444 !important;
 }
+
+.uppercase-input {
+    text-transform: uppercase;
+}

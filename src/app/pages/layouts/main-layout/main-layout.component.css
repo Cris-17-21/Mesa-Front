@@ -1,84 +1,85 @@
-/* --- CONTENEDOR PRINCIPAL --- */
+/* 1. CONTENEDOR MAESTRO */
 .dashboard-layout {
   display: flex;
   min-height: 100vh;
-  background-color: white;
+  background-color: #f8fafc; /* Fondo Zinc muy claro */
   position: relative;
+  width: 100%;
 }
 
-/* --- ÁREA DE CONTENIDO (DINÁMICA) --- */
-.content {
+/* 2. WRAPPER DERECHO (Agrupa Header + Content) */
+.main-wrapper {
   flex-grow: 1;
-  /* Importante: este margen debe coincidir con el ancho de tu sidebar */
-  margin-left: 250px; 
-  padding: 40px;
-  transition: all 0.3s ease;
-  width: 100%;
-  min-height: 100vh;
-}
-
-/* --- BOTÓN HAMBURGUESA (SOLO MÓVIL) --- */
-.mobile-toggle-btn {
-  display: none; /* Oculto en PC */
-}
-
-/* --- OVERLAY PARA CARGA --- */
-.loading-overlay {
   display: flex;
-  justify-content: center;
-  align-items: center;
+  flex-direction: column;
+  min-height: 100vh;
+  /* El margen debe ser exacto al ancho de tu sidebar */
+  margin-left: 250px; 
+  transition: margin 0.3s ease;
+  width: calc(100% - 250px);
+}
+
+/* 3. HEADER (Dentro del flujo) */
+app-header {
   width: 100%;
-  height: 100vh;
-  background: #fff;
-  font-family: 'Inter', sans-serif;
-  color: #2C3E50;
-  font-weight: 600;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: white;
+}
+
+/* 4. ÁREA DE CONTENIDO */
+.content {
+  padding: 30px;
+  flex-grow: 1;
+  box-sizing: border-box;
+}
+
+/* 5. BOTÓN MÓVIL (OCULTO EN LAPTOPS) */
+.mobile-toggle-btn {
+  display: none !important; /* Fuerza desaparición en PC/Laptop */
 }
 
 /* =========================================
-   RESPONSIVIDAD (Móviles y Tablets)
+   RESPONSIVIDAD (Móviles)
    ========================================= */
 @media (max-width: 768px) {
-  
+  .main-wrapper {
+    margin-left: 0; /* Quita margen en móvil */
+    width: 100%;
+  }
+
   .content {
-    margin-left: 0; /* El contenido ocupa todo el ancho */
-    padding: 80px 20px 40px 20px; /* Espacio extra arriba por el botón flotante */
+    padding: 80px 20px 20px 20px; /* Espacio para el botón flotante */
   }
 
   .mobile-toggle-btn {
-    display: flex;
+    display: flex !important; /* Solo aparece en móvil */
     align-items: center;
     justify-content: center;
-    
     position: fixed;
     top: 15px;
     left: 15px;
-    z-index: 99; /* Por debajo del sidebar (100) pero sobre el contenido */
-    
+    z-index: 1100;
     background: #ffffff;
-    border: 1px solid #eaeaea;
-    color: #000;
-    width: 45px;
-    height: 45px;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    border: 1px solid #e2e8f0;
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     cursor: pointer;
-    transition: transform 0.2s active;
-  }
-
-  .mobile-toggle-btn:active {
-    transform: scale(0.95);
-  }
-
-  .mobile-toggle-btn svg {
-    width: 24px;
-    height: 24px;
   }
 }
 
-/* Opcional: Ajuste para pantallas muy grandes */
-@media (min-width: 1600px) {
-  .content {
-    padding: 60px 10%; /* Más aire en los lados en monitores gigantes */
-  }
+/* 6. OVERLAY DE CARGA (Opcional) */
+.loading-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: white;
+  z-index: 9999;
+  font-weight: 600;
+  color: #18181b;
 }

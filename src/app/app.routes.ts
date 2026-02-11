@@ -71,7 +71,12 @@ export const routes: Routes = [
       },
       {
         path: 'compras',
-        loadChildren: () => import('./pages/compras/compras.routes').then(m => m.COMPRA_ROUTES)
+        children: [
+          {
+            path: 'prooductos',
+            loadComponent: () => import('./pages/compras/components/compra-list/compra-list.component').then(m => m.CompraListComponent)
+          }
+        ]
       }
     ]
   },

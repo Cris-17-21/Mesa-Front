@@ -46,4 +46,19 @@ export class UserService {
   deleteUser(id: string): Observable<void> {
     return this.http.delete<void>(`${this.API_URL}/${id}`);
   }
+
+  //GET DE USUARIOS POR EMPRESA
+  getUserByEmpresaId(empresaId: string): Observable<User[]> {
+    return this.http.get<User[]>(`${this.API_URL}/empresa/${empresaId}`);
+  }
+
+  //GET DE USUARIOS POR EMPRESA Y SUCURSAL
+  getUserByEmpresaIdAndSucursalId(empresaId: string, sucursalId: string): Observable<User[]> {
+    return this.http.get<User[]>(`${this.API_URL}/empresa/${empresaId}/sucursal/${sucursalId}`);
+  }
+
+  // GET DE USUARIO POR USERNAME
+  getUserByUsername(username: string): Observable<User> {
+    return this.http.get<User>(`${this.API_URL}/username/${username}`);
+  }
 }

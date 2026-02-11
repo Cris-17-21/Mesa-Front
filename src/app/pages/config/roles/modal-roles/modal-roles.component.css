@@ -2,6 +2,7 @@
     display: flex;
     flex-direction: column;
     gap: 1.2rem;
+    padding-bottom: 1rem;
 }
 
 .permission-item {
@@ -11,6 +12,12 @@
 }
 
 /* Estilos Noir para PickList */
+::ng-deep .p-picklist {
+    display: flex;
+    flex-direction: row;
+    gap: 0.5rem;
+}
+
 ::ng-deep .p-picklist-list {
     border-radius: 8px !important;
     border-color: #e4e4e7 !important;
@@ -33,13 +40,13 @@
 }
 
 ::ng-deep .p-picklist-item.p-highlight {
-    background: #18181b !important; 
+    background: #18181b !important;
     color: #ffffff !important;
     font-weight: 600;
 }
 
 ::ng-deep .p-listbox .p-listbox-list .p-listbox-option.p-listbox-option-selected {
-    background-color: #fcf1e8!important;
+    background-color: #fcf1e8 !important;
 }
 
 .footer-actions {
@@ -82,8 +89,49 @@
     cursor: pointer;
 }
 
+/* Mensajes de error en rojo */
+.error-text {
+    color: #ef4444;
+    font-size: 0.75rem;
+    margin-top: 4px;
+    font-weight: 500;
+    display: block;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Bordes rojos para inputs */
+.input-error {
+    border-color: #ef4444 !important;
+}
+
+/* Borde rojo para el Picklist */
+::ng-deep .picklist-error .p-picklist-list {
+    border: 1px solid #ef4444 !important;
+}
+
+/* Animación de aparición */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-3px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.uppercase-input {
+    text-transform: uppercase;
+}
+
 /* --- OPTIMIZACIÓN PARA MÓVILES (RESPONSIVE) --- */
 @media screen and (max-width: 768px) {
+
+    .form-container {
+        gap: 1rem;
+    }
 
     /* Ajustar el ancho del modal en móvil */
     ::ng-deep .p-dialog {
@@ -93,7 +141,7 @@
 
     /* Forzar que las listas se apilen verticalmente */
     ::ng-deep .p-picklist {
-        flex-direction: column;
+        flex-direction: column !important;
     }
 
     /* Los botones de flechas ahora deben apuntar arriba/abajo */
@@ -109,7 +157,22 @@
     }
 
     ::ng-deep .p-picklist-list {
-        height: 12rem !important;
+        height: 15rem !important;
         /* Altura reducida en móvil para que quepan ambas */
+    }
+
+
+    .footer-actions {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .btn-save, .btn-cancel {
+        width: 100%;
+        order: 1;
+    }
+    
+    .btn-cancel {
+        order: 2; /* Botón cancelar abajo en móvil */
     }
 }

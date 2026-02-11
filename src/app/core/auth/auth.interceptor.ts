@@ -4,7 +4,7 @@ import { AuthService } from './auth.service';
 import { BehaviorSubject, catchError, filter, switchMap, take, throwError } from 'rxjs';
 import { Router } from '@angular/router';
 
-// Usamos variables fuera de la función para mantener el estado entre llamadas del interceptor
+// Estado para manejar múltiples peticiones durante un refresh
 let isRefreshing = false;
 let refreshTokenSubject: BehaviorSubject<string | null> = new BehaviorSubject<string | null>(null);
 
@@ -13,6 +13,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
   const token = authService.getToken();
 
+  // No interceptar la propia petición de refresh para evitar bucles infinitos
   if (req.url.includes('/auth/refresh')) {
     return next(req);
   }
@@ -24,8 +25,20 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(authReq).pipe(
     catchError((error) => {
-      // Si el error es 401 (o 400 por el error de Hibernate que ya conocemos)
+      // Capturamos 401 y 403 (donde suele caer el SuperAdmin cuando expira el token)
       if (error instanceof HttpErrorResponse && (error.status === 401 || error.status === 403)) {
+
+        // Si el error ocurre en login o selección de sede, no intentamos refresh
+        if (req.url.includes('/auth/select-branch') || req.url.includes('/auth/login')) {
+          return throwError(() => error);
+        }
+
+        // Si es un 403, mandamos un aviso a consola pero NO cortamos el flujo,
+        // dejamos que intente el refresh por si es una expiración camuflada.
+        if (error.status === 403) {
+          console.warn('Acceso denegado o token expirado (403). Intentando refrescar sesión...');
+        }
+
         return handleRefreshLogic(authReq, next, authService, router);
       }
       return throwError(() => error);
@@ -34,22 +47,24 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 };
 
 const handleRefreshLogic = (request: HttpRequest<any>, next: HttpHandlerFn, authService: AuthService, router: Router) => {
-  
   if (!isRefreshing) {
     isRefreshing = true;
     refreshTokenSubject.next(null);
 
     const refreshToken = authService.getRefreshToken();
+    
     if (!refreshToken) {
       return finalizeLogout(authService, router);
     }
 
+    // Llamada al servicio de refresh (enviando solo el refreshToken según tu servicio actual)
     return authService.refreshToken({ refreshToken }).pipe(
       switchMap((res) => {
         isRefreshing = false;
+        // El servicio ya guarda los tokens y carga el estado inicial según tu código
         refreshTokenSubject.next(res.accessToken);
-        
-        // Reintentamos la petición original con el nuevo token
+
+        // Reintentamos la petición original con el nuevo token de acceso
         return next(request.clone({
           setHeaders: { Authorization: `Bearer ${res.accessToken}` }
         }));
@@ -60,7 +75,7 @@ const handleRefreshLogic = (request: HttpRequest<any>, next: HttpHandlerFn, auth
       })
     );
   } else {
-    // Si ya hay un refresh en curso, pausamos esta petición hasta que el subject tenga el token
+    // Si ya hay un refresh en curso, las demás peticiones esperan aquí
     return refreshTokenSubject.pipe(
       filter(token => token !== null),
       take(1),
@@ -74,10 +89,10 @@ const handleRefreshLogic = (request: HttpRequest<any>, next: HttpHandlerFn, auth
 };
 
 const finalizeLogout = (authService: AuthService, router: Router) => {
+  isRefreshing = false;
   authService.logout();
-  // USAMOS router.navigate en lugar de window.location.href para romper el bucle infinito
   if (!router.url.includes('/login')) {
     router.navigate(['/login']);
   }
-  return throwError(() => new Error('Sesión expirada'));
+  return throwError(() => new Error('Sesión expirada o sin permisos'));
 };

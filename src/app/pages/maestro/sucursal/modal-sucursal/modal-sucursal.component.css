@@ -1,0 +1,145 @@
+/* --- Estructura General del Formulario --- */
+.form-noir {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    padding: 0.5rem 0;
+}
+
+.field-noir {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+/* --- Etiquetas (Labels) --- */
+.label-noir {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #18181b; /* Zinc 950 */
+    letter-spacing: -0.01em;
+}
+
+/* --- Inputs Estilo Noir --- */
+.noir-input {
+    width: 100%;
+    padding: 0.65rem 0.85rem;
+    font-family: inherit;
+    font-size: 0.9rem;
+    color: #18181b;
+    background-color: #ffffff;
+    border: 1px solid #e4e4e7; /* Zinc 200 */
+    border-radius: 8px;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.noir-input:focus {
+    border-color: #18181b;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(24, 24, 27, 0.05);
+}
+
+.noir-input::placeholder {
+    color: #a1a1aa; /* Zinc 400 */
+}
+
+/* --- Estado de Error --- */
+.noir-input.invalid {
+    border-color: #ef4444 !important; /* Red 500 */
+    background-color: #fef2f2;
+}
+
+.error-text {
+    font-size: 0.75rem;
+    color: #ef4444;
+    font-weight: 500;
+    min-height: 1rem;
+}
+
+/* --- Acciones y Botones (Footer) --- */
+.footer-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 0.75rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #f4f4f5; /* Zinc 100 */
+}
+
+.btn-cancel {
+    background: transparent;
+    color: #71717a; /* Zinc 500 */
+    border: 1px solid #e4e4e7;
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-cancel:hover {
+    background: #f4f4f5;
+    color: #18181b;
+}
+
+.btn-save {
+    background: #18181b; /* Negro puro */
+    color: #ffffff;
+    border: 1px solid #18181b;
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.875rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+}
+
+.btn-save:hover {
+    background: #3f3f46; /* Zinc 700 */
+    border-color: #3f3f46;
+}
+
+.btn-save:disabled {
+    background: #a1a1aa;
+    border-color: #a1a1aa;
+    cursor: not-allowed;
+}
+
+/* --- Personalización de PrimeNG (Deep Selectors) --- */
+:host ::ng-deep {
+    /* Selector de Empresa */
+    .p-select {
+        width: 100%;
+        border-radius: 8px;
+        border-color: #e4e4e7;
+    }
+
+    .p-select:not(.p-disabled).p-focus {
+        border-color: #18181b;
+        box-shadow: 0 0 0 3px rgba(24, 24, 27, 0.05);
+    }
+
+    .p-select.ng-invalid.ng-touched {
+        border-color: #ef4444 !important;
+    }
+
+    /* Dialog Header */
+    .p-dialog .p-dialog-header {
+        padding: 1.5rem 1.5rem 0.5rem 1.5rem;
+        font-family: inherit;
+    }
+
+    .p-dialog .p-dialog-title {
+        font-weight: 700;
+        font-size: 1.25rem;
+        color: #18181b;
+    }
+
+    .p-dialog .p-dialog-content {
+        padding: 0 1.5rem 1.5rem 1.5rem;
+    }
+}
