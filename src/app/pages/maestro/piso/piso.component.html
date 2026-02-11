@@ -1,1 +1,60 @@
-<p>piso works!</p>
+<header class="main-header">
+    <div class="header-titles">
+        <h1>Maestro de Pisos</h1>
+        <p class="subtitle">Gestione las áreas y zonas de su sucursal</p>
+    </div>
+
+    <div class="header-actions">
+        <div class="search-wrapper">
+            <i class="bi bi-search search-icon"></i>
+            <input type="text" class="noir-input" (input)="onSearch($event)" placeholder="Buscar piso..." />
+        </div>
+
+        <button *appHasPermission="'CREATE_PISO'" class="button-add" (click)="openCreate()">
+            <i class="bi bi-plus-lg"></i>
+            <span>Nuevo Piso</span>
+        </button>
+    </div>
+</header>
+
+<div class="grid" *appHasPermission="'READ_PISO'">
+    <div class="col-12 sm:col-6 md:col-4 lg:col-3" *ngFor="let piso of filteredPisos">
+        <div class="piso-card shadow-noir" (click)="goToMesaDesign(piso.id)">
+
+            <div class="card-content">
+                <div class="flex align-items-center gap-3 mb-3">
+                    <div class="icon-container-noir">
+                        <i class="bi bi-layers text-2xl"></i>
+                    </div>
+                    <h3 class="m-0 font-bold uppercase">{{ piso.nombre }}</h3>
+                </div>
+
+                <div class="info-section">
+                    <div class="flex align-items-center gap-2 text-secondary mb-2">
+                        <i class="bi bi-grid-3x3-gap" style="margin-right: 0.5rem;"></i>
+                        <span>{{ piso.mesas.length || 0 }} Mesas configuradas</span>
+                    </div>
+                    <p class="description-text">
+                        {{ piso.descripcion || 'Sin descripción disponible.' }}
+                    </p>
+                </div>
+
+                <div class="actions-footer">
+                    <div class="flex gap-2" (click)="$event.stopPropagation()"> <button
+                            *appHasPermission="'UPDATE_PISO'" class="button-action edit" (click)="onEdit(piso)"
+                            title="Editar">
+                            <i class="bi bi-pencil-square"></i>
+                        </button>
+                        <button *appHasPermission="'DELETE_PISO'" class="button-action delete"
+                            (click)="onDelete(piso.id)" title="Eliminar">
+                            <i class="bi bi-trash3"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<app-modal-piso [(visible)]="displayModal" [dataToEdit]="selectedPiso" [sucursalId]="sucursalId" (onSave)="loadPisos()">
+</app-modal-piso>

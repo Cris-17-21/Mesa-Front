@@ -26,7 +26,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   return next(authReq).pipe(
     catchError((error) => {
       // Capturamos 401 y 403 (donde suele caer el SuperAdmin cuando expira el token)
-      if (error instanceof HttpErrorResponse && (error.status === 401 || error.status === 403)) {
+      if (error instanceof HttpErrorResponse && (error.status === 401 || error.status === 403 )) {
 
         // Si el error ocurre en login o selección de sede, no intentamos refresh
         if (req.url.includes('/auth/select-branch') || req.url.includes('/auth/login')) {
@@ -35,7 +35,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
         // Si es un 403, mandamos un aviso a consola pero NO cortamos el flujo,
         // dejamos que intente el refresh por si es una expiración camuflada.
-        if (error.status === 403) {
+        if (error.status === 403 && router.url.includes('/select-branch')) {
           console.warn('Acceso denegado o token expirado (403). Intentando refrescar sesión...');
         }
 
@@ -52,8 +52,13 @@ const handleRefreshLogic = (request: HttpRequest<any>, next: HttpHandlerFn, auth
     refreshTokenSubject.next(null);
 
     const refreshToken = authService.getRefreshToken();
-    
+
     if (!refreshToken) {
+      console.error('No se encontró Refresh Token en el storage. ¿Se borró accidentalmente?');
+      // Si estamos en selección de sede, no lo saques del sistema todavía
+      if (router.url.includes('/select-branch')) {
+        return throwError(() => new Error('Falta token de refresco en selección de sede.'));
+      }
       return finalizeLogout(authService, router);
     }
 
@@ -71,6 +76,10 @@ const handleRefreshLogic = (request: HttpRequest<any>, next: HttpHandlerFn, auth
       }),
       catchError((err) => {
         isRefreshing = false;
+        // SI EL ERROR ES EN SELECCIÓN DE SEDE, NO CERRAR SESIÓN, SOLO LANZAR EL ERROR
+        if (router.url.includes('/select-branch')) {
+          return throwError(() => new Error('Error de permisos al seleccionar sede.'));
+        }
         return finalizeLogout(authService, router);
       })
     );
@@ -90,6 +99,13 @@ const handleRefreshLogic = (request: HttpRequest<any>, next: HttpHandlerFn, auth
 
 const finalizeLogout = (authService: AuthService, router: Router) => {
   isRefreshing = false;
+
+  // SI ESTAMOS EN SELECT-BRANCH, NO LOGOUT, solo lanzamos el error
+  if (router.url.includes('/select-branch')) {
+    console.warn('Postergando logout: El usuario está seleccionando sucursal.');
+    return throwError(() => new Error('Sin permisos de sucursal aún.'));
+  }
+
   authService.logout();
   if (!router.url.includes('/login')) {
     router.navigate(['/login']);

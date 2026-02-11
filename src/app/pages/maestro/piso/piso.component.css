@@ -1,0 +1,194 @@
+/* Reutilizando la base Noir del header */
+.header-titles h1 {
+  margin-bottom: 5px;
+  font-weight: 700;
+  font-size: 2rem;
+}
+
+.subtitle {
+  margin-top: 0px;
+  color: #71717a;
+}
+
+.header-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 30px;
+}
+
+/* Tarjeta Estilo Noir */
+.piso-card {
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e4e4e7;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  height: 100%;
+}
+
+.piso-card:hover {
+  transform: translateY(-4px);
+  border-color: #18181b;
+}
+
+.shadow-noir {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* Icono y Contenido */
+.icon-container-noir {
+  background-color: #f4f4f5;
+  color: #18181b;
+  padding: 12px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card-content {
+  padding: 1.5rem;
+}
+
+.description-text {
+  font-size: 0.875rem;
+  color: #71717a;
+  line-height: 1.5;
+  margin: 0;
+  min-height: 3em;
+}
+
+/* Badges Personalizados */
+.status-badge-noir {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 6px;
+  letter-spacing: 0.05em;
+}
+
+.status-badge-noir.active {
+  background-color: #f0fdf4;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+
+.status-badge-noir.inactive {
+  background-color: #fef2f2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+/* Footer y Botones de Acción */
+.actions-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #f4f4f5;
+}
+
+.button-action {
+  background: transparent;
+  border: none;
+  padding: 8px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: 0.2s all ease;
+  border-radius: 6px;
+}
+
+.button-action:hover {
+  background-color: #f4f4f5;
+  transform: scale(1.1);
+}
+
+.edit { color: #18181b; }
+.delete { color: #ef4444; }
+.power { color: #71717a; }
+
+/* Botón Principal (Reutilizado) */
+.button-add {
+  background-color: #18181b;
+  border: none;
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: 0.3s all ease;
+  height: 3rem;
+}
+
+.button-add:hover {
+  background-color: #3f3f46;
+}
+
+/* Hacer que la tarjeta parezca clickeable */
+.piso-card {
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.piso-card:active {
+    transform: scale(0.98);
+}
+
+/* Evitar que los botones de acción se vean como parte del clic de la tarjeta */
+.actions-footer .button-action {
+    position: relative;
+    z-index: 2;
+}
+
+/* Contenedor relativo para posicionar el icono */
+.search-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 300px; /* Tamaño del buscador */
+  margin-bottom: 1.5rem;
+}
+
+/* El Icono de Bootstrap */
+.search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #a1a1aa; /* Gris Zinc 400 */
+  font-size: 0.9rem;
+  pointer-events: none; /* Evita que el icono bloquee el clic en el input */
+}
+
+/* El Input Estilo Noir */
+.noir-input {
+  width: 100%;
+  padding: 10px 12px 10px 38px; /* Padding extra a la izquierda para el icono */
+  font-size: 0.875rem;
+  font-family: 'Inter', system-ui, sans-serif;
+  color: #18181b;
+  background-color: #ffffff;
+  border: 1px solid #e4e4e7; /* Borde gris suave */
+  border-radius: 8px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  outline: none;
+}
+
+/* Estado Focus: Borde negro y sombra sutil */
+.noir-input:focus {
+  border-color: #18181b;
+  box-shadow: 0 0 0 3px rgba(24, 24, 27, 0.05);
+}
+
+/* Estilo del Placeholder */
+.noir-input::placeholder {
+  color: #a1a1aa;
+  font-weight: 400;
+}

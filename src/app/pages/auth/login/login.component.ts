@@ -58,88 +58,85 @@ export class LoginComponent implements OnInit {
   obtenerDatosYsucursales() {
     const token = this.authService.getToken();
     if (token) {
-      const payload = JSON.parse(atob(token.split('.')[1]));
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
 
-      const user = payload.sub;
+        // Extraemos todo del payload para evitar peticiones HTTP innecesarias
+        this.tempUserId = payload.sub; // El username (ej: 'demo')
+        this.userId = payload.userId || ''; // Si incluiste el ID en el JWT
+        const idEmpresa = payload.empresaId;
 
-      this.userService.getUserByUsername(user).subscribe({
-        next: (userData) => {
-          this.userId = userData.id;
-        },
-        error: (err) => {
-          console.error("Error al obtener datos del usuario", err);
+        if (!idEmpresa) {
+          console.error("El token no contiene empresaId");
+          return;
         }
-      });
 
-      // Usamos el empresaId del token
-      const idEmpresa = payload.empresaId;
+        console.log('Buscando todas las sedes de la empresa:', idEmpresa);
+        this.isLoading = true;
 
-      console.log('Buscando todas las sedes de la empresa:', idEmpresa);
-
-      // Llamamos al nuevo servicio que mencionaste
-      this.sucursalService.getSucursalByEmpresaId(idEmpresa).subscribe({
-        next: (sedes) => {
-          // Mapeamos los datos para que coincidan con lo que espera tu selector
-          this.sucursalesDisponibles = sedes.map(s => ({
-            id: s.id,
-            nombre: s.nombre
-          }));
-
-          this.isLoading = false;
-
-          if (this.sucursalesDisponibles.length > 0) {
-            console.log('Sedes cargadas con éxito:', this.sucursalesDisponibles.length);
+        // Solo llamamos a las sucursales, que debería estar permitido para SuperAdmin
+        this.sucursalService.getSucursalByEmpresaId(idEmpresa).subscribe({
+          next: (sedes) => {
+            this.sucursalesDisponibles = sedes.map(s => ({
+              id: s.id,
+              nombre: s.nombre
+            }));
+            this.isLoading = false;
+          },
+          error: (err) => {
+            console.error("Error al traer sedes por empresa", err);
+            this.isLoading = false;
+            // Si esto da 403, el interceptor manejará el refresh sin borrar el storage
+            // gracias a que no hay peticiones concurrentes fallando masivamente.
           }
-        },
-        error: (err) => {
-          console.error("Error al traer sedes por empresa", err);
-          this.isLoading = false;
-        }
-      });
+        });
+      } catch (e) {
+        console.error("Error al decodificar el token", e);
+      }
     }
   }
 
   confirmarSede() {
-  if (this.selectedSucursal) {
-    this.isLoading = true;
+    if (this.selectedSucursal) {
+      this.isLoading = true;
 
-    // 1. Extraemos el token para obtener el userId (sub)
-    const token = this.authService.getToken();
-    let usuarioFinal = this.tempUserId; // Intento inicial
+      // 1. Extraemos el token para obtener el userId (sub)
+      const token = this.authService.getToken();
+      let usuarioFinal = this.tempUserId; // Intento inicial
 
-    if (token) {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      usuarioFinal = payload.sub; // Aseguramos que sea el 'demo' del token
-    }
-
-    if (!usuarioFinal) {
-      this.errorMessage = 'No se pudo identificar al usuario. Reintente el login.';
-      this.isLoading = false;
-      return;
-    }
-
-    console.log('Vinculando sede para el usuario:', usuarioFinal);
-
-    this.authService.selectBranch(usuarioFinal, this.selectedSucursal.id).subscribe({
-      next: (res) => {
-        // 1. Guardamos tokens (esto actualiza permisos automáticamente)
-        this.authService.saveTokens(res);
-
-        // 2. ACTUALIZACIÓN REACTIVA
-        this.authService.setBranchName(this.selectedSucursal.nombre);
-
-        setTimeout(() => {
-          this.router.navigate(['/dashboard']);
-        }, 100);
-      },
-      error: (err) => {
-        console.error('Error en el back:', err);
-        this.errorMessage = 'No tienes permiso para acceder a esta sede';
-        this.isLoading = false;
+      if (token) {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        usuarioFinal = payload.sub; // Aseguramos que sea el 'demo' del token
       }
-    });
+
+      if (!usuarioFinal) {
+        this.errorMessage = 'No se pudo identificar al usuario. Reintente el login.';
+        this.isLoading = false;
+        return;
+      }
+
+      console.log('Vinculando sede para el usuario:', usuarioFinal);
+
+      this.authService.selectBranch(usuarioFinal, this.selectedSucursal.id).subscribe({
+        next: (res) => {
+          // 1. Guardamos tokens (esto actualiza permisos automáticamente)
+          this.authService.saveTokens(res);
+
+          // 2. ACTUALIZACIÓN REACTIVA
+          this.authService.setBranchName(this.selectedSucursal.nombre);
+
+          setTimeout(() => {
+            this.router.navigate(['/dashboard']);
+          }, 100);
+        },
+        error: (err) => {
+          console.error('Error en el back:', err);
+          this.errorMessage = 'No tienes permiso para acceder a esta sede';
+          this.isLoading = false;
+        }
+      });
+    }
   }
-}
 
   onSubmit() {
     if (this.loginForm.valid) {

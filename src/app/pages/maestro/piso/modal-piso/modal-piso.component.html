@@ -1,1 +1,37 @@
-<p>modal-piso works!</p>
+<p-dialog [header]="dataToEdit ? 'Editar Piso' : 'Nuevo Piso'" [(visible)]="visible" [modal]="true"
+    [style]="{ width: '30rem', maxWidth: '80vw' }"
+    [contentStyle]="{ 'max-height': '75vh', 'overflow-y': 'auto', 'padding': '1.5rem' }" (onHide)="close()"
+    [draggable]="false">
+
+    <form [formGroup]="pisoForm" (ngSubmit)="save()" class="form-container">
+
+        <div class="field">
+            <label class="label-noir">Nombre del Piso</label>
+            <input pInputText formControlName="nombre" class="noir-input"
+                [class.input-error]="pisoForm.get('nombre')?.invalid && pisoForm.get('nombre')?.touched"
+                placeholder="Ej: TERRAZA / SALÓN PRINCIPAL" />
+            <small class="error-text"
+                *ngIf="pisoForm.get('nombre')?.invalid && pisoForm.get('nombre')?.touched">
+                El nombre es obligatorio (mín. 3 caracteres).
+            </small>
+        </div>
+
+        <div class="field">
+            <label class="label-noir">Descripción</label>
+            <textarea pTextarea formControlName="descripcion" rows="3" class="noir-input"
+                [class.input-error]="pisoForm.get('descripcion')?.invalid && pisoForm.get('descripcion')?.touched"
+                placeholder="Describa el área o ubicación..."></textarea>
+            <small class="error-text"
+                *ngIf="pisoForm.get('descripcion')?.invalid && pisoForm.get('descripcion')?.touched">
+                La descripción es necesaria para identificar el piso.
+            </small>
+        </div>
+
+        <div class="footer-actions">
+            <button type="button" class="btn-cancel" (click)="close()">Cancelar</button>
+            <button type="submit" class="btn-save" [disabled]="loading()" (keyup.enter)="save()">
+                {{ loading() ? 'Procesando...' : 'Guardar' }}
+            </button>
+        </div>
+    </form>
+</p-dialog>
