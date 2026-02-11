@@ -93,8 +93,10 @@ export class ModalPermissionsComponent implements OnInit, OnChanges {
         this.close();
       },
       error: (err) => {
+        this.loading.set(false);
+        this.close();
         console.error(err);
-        Swal.fire('Error', 'No se pudo procesar la solicitud', 'error');
+        Swal.fire(err.error.error, err.error.message , 'error');
       },
       complete: () => this.loading.set(false)
     });

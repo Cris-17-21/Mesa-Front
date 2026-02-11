@@ -123,11 +123,11 @@ export class EmpresaComponent implements OnInit {
   deleteEmpresa(id: string) {
     Swal.fire({
       title: '¿Estás seguro?',
-      text: "Esta acción eliminará el permiso de forma permanente.",
+      text: "Esta acción eliminará la empresa de forma permanente.",
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#ef4444', // Color negro de tu estilo Noir
-      cancelButtonColor: '#E67E22', // Rojo suave para cancelar
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#3f54cc',
       confirmButtonText: 'Sí, eliminar',
       cancelButtonText: 'Cancelar',
       reverseButtons: true, // Pone el botón de cancelar a la izquierda
@@ -145,7 +145,7 @@ export class EmpresaComponent implements OnInit {
 
             Swal.fire({
               title: '¡Eliminado!',
-              text: 'El permiso ha sido borrado correctamente.',
+              text: 'La empresa ha sido borrado correctamente.',
               icon: 'success',
               confirmButtonColor: '#18181b',
               timer: 1500,
@@ -156,7 +156,7 @@ export class EmpresaComponent implements OnInit {
             console.error('Error al eliminar:', err);
             Swal.fire({
               title: 'Error',
-              text: 'No se pudo eliminar el permiso. Es posible que esté en uso.',
+              text: 'No se pudo eliminar la empresa. Es posible que esté en uso.',
               icon: 'error',
               confirmButtonColor: '#18181b'
             });
@@ -170,7 +170,7 @@ export class EmpresaComponent implements OnInit {
     Swal.fire({ title: '¡Éxito!', text: msg, icon: 'success', confirmButtonColor: '#18181b' });
   }
 
-  private errorMessage(msg: string) {
-    Swal.fire({ title: 'Error', text: msg, icon: 'error', confirmButtonColor: '#18181b' });
+  private errorMessage(msg: any) {
+    Swal.fire({ title: msg.error.error, text: msg.error.message, icon: 'error', confirmButtonColor: '#18181b' });
   }
 }

@@ -56,7 +56,7 @@ export class PermissionsComponent implements OnInit {
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#ef4444', // Color negro de tu estilo Noir
-      cancelButtonColor: '#E67E22', // Rojo suave para cancelar
+      cancelButtonColor: '#3f54cc', // Rojo suave para cancelar
       confirmButtonText: 'Sí, eliminar',
       cancelButtonText: 'Cancelar',
       reverseButtons: true, // Pone el botón de cancelar a la izquierda

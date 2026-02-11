@@ -9,7 +9,7 @@
     </header>
 
     <div class="stats-grid">
-      <div class="card">
+      <div class="card" *appHasPermission="'READ_USER'">
         <span class="card-label">Usuarios</span>
         <p class="number">{{ totalUsers }}</p>
         <div class="card-footer">Activos en sistema</div>

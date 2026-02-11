@@ -10,7 +10,7 @@ export interface Sucursal {
 }
 
 // CREATE DTO
-export type CreateSucursalDto = Omit<Sucursal, 'id'>
+export type CreateSucursalDto = Omit<Sucursal, 'id' | 'empresa'> & { empresaId: string };
 
 // UPDATE DTO
 export type UpdateSucursalDto = Partial<CreateSucursalDto>

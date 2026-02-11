@@ -107,7 +107,12 @@ export class ModalModulesComponent implements OnInit, OnChanges {
         this.onSave.emit();
         this.close();
       },
-      error: () => Swal.fire('Error', 'No se pudo guardar el módulo', 'error'),
+      error: (err) => {
+        this.loading.set(false);
+        this.close();
+        console.log(err);
+        Swal.fire(err.error.error, err.error.message, 'error')
+      },
       complete: () => this.loading.set(false)
     });
   }

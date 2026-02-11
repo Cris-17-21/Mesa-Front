@@ -39,7 +39,8 @@
 .search-wrapper {
   position: relative;
   width: 100%;
-  max-width: 300px; /* Tamaño del buscador */
+  max-width: 300px;
+  /* Tamaño del buscador */
   margin-bottom: 1.5rem;
 }
 
@@ -49,20 +50,24 @@
   left: 12px;
   top: 50%;
   transform: translateY(-50%);
-  color: #a1a1aa; /* Gris Zinc 400 */
+  color: #a1a1aa;
+  /* Gris Zinc 400 */
   font-size: 0.9rem;
-  pointer-events: none; /* Evita que el icono bloquee el clic en el input */
+  pointer-events: none;
+  /* Evita que el icono bloquee el clic en el input */
 }
 
 /* El Input Estilo Noir */
 .noir-input {
   width: 100%;
-  padding: 10px 12px 10px 38px; /* Padding extra a la izquierda para el icono */
+  padding: 10px 12px 10px 38px;
+  /* Padding extra a la izquierda para el icono */
   font-size: 0.875rem;
   font-family: 'Inter', system-ui, sans-serif;
   color: #18181b;
   background-color: #ffffff;
-  border: 1px solid #e4e4e7; /* Borde gris suave */
+  border: 1px solid #e4e4e7;
+  /* Borde gris suave */
   border-radius: 8px;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   outline: none;
@@ -105,7 +110,7 @@
   align-items: center;
 }
 
-.gap-2{
+.gap-2 {
   gap: 15px;
 }
 
@@ -135,4 +140,106 @@
 .button-action:hover {
   cursor: pointer;
   transform: translateY(-5%);
+}
+
+.table-header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding-bottom: 1rem;
+}
+
+.filters-wrapper {
+  display: flex;
+  gap: 0.75rem;
+}
+
+/* Ajuste de los Selects para que parezcan parte del diseño Noir */
+::ng-deep .filter-select .p-select {
+  background: #ffffff !important;
+  border: 1px solid #e4e4e7 !important;
+  border-radius: 8px !important;
+  min-width: 200px;
+}
+
+::ng-deep .filter-select .p-select:not(.p-disabled).p-focus {
+  border-color: #18181b !important;
+  box-shadow: 0 0 0 3px rgba(24, 24, 27, 0.05) !important;
+}
+
+::ng-deep .p-select-label {
+  font-size: 0.875rem;
+  color: #18181b;
+}
+
+.p-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.table-header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding-bottom: 1rem;
+}
+
+.filters-wrapper {
+  display: flex;
+  gap: 0.75rem;
+
+  & ::ng-deep .p-select {
+    width: 12rem;
+  }
+}
+
+/* Ajuste de los Selects para que parezcan parte del diseño Noir */
+::ng-deep .filter-select .p-select {
+  background: #ffffff !important;
+  border: 1px solid #e4e4e7 !important;
+  border-radius: 8px !important;
+  min-width: 200px;
+}
+
+::ng-deep .filter-select .p-select:not(.p-disabled).p-focus {
+  border-color: #18181b !important;
+  box-shadow: 0 0 0 3px rgba(24, 24, 27, 0.05) !important;
+}
+
+::ng-deep .p-select-label {
+  font-size: 0.875rem;
+  color: #18181b;
+}
+
+.p-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media screen and (max-width: 768px) {
+  .table-header-container {
+    flex-direction: row;
+    /* Alineados horizontalmente */
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .filters-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .search-wrapper {
+    max-width: 300px;
+  }
+
+  ::ng-deep .filter-select .p-select {
+    min-width: 200px;
+    width: auto !important;
+  }
 }

@@ -138,3 +138,40 @@
     from { opacity: 0; transform: translateY(-5px); }
     to { opacity: 1; transform: translateY(0); }
 }
+
+/* modal-users.component.css */
+
+/* Estilo para el grupo de entrada */
+.p-inputgroup {
+    display: flex;
+    align-items: stretch;
+    width: 100%;
+}
+
+.btn-search-dni {
+    background: #18181b !important; /* Negro Noir */
+    border: 1px solid #18181b !important;
+    color: white !important;
+    border-top-right-radius: 8px !important;
+    border-bottom-right-radius: 8px !important;
+    border-top-left-radius: 0 !important;
+    border-bottom-left-radius: 0 !important;
+    padding: 0 15px;
+    cursor: pointer;
+}
+
+.btn-search-dni:hover {
+    background: #000000 !important;
+}
+
+.p-inputgroup .noir-input {
+    border-top-right-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+}
+
+/* Estilo para campos autocompletados (readonly) */
+.readonly-input {
+    background-color: #f8fafc !important;
+    color: #64748b !important;
+    cursor: default;
+}

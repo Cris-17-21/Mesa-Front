@@ -14,6 +14,7 @@ import { MenuItem } from 'primeng/api';
 import { Empresa } from '../../../../models/maestro/empresa.model';
 import { Role } from '../../../../models/security/role.model';
 import { RoleService } from '../../../../services/config/role.service';
+import { ConsultaService } from '../../../../services/auxiliar/consulta.service';
 
 @Component({
   selector: 'app-modal-empresa',
@@ -34,14 +35,18 @@ import { RoleService } from '../../../../services/config/role.service';
 export class ModalEmpresaComponent implements OnInit, OnChanges {
   private fb = inject(FormBuilder);
   private roleService = inject(RoleService);
+  private consultaService = inject(ConsultaService);
 
   @Input() visible = false;
+  @Input() isReadOnly = false;
   @Input() dataToEdit: Empresa | null = null;
   @Output() visibleChange = new EventEmitter<boolean>();
   @Output() onComplete = new EventEmitter<any>();
 
   currentStep = signal(0);
   loading = signal(false);
+  searchingRuc = signal(false);
+  previewLogo = signal<string | null>(null);
   adminRoleId = signal<string | null>(null);
 
   steps = signal<MenuItem[]>([
@@ -62,7 +67,8 @@ export class ModalEmpresaComponent implements OnInit, OnChanges {
       direccionFiscal: ['', Validators.required],
       telefono: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
-      logoUrl: ['']
+      logoUrl: [''],
+      fechaAfiliacion: [new Date().toISOString()]
     }),
     sucursal: this.fb.group({
       nombre: ['Sede Principal', Validators.required],
@@ -72,14 +78,14 @@ export class ModalEmpresaComponent implements OnInit, OnChanges {
     usuario: this.fb.group({
       username: ['', Validators.required],
       password: ['', [Validators.required, Validators.minLength(6)]],
+      roleId: ['', Validators.required],
+      numeroDocumento: ['', [Validators.required, Validators.pattern('^[0-9]{8}$')]], // Solo 8 números
       nombres: ['', Validators.required],
       apellidoPaterno: ['', Validators.required],
       apellidoMaterno: ['', Validators.required],
-      tipoDocumento: ['DNI', Validators.required],
-      numeroDocumento: ['', [Validators.required, Validators.minLength(8), Validators.maxLength(8), Validators.pattern('^[0-9]*$')]],
-      telefono: ['', Validators.required],
+      telefono: ['', [Validators.required, Validators.pattern('^9[0-9]{8}$')]], // Inicia con 9 y tiene 9 dígitos
       email: ['', [Validators.required, Validators.email]],
-      roleId: ['', Validators.required]
+      tipoDocumento: ['DNI'] // Por defecto
     })
   });
 
@@ -90,12 +96,65 @@ export class ModalEmpresaComponent implements OnInit, OnChanges {
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['visible']?.currentValue === true) {
-      if (this.dataToEdit) {
+      if (this.isReadOnly) {
+        this.setupViewMode();
+      } else if (this.dataToEdit) {
         this.setupEditMode();
       } else {
         this.setupCreateMode();
       }
     }
+  }
+
+  private setupViewMode() {
+    this.steps.set([{ label: 'Información General' }]);
+    this.currentStep.set(0); // Mostraremos todo en una sola vista o permitiremos navegar
+    this.wizardForm.patchValue(this.dataToEdit!); // Cargamos la data
+    this.wizardForm.disable(); // Desactivamos TODO el formulario
+
+    // Si tienes el logo, asegúrate de cargarlo en la previsualización
+    if (this.dataToEdit?.logoUrl) {
+      this.previewLogo.set(this.dataToEdit.logoUrl);
+    }
+  }
+
+  buscarRuc(ruc: string) {
+    this.searchingRuc.set(true);
+    this.consultaService.consultaRuc(ruc).subscribe({
+      next: (res) => {
+        this.wizardForm.get('empresa')?.patchValue({
+          razonSocial: res.razon_social,
+          direccionFiscal: res.direccion
+        });
+        this.searchingRuc.set(false);
+      },
+      error: () => this.searchingRuc.set(false)
+    });
+  }
+
+  onFileSelected(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => this.previewLogo.set(reader.result as string);
+      reader.readAsDataURL(file);
+      // Aquí guardarías el file para subirlo luego o la base64
+      this.wizardForm.get('empresa.logoUrl')?.setValue(file.name);
+    }
+  }
+
+  getErrorMessage(path: string): string {
+    const control = this.wizardForm.get(path);
+    if (!control || !control.errors) return '';
+
+    const errors = control.errors;
+    if (errors['required']) return 'Este campo es obligatorio';
+    if (errors['email']) return 'Correo electrónico inválido';
+    if (errors['minlength']) return `Mínimo ${errors['minlength'].requiredLength} caracteres`;
+    if (errors['maxlength']) return `Máximo ${errors['maxlength'].requiredLength} caracteres`;
+    if (errors['pattern']) return 'Solo se permiten números';
+
+    return 'Campo no válido';
   }
 
   private loadAdminRole() {
@@ -161,56 +220,103 @@ export class ModalEmpresaComponent implements OnInit, OnChanges {
   }
 
   saveAll() {
-    this.loading.set(true);
+    console.log('🚀 Iniciando saveAll...');
+    console.log('Estado de carga actual:', this.loading());
 
-    // Extraemos los valores ignorando el estado de 'disabled'
-    const formValue = this.wizardForm.getRawValue();
-
-    // Caso: EDICIÓN
-    if (this.dataToEdit) {
-      // Si editamos, solo nos importa el grupo 'empresa'
-      if (this.wizardForm.get('empresa')?.valid) {
-        this.onComplete.emit({
-          data: { ...formValue.empresa, id: this.dataToEdit.id },
-          isEdit: true
-        });
-      } else {
-        this.wizardForm.get('empresa')?.markAllAsTouched();
-        this.loading.set(false);
-      }
+    // 1. Verificación inicial de validez
+    if (this.wizardForm.invalid) {
+      console.error('❌ Formulario inválido globalmente');
+      this.logValidationErrors(); // Función que crearemos abajo
+      this.wizardForm.markAllAsTouched();
+      this.loading.set(false);
       return;
     }
 
-    // Caso: CREACIÓN (Validación manual por grupos)
-    const isEmpresaValid = this.wizardForm.get('empresa')?.valid;
-    const isSucursalValid = this.wizardForm.get('sucursal')?.valid;
-    const isUsuarioValid = this.wizardForm.get('usuario')?.valid;
+    this.loading.set(true);
+    const formValue = this.wizardForm.getRawValue();
+    console.log('📦 Valores capturados:', formValue);
 
-    if (isEmpresaValid && isSucursalValid && isUsuarioValid) {
+    // 2. Lógica para EDICIÓN
+    if (this.dataToEdit) {
+      console.log('📝 Modo Edición detectado para ID:', this.dataToEdit.id);
       this.onComplete.emit({
-        data: {
-          empresa: formValue.empresa,
-          sucursal: formValue.sucursal,
-          usuario: formValue.usuario
-        },
-        isEdit: false
+        data: { ...formValue.empresa, id: this.dataToEdit.id },
+        isEdit: true
       });
-    } else {
-      this.loading.set(false);
-      this.wizardForm.markAllAsTouched();
-      console.error('Formulario incompleto:', {
-        empresa: this.wizardForm.get('empresa')?.errors,
-        sucursal: this.wizardForm.get('sucursal')?.errors,
-        usuario: this.wizardForm.get('usuario')?.errors
-      });
-      // Opcional: Alerta visual rápida para saber qué paso revisar
-      if (!isEmpresaValid) this.currentStep.set(0);
-      else if (!isSucursalValid) this.currentStep.set(1);
-      else if (!isUsuarioValid) this.currentStep.set(2);
+      return;
     }
+
+    // 3. Lógica para CREACIÓN
+    console.log('✨ Modo Creación detectado');
+    const finalData = {
+      ...formValue,
+      empresa: {
+        ...formValue.empresa,
+        fechaAfiliacion: new Date().toISOString()
+      }
+    };
+
+    console.log('out -> 📤 Emitiendo onComplete con:', finalData);
+    this.onComplete.emit({ data: finalData, isEdit: false });
+  }
+
+  // MÉTODO DE APOYO: Esto te dirá en consola exactamente qué input falla
+  logValidationErrors() {
+    const controls = this.wizardForm.controls;
+    Object.keys(controls).forEach(key => {
+      const group = controls[key] as FormGroup;
+      if (group.invalid) {
+        console.warn(`⚠️ Grupo [${key}] es inválido`);
+        Object.keys(group.controls).forEach(field => {
+          const control = group.get(field);
+          if (control?.invalid) {
+            console.error(`   - Campo [${field}] falló. Errores:`, control.errors);
+          }
+        });
+      }
+    });
   }
 
   close() {
     this.visibleChange.emit(false);
   }
+
+  consultarRuc() {
+    const ruc = this.wizardForm.get('empresa.ruc')?.value;
+
+    if (!ruc || ruc.length !== 11) {
+      return;
+    }
+
+    this.consultaService.consultaRuc(ruc).subscribe({
+      next: (data) => {
+        this.wizardForm.get('empresa.razonSocial')?.setValue(data.razon_social);
+        this.wizardForm.get('empresa.direccionFiscal')?.setValue(data.direccion);
+      },
+      error: (error) => {
+        console.error('Error al consultar RUC:', error);
+      }
+    })
+  }
+
+  consultarDni() {
+    const dni = this.wizardForm.get('usuario.numeroDocumento')?.value;
+
+    if (!dni || dni.length !== 8) {
+      return;
+    }
+
+    this.consultaService.consultaDni(dni).subscribe({
+      next: (data) => {
+        this.wizardForm.get('usuario.nombres')?.setValue(data.first_name);
+        this.wizardForm.get('usuario.apellidoPaterno')?.setValue(data.first_last_name);
+        this.wizardForm.get('usuario.apellidoMaterno')?.setValue(data.second_last_name);
+      },
+      error: (error) => {
+        console.error('Error al consultar DNI:', error);
+      }
+    })
+  }
+
+
 }

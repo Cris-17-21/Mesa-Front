@@ -37,6 +37,7 @@ export class ModalRolesComponent implements OnInit, OnChanges {
     this.roleForm = this.fb.group({
       name: ['', [Validators.required]],
       description: ['', [Validators.required]]
+
     });
   }
 
@@ -69,10 +70,19 @@ export class ModalRolesComponent implements OnInit, OnChanges {
   }
 
   save() {
+    //1. Validar formulario
     if (this.roleForm.invalid) {
       this.roleForm.markAllAsTouched();
+    }
+
+    //2. Validar que existen permisos seleccionados
+    if (this.targetPermissions().length === 0) {
+      // Aquí puedes manejar un estado visual o simplemente detener el guardado
+      if (this.roleForm.valid) this.roleForm.markAllAsTouched(); // Para consistencia
       return;
     }
+
+    if (this.roleForm.invalid) return;
 
     this.loading.set(true);
 
@@ -97,12 +107,23 @@ export class ModalRolesComponent implements OnInit, OnChanges {
         this.onSave.emit();
         this.close();
       },
-      error: () => Swal.fire('Error', 'No se pudo guardar el rol', 'error'),
+      error: (err) => {
+        console.error(err);
+        this.loading.set(false);
+        this.close();
+        Swal.fire(err.error.error, err.error.message, 'error')
+      },
       complete: () => this.loading.set(false)
     });
   }
 
   close() {
     this.visibleChange.emit(false);
+  }
+
+  // Helper para el HTML
+  isFieldInvalid(field: string) {
+    const control = this.roleForm.get(field);
+    return control ? control.invalid && (control.touched || control.dirty) : false;
   }
 }

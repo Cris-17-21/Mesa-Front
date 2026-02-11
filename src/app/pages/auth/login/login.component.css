@@ -263,3 +263,29 @@ input::placeholder {
     padding: 16px;
   }
 }
+
+.instruction-text {
+  font-size: 0.85rem;
+  color: var(--text-light);
+  margin-bottom: 1.5rem;
+  text-align: left;
+  line-height: 1.4;
+}
+
+.noir-select .p-select {
+  border: 1px solid #D0D3D4 !important;
+  transition: all 0.3s ease;
+}
+
+.btn-back {
+  background: transparent !important;
+  color: var(--text-light) !important;
+  box-shadow: none !important;
+  margin-top: 0.5rem !important;
+  font-size: 0.8rem !important;
+  text-decoration: underline;
+}
+
+.btn-back:hover {
+  color: var(--primary-brand) !important;
+}

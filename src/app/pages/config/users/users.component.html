@@ -13,15 +13,30 @@
     </div>
 
     <div class="table">
-        <p-table #dt2 [value]="users()" dataKey="id" [rows]="10" [rowsPerPageOptions]="[10, 25, 50]"
-            [paginator]="true" [globalFilterFields]="['username', 'nombres', 'apellidoPaterno', 'role']" [tableStyle]="{ 'min-width': '50rem' }">
+        <p-table #dt2 [value]="users()" dataKey="id" [rows]="10" [rowsPerPageOptions]="[10, 25, 50]" [paginator]="true"
+            [globalFilterFields]="['username', 'nombres', 'apellidoPaterno', 'role']"
+            [tableStyle]="{ 'min-width': '50rem' }">
             <ng-template #caption>
-                <div class="search-wrapper">
-                    <i class="bi bi-search search-icon"></i>
+                <div class="table-header-container">
+                    <div class="search-wrapper">
+                        <i class="bi bi-search search-icon"></i>
+                        <input type="text" class="noir-input"
+                            (input)="dt2.filterGlobal($any($event.target).value, 'contains')"
+                            placeholder="Buscar usuario..." />
+                    </div>
 
-                    <input type="text" class="noir-input"
-                        (input)="dt2.filterGlobal($any($event.target).value, 'contains')"
-                        placeholder="Buscar usuario..." />
+                    <div class="filters-wrapper">
+                        <p-select [options]="empresas()" [(ngModel)]="selectedEmpresaId"
+                            (onChange)="onEmpresaFilterChange($event.value)" optionLabel="razonSocial" optionValue="id"
+                            placeholder="Filtrar por Empresa" [showClear]="true" class="filter-select">
+                        </p-select>
+
+                        <p-select [options]="sucursalesFiltradas()" [(ngModel)]="selectedSucursalId"
+                            (onChange)="onSucursalFilterChange($event.value)" optionLabel="nombre" optionValue="id"
+                            placeholder="Filtrar por Sucursal" [showClear]="true" [disabled]="!selectedEmpresaId()"
+                            class="filter-select">
+                        </p-select>
+                    </div>
                 </div>
             </ng-template>
             <ng-template #header>
@@ -69,11 +84,6 @@
 </header>
 
 
-<app-modal-users
-    [(visible)]="displayModal" 
-    [dataToEdit]="selectedUser()" 
-    [roles]="roles()" 
-    [empresas]="empresas()" 
-    [todasLasSucursales]="sucursales()"
+<app-modal-users [(visible)]="displayModal" [dataToEdit]="selectedUser()" [roles]="roles()" [empresas]="empresas()"
     (onSave)="handleSaveUser($event)">
 </app-modal-users>

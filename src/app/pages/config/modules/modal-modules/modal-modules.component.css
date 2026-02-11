@@ -18,6 +18,10 @@
     padding: 1.2rem;
     border-radius: 10px;
     border: 1px solid #e4e4e7;
+
+    & .label-noir {
+        margin: 10px 0px;
+    }
 }
 
 .input-with-icon {
@@ -51,3 +55,9 @@
 .error-text { color: #ef4444; font-size: 0.75rem; margin-top: 4px; font-weight: 500; }
 .btn-save { background: #18181b; color: white; border: none; padding: 10px 24px; border-radius: 8px; cursor: pointer; }
 .btn-cancel { background: white; border: 1px solid #e4e4e7; padding: 10px 24px; border-radius: 8px; cursor: pointer; }
+
+@media screen and (max-width: 768px) {
+    .form-container {
+        gap: 1rem;
+    }
+}
