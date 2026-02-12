@@ -4,14 +4,15 @@ export interface Cliente {
     id: string,
     tipoDocumento: string,
     numeroDocumento: string,
-    nombraRazonSocial: string,
+    nombreRazonSocial: string,
     direccion: string,
     correo: string,
-    telefono: string
+    telefono: string,
+    isActive: boolean
 }
 
 // CREATE DTO
-export type CreateClienteDto = Omit<Cliente, 'id' | 'tipoDocumento'> & {
+export type CreateClienteDto = Omit<Cliente, 'id' | 'tipoDocumento' | 'isActive'> & {
     empresaId: string;
     tipoDocumentoId: string;
 }

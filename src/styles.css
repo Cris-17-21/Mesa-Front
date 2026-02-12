@@ -60,3 +60,7 @@ body {
     border-color: #a1a1aa !important;
     outline: none;
 }
+
+.swal2-container {
+    z-index: 99999 !important;
+}

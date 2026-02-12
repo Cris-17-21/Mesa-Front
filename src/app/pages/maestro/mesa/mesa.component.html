@@ -1,1 +1,59 @@
-<p>mesa works!</p>
+<div class="header-container" *appHasPermission="'READ_MESA'">
+    <div class="text-group">
+        <h1 class="title">Gestión de Mesas</h1>
+        <p class="subtitle">Visualizando mesas de: <b>{{ pisoNombreActual() }}</b></p>
+    </div>
+
+    <div class="actions-bar">
+        <div class="filters">
+            <div class="search-wrapper">
+                <i class="bi bi-search search-icon"></i>
+                <input type="text" class="noir-input" (input)="onSearch($event)" placeholder="Buscar código..." />
+            </div>
+
+            <div class="piso-selector">
+                <p-dropdown [options]="pisos()" [(ngModel)]="pisoSeleccionado" optionLabel="nombre" optionValue="id"
+                    (onChange)="onPisoChange($event)" placeholder="Seleccionar Piso" styleClass="noir-dropdown">
+                </p-dropdown>
+            </div>
+        </div>
+
+        <button *appHasPermission="'CREATE_MESA'" class="btn-new" (click)="openCreate()">
+            <i class="bi bi-plus-lg"></i>
+            <span>Nueva Mesa</span>
+        </button>
+    </div>
+</div>
+
+<div class="grid-container" *appHasPermission="'READ_MESA'">
+    <div *ngFor="let mesa of filteredMesas()" class="mesa-card">
+        <div class="card-header">
+            <p-tag [value]="mesa.estado" [severity]="getSeverity(mesa.estado)"></p-tag>
+
+            <div class="actions">
+                <button *appHasPermission="'UPDATE_MESA'" (click)="onEdit(mesa)"
+                    [ngClass]="{'btn-disabled': isMesaOcupada(mesa)}" pTooltip="Editar">
+                    <i class="bi bi-pencil"></i>
+                </button>
+                <button *appHasPermission="'DELETE_MESA'" (click)="onDelete(mesa.id, mesa)"
+                    [ngClass]="{'btn-disabled': isMesaOcupada(mesa)}" class="btn-del" pTooltip="Eliminar">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="card-body">
+            <div class="mesa-icon">
+                <i class="bi bi- heptagon"></i>
+            </div>
+            <h2 class="mesa-code">{{ mesa.codigoMesa }}</h2>
+            <div class="capacidad-badge">
+                <i class="bi bi-people-fill"></i>
+                <span>Capacidad: {{ mesa.capacidad }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<app-modal-mesa [(visible)]="displayModal" [dataToEdit]="selectedMesa" [sucursalId]="sucursalId" (onSave)="loadMesas()">
+</app-modal-mesa>

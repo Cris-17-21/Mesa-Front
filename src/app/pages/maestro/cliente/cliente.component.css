@@ -1,0 +1,142 @@
+/* --- CONTENEDOR PRINCIPAL --- */
+.header-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+}
+
+/* --- TÍTULOS --- */
+.header-titles h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #18181b;
+    margin: 0;
+}
+
+.subtitle {
+    color: #71717a;
+    margin-top: 0.25rem;
+    font-size: 1rem;
+}
+
+/* --- BARRA DE ACCIONES (Filtros + Botón) --- */
+.header-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    width: 100%;
+}
+
+.search-wrapper {
+    position: relative;
+    flex: 1;
+    max-width: 400px;
+}
+
+.search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #a1a1aa;
+    z-index: 1;
+}
+
+.noir-input {
+    width: 100%;
+    padding: 10px 12px 10px 38px;
+    border: 1px solid #e4e4e7;
+    border-radius: 8px;
+    outline: none;
+    background-color: #fff;
+    transition: all 0.2s ease;
+}
+
+.noir-input:focus {
+    border-color: #18181b;
+    box-shadow: 0 0 0 3px rgba(24, 24, 27, 0.05);
+}
+
+.button-add {
+    background-color: #18181b;
+    color: white;
+    border: none;
+    padding: 0 20px;
+    height: 42px; /* Alineado con el input */
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    white-space: nowarp;
+    transition: background 0.2s;
+}
+
+.button-add:hover {
+    background-color: #3f3f46;
+}
+
+/* --- TABLA Y COMPONENTES --- */
+::ng-deep .noir-table .p-datatable-thead > tr > th {
+    background: #f8f8f9;
+    color: #18181b;
+    border-bottom: 1px solid #e4e4e7;
+    padding: 1rem;
+}
+
+.doc-badge {
+    background: #f4f4f5;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+.button-action {
+  background-color: white;
+  border-style: none;
+  font-size: 20px;
+  transition: 0.3s all ease;
+}
+
+.edit {
+  color: #233cc9;
+}
+
+.delete {
+  color: #bd2121;
+}
+
+.button-action:hover {
+  cursor: pointer;
+  transform: translateY(-5%);
+}
+
+/* --- RESPONSIVIDAD ÚNICA (640px) --- */
+@media (max-width: 640px) {
+    .header-container {
+        text-align: left; /* Mantener alineación a la izquierda suele verse más pro */
+        gap: 1.25rem;
+    }
+
+    .header-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .search-wrapper {
+        max-width: none;
+        order: 1; /* El buscador va primero */
+    }
+
+    .button-add {
+        width: 100%;
+        order: 2; /* El botón de "Nuevo" va al final */
+        height: 45px;
+    }
+}

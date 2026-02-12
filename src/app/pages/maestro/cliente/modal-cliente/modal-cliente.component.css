@@ -1,0 +1,154 @@
+/* --- CONTENEDOR DEL FORMULARIO --- */
+.noir-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    padding: 1rem 0.5rem;
+}
+
+/* --- GRID RESPONSIVO --- */
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr; /* 2 columnas en Desktop */
+    gap: 1.2rem;
+}
+
+/* --- CAMPOS Y ETIQUETAS --- */
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.field label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #3f3f46;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.optional {
+    font-weight: 400;
+    color: #a1a1aa;
+    font-size: 0.75rem;
+}
+
+/* --- INPUTS Y COMPONENTES --- */
+.noir-input-field {
+    width: 100%;
+    border-radius: 8px !important;
+    border: 1px solid #e4e4e7 !important;
+    padding: 0.6rem 0.8rem;
+    transition: border-color 0.2s;
+}
+
+.noir-input-field:focus {
+    border-color: #18181b !important;
+    outline: none;
+}
+
+/* --- SEARCH GROUP (DNI/RUC) --- */
+.noir-inputgroup {
+    display: flex;
+    height: 42px;
+}
+
+.noir-inputgroup .noir-input-field {
+    border-radius: 8px 0 0 8px !important;
+    border-right: none !important;
+}
+
+.btn-search-noir {
+    background-color: #18181b;
+    color: white;
+    border: 1px solid #18181b;
+    border-radius: 0 8px 8px 0;
+    padding: 0 15px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+
+.btn-search-noir:hover:not(:disabled) {
+    background-color: #3f3f46;
+}
+
+/* --- ACCIONES DEL FOOTER --- */
+.footer-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.8rem;
+    margin-top: 2rem;
+}
+
+.btn-cancel, .btn-save {
+    padding: 0.7rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-cancel {
+    background: white;
+    border: 1px solid #e4e4e7;
+    color: #3f3f46;
+}
+
+.btn-cancel:hover {
+    background: #f4f4f5;
+}
+
+.btn-save {
+    background: #18181b;
+    border: none;
+    color: white;
+}
+
+.btn-save:disabled {
+    background: #a1a1aa;
+    cursor: not-allowed;
+}
+
+/* --- ANIMACIONES --- */
+.spin {
+    display: inline-block;
+    animation: rotate 1s linear infinite;
+}
+
+@keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* --- MEDIA QUERIES (RESPONSIVIDAD) --- */
+
+@media (max-width: 640px) {
+    .form-grid {
+        grid-template-columns: 1fr; /* Una sola columna en móvil */
+        gap: 1rem;
+    }
+
+    .footer-actions {
+        flex-direction: column-reverse; /* Botón confirmar arriba del cancelar en móvil */
+        gap: 0.5rem;
+    }
+
+    .btn-cancel, .btn-save {
+        width: 100%; /* Botones de ancho completo */
+        text-align: center;
+    }
+    
+    .noir-form {
+        padding: 0.5rem 0;
+    }
+}
+
+/* Forzar que SweetAlert esté siempre al frente */
+.modal-container {
+    z-index: 1100 !important; /* Los modales de PrimeNG suelen rondar los 1000 */
+}

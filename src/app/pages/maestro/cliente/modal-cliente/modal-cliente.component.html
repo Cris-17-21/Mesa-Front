@@ -1,1 +1,59 @@
-<p>modal-cliente works!</p>
+<p-dialog [header]="dataToEdit ? 'Editar Cliente' : 'Nuevo Cliente'" [(visible)]="visible" [modal]="true"
+    [style]="{ width: '35rem', maxWidth: '80vw' }"
+    [contentStyle]="{ 'max-height': '75vh', 'overflow-y': 'auto', 'padding': '1.5rem' }" (onHide)="close()">
+
+    <div id="modal-container"></div>
+
+    <form [formGroup]="clienteForm" (ngSubmit)="save()" class="noir-form">
+
+        <div class="form-grid">
+            <div class="field">
+                <label>Tipo Doc.</label>
+                <p-dropdown [options]="tiposDoc" formControlName="tipoDocumentoId" styleClass="w-full"></p-dropdown>
+            </div>
+
+            <div class="field">
+                <label>Nro. Documento</label>
+                <div class="p-inputgroup noir-inputgroup">
+                    <input pInputText formControlName="numeroDocumento" placeholder="Buscar..."
+                        (blur)="buscarDocumento()" class="noir-input-field" />
+
+                    <button type="button" class="btn-search-noir" (click)="buscarDocumento()" [disabled]="searching()">
+                        <i *ngIf="!searching()" class="bi bi-search"></i>
+                        <i *ngIf="searching()" class="bi bi-arrow-repeat spin"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="field">
+            <label>Nombre o Razón Social</label>
+            <input pInputText formControlName="nombreRazonSocial" class="w-full"
+                [ngClass]="{'ng-invalid ng-dirty': clienteForm.get('nombraRazonSocial')?.invalid && clienteForm.get('nombraRazonSocial')?.touched}" />
+        </div>
+
+        <div class="field">
+            <label>Dirección <span class="optional">(Opcional)</span></label>
+            <input pInputText formControlName="direccion" class="w-full" />
+        </div>
+
+        <div class="form-grid">
+            <div class="field">
+                <label>Correo <span class="optional">(Opcional)</span></label>
+                <input pInputText formControlName="correo" class="w-full" placeholder="ejemplo@web.com" />
+            </div>
+
+            <div class="field">
+                <label>Teléfono <span class="optional">(Opcional)</span></label>
+                <input pInputText formControlName="telefono" class="w-full" />
+            </div>
+        </div>
+
+        <div class="footer-actions">
+            <button type="button" class="btn-cancel" (click)="close()">Cancelar</button>
+            <button type="submit" class="btn-save" [disabled]="loading() || searching()">
+                {{ loading() ? 'Guardando...' : 'Confirmar' }}
+            </button>
+        </div>
+    </form>
+</p-dialog>

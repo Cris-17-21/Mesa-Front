@@ -1,1 +1,51 @@
-<p>modal-mesa works!</p>
+<p-dialog 
+    [header]="dataToEdit ? 'Editar Mesa' : 'Nueva Mesa'" 
+    [(visible)]="visible" 
+    [modal]="true" 
+    [style]="{ width: '30rem', maxWidth: '80vw' }"
+    [contentStyle]="{ 'max-height': '75vh', 'overflow-y': 'auto', 'padding': '1.5rem' }" 
+    (onHide)="close()">
+
+    <form [formGroup]="mesaForm" (ngSubmit)="save()" class="noir-form">
+        
+        <div class="field">
+            <label for="codigoMesa">Código de Mesa</label>
+            <input pInputText id="codigoMesa" formControlName="codigoMesa" 
+                   placeholder="Ej: M-01" class="w-full"
+                   [ngClass]="{'ng-invalid ng-dirty': mesaForm.get('codigoMesa')?.invalid && mesaForm.get('codigoMesa')?.touched}" />
+            <small class="error-text" *ngIf="mesaForm.get('codigoMesa')?.invalid && mesaForm.get('codigoMesa')?.touched">
+                El código es obligatorio (máx. 10 caracteres).
+            </small>
+        </div>
+
+        <div class="field">
+            <label for="capacidad">Capacidad (Personas)</label>
+            <p-inputNumber id="capacidad" formControlName="capacidad" [showButtons]="true" 
+                buttonLayout="horizontal" spinnerMode="horizontal" [min]="1"
+                [ngClass]="{'ng-invalid ng-dirty': mesaForm.get('capacidad')?.invalid && mesaForm.get('capacidad')?.touched}"
+                class="w-full">
+            </p-inputNumber>
+            <small class="error-text" *ngIf="mesaForm.get('capacidad')?.invalid && mesaForm.get('capacidad')?.touched">
+                La capacidad debe ser al menos 1 persona.
+            </small>
+        </div>
+
+        <div class="field" *ngIf="!dataToEdit">
+            <label for="pisoId">Piso / Ubicación</label>
+            <p-dropdown [options]="pisos()" formControlName="pisoId" optionLabel="nombre" optionValue="id"
+                placeholder="Seleccione un piso" styleClass="w-full"
+                [ngClass]="{'ng-invalid ng-dirty': mesaForm.get('pisoId')?.invalid && mesaForm.get('pisoId')?.touched}">
+            </p-dropdown>
+            <small class="error-text" *ngIf="mesaForm.get('pisoId')?.invalid && mesaForm.get('pisoId')?.touched">
+                Debe asignar la mesa a un piso.
+            </small>
+        </div>
+
+        <div class="footer-actions">
+            <button type="button" class="btn-cancel" (click)="close()">Cancelar</button>
+            <button type="submit" class="btn-save" [disabled]="loading() || (dataToEdit && mesaForm.disabled)">
+                {{ loading() ? 'Guardando...' : 'Confirmar' }}
+            </button>
+        </div>
+    </form>
+</p-dialog>

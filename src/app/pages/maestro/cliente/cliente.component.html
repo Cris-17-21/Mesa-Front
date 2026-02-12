@@ -1,1 +1,66 @@
-<p>cliente works!</p>
+<div class="header-container" *appHasPermission="'READ_CLIENTE'">
+    <div class="header-titles">
+        <h1>Maestro de Clientes</h1>
+        <p class="subtitle">Base de datos centralizada de clientes y empresas</p>
+    </div>
+
+    <div class="header-actions">
+        <div class="search-wrapper">
+            <i class="bi bi-search search-icon"></i>
+            <input type="text" 
+                   class="noir-input" 
+                   (input)="onSearch($event)" 
+                   placeholder="Buscar por nombre o documento..." />
+        </div>
+
+        <button *appHasPermission="'CREATE_CLIENTE'" class="button-add" (click)="openCreate()">
+            <i class="bi bi-person-plus"></i>
+            <span>Nuevo Cliente</span>
+        </button>
+    </div>
+</div>
+
+<div class="card shadow-noir" *appHasPermission="'READ_CLIENTE'">
+    <p-table [value]="filteredClientes()" [loading]="loading()" 
+             [paginator]="true" [rows]="10" styleClass="p-datatable-sm noir-table">
+        <ng-template pTemplate="header">
+            <tr>
+                <th>Documento</th>
+                <th>Nombre / Razón Social</th>
+                <th>Contacto</th>
+                <th class="text-center">Acciones</th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-cliente>
+            <tr>
+                <td>
+                    <span class="doc-badge">{{ cliente.numeroDocumento }}</span>
+                </td>
+                <td class="font-bold">{{ cliente.nombreRazonSocial }}</td>
+                <td>
+                    <div class="contact-info">
+                        <small *ngIf="cliente.telefono"><i class="bi bi-telephone"></i> {{ cliente.telefono }}</small>
+                        <small *ngIf="cliente.correo"><i class="bi bi-envelope"></i> {{ cliente.correo }}</small>
+                    </div>
+                </td>
+                <td>
+                    <div class="flex justify-content-center gap-2">
+                        <button *appHasPermission="'UPDATE_CLIENTE'" class="button-action edit" (click)="onEdit(cliente)" pTooltip="Editar">
+                            <i class="bi bi-pencil-square"></i>
+                        </button>
+                        <button *appHasPermission="'DELETE_CLIENTE'" class="button-action delete" (click)="onDelete(cliente.id)" pTooltip="Eliminar">
+                            <i class="bi bi-trash3"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        </ng-template>
+    </p-table>
+</div>
+
+<app-modal-cliente 
+    [(visible)]="displayModal" 
+    [dataToEdit]="selectedCliente" 
+    [empresaId]="empresaId" 
+    (onSave)="loadClientes()">
+</app-modal-cliente>

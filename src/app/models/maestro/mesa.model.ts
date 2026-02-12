@@ -9,7 +9,7 @@ export interface Mesa {
 }
 
 // CREATE DTO
-export type CreateMesaDto = Omit<Mesa, 'id' | 'idPrincipal' | 'estado'> & {
+export type CreateMesaDto = Omit<Mesa, 'id' | 'idPrincipal' | 'estado' | 'pisoNombre'> & {
     pisoId: string;
 }
 

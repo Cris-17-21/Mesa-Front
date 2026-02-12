@@ -143,6 +143,6 @@ export class PisoComponent implements OnInit {
   // MÉTODO PARA NAVEGAR AL MÓDULO DE MESAS FILTRADO POR PISO
   goToMesaDesign(pisoId: string) {
     // Navegamos a la ruta de mesas enviando el ID del piso como parámetro
-    this.router.navigate(['/dashboard/mesas'], { queryParams: { piso: pisoId } });
+    this.router.navigate(['/maestros/mesas'], { queryParams: { piso: pisoId } });
   }
 }
