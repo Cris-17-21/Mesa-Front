@@ -48,15 +48,15 @@ export const routes: Routes = [
           },
           {
             path: 'sucursal',
-            loadComponent: () => import('./pages/maestro/sucursal/sucursal.component').then(m => m.SucursalComponent)            
+            loadComponent: () => import('./pages/maestro/sucursal/sucursal.component').then(m => m.SucursalComponent)
           },
           {
             path: 'pisos',
-            loadComponent: () => import('./pages/maestro/piso/piso.component').then(m => m.PisoComponent)  
+            loadComponent: () => import('./pages/maestro/piso/piso.component').then(m => m.PisoComponent)
           },
           {
             path: 'mesas',
-            loadComponent: () => import('./pages/maestro/mesa/mesa.component').then(m => m.MesaComponent) 
+            loadComponent: () => import('./pages/maestro/mesa/mesa.component').then(m => m.MesaComponent)
           },
           {
             path: 'clientes',
@@ -67,10 +67,7 @@ export const routes: Routes = [
       {
         path: 'ventas',
         children: [
-          {
-            path: 'pedidos',
-            loadComponent: () => import('./pages/ventas/pedidos/pedidos.component').then(m => m.PedidosComponent)
-          }
+
         ]
       },
       {

@@ -6,6 +6,7 @@ export interface Mesa {
     estado: string;
     pisoNombre: string;
     idPrincipal: string;
+    pisoId?: string;
 }
 
 // CREATE DTO
