@@ -12,7 +12,7 @@ export class PedidoService {
 
   constructor(private http: HttpClient) { }
 
-  private readonly apiUrl = `${environment.apiUrl}/api/ventas/pedidos`;
+  private readonly apiUrl = `${environment.apiUrl}/ventas/pedidos`;
 
   // =================================================================
   // 1. STATE (Signals) - La única fuente de verdad

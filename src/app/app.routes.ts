@@ -67,7 +67,23 @@ export const routes: Routes = [
       {
         path: 'ventas',
         children: [
-
+          {
+            path: 'caja',
+            loadComponent: () => import('./pages/venta/caja/caja.component').then(m => m.CajaComponent)
+          },
+          {
+            path: 'pos',
+            children: [
+              {
+                path: 'orden',
+                loadComponent: () => import('./pages/venta/pos/orden/orden.component').then(m => m.OrdenComponent)
+              },
+              {
+                path: 'piso-mapa',
+                loadComponent: () => import('./pages/venta/pos/piso-mapa/piso-mapa.component').then(m => m.PisoMapaComponent)
+              }
+            ]
+          }
         ]
       },
       {

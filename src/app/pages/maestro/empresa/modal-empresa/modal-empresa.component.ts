@@ -68,7 +68,7 @@ export class ModalEmpresaComponent implements OnInit, OnChanges {
       telefono: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
       logoUrl: [''],
-      fechaAfiliacion: [new Date().toISOString()]
+      fechaAfiliacion: [new Date().toISOString().split('T')[0]]
     }),
     sucursal: this.fb.group({
       nombre: ['Sede Principal', Validators.required],
@@ -252,7 +252,7 @@ export class ModalEmpresaComponent implements OnInit, OnChanges {
       ...formValue,
       empresa: {
         ...formValue.empresa,
-        fechaAfiliacion: new Date().toISOString()
+        fechaAfiliacion: new Date().toISOString().split('T')[0]
       }
     };
 

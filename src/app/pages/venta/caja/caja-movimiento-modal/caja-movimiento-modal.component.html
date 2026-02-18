@@ -1,0 +1,45 @@
+<p-dialog header="Registrar Movimiento" [(visible)]="visible" [modal]="true"
+    [style]="{ width: '30rem', maxWidth: '90vw' }" [draggable]="false" (onHide)="close()">
+
+    <form [formGroup]="form" (ngSubmit)="submit()" class="form-container">
+
+        <div class="type-selector">
+            <p-selectButton [options]="tiposMovimiento" formControlName="tipo" optionLabel="label" optionValue="value"
+                styleClass="w-full">
+            </p-selectButton>
+        </div>
+
+        <div class="field">
+            <label class="label-noir">Monto</label>
+            <div class="amount-wrapper" [ngClass]="form.get('tipo')?.value === 'INGRESO' ? 'is-income' : 'is-expense'">
+
+                <i class="bi" [ngClass]="form.get('tipo')?.value === 'INGRESO' ? 'bi-plus-lg' : 'bi-dash-lg'"></i>
+
+                <p-inputNumber formControlName="monto" mode="currency" currency="PEN" locale="es-PE" placeholder="0.00"
+                    styleClass="transparent-input-number">
+                </p-inputNumber>
+            </div>
+            @if (form.get('monto')?.invalid && form.get('monto')?.touched) {
+            <small class="error-text">El monto es obligatorio.</small>
+            }
+        </div>
+
+        <div class="field">
+            <label class="label-noir">Descripción / Motivo</label>
+            <textarea pInputTextarea formControlName="descripcion" rows="3" class="noir-input"
+                placeholder="Ej: Compra de artículos de limpieza..."></textarea>
+
+            @if(form.get('descripcion')?.invalid && form.get('descripcion')?.touched) {
+            <small class="error-text">Debe ingresar una descripción.</small>
+            }
+        </div>
+
+        <div class="footer-actions">
+            <button type="button" class="btn-cancel" (click)="close()">Cancelar</button>
+            <button type="submit" class="btn-save" [disabled]="form.invalid || loading()">
+                {{ loading() ? 'Guardando...' : 'Registrar Movimiento' }}
+            </button>
+        </div>
+
+    </form>
+</p-dialog>

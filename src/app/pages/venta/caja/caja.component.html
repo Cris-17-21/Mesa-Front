@@ -1,0 +1,145 @@
+<header class="main-header">
+    <div class="header-titles">
+        <h1>Gestión de Caja</h1>
+        <p class="subtitle">Control de flujo de efectivo y turnos</p>
+    </div>
+
+    <div class="header-actions">
+        @if (!cajaService.isCajaAbierta()) {
+        <div class="status-indicator closed">
+            <i class="bi bi-circle-fill"></i> Turno Cerrado
+        </div>
+        <button class="button-noir" (click)="abrirCaja()">
+            <i class="bi bi-key"></i> Abrir Caja
+        </button>
+        }
+
+        @if (cajaService.isCajaAbierta()) {
+        <div class="status-indicator open">
+            <i class="bi bi-circle-fill"></i> Turno Activo
+        </div>
+
+        <button class="button-outline" (click)="registrarMovimiento()">
+            <i class="bi bi-arrow-left-right"></i> Movimiento
+        </button>
+
+        <button class="button-noir delete-hover" (click)="cerrarCaja()">
+            <i class="bi bi-door-closed"></i> Cerrar Caja
+        </button>
+        }
+    </div>
+</header>
+
+@if (!cajaService.isCajaAbierta()) {
+<div class="empty-state-container fade-in">
+    <div class="empty-content">
+        <div class="icon-circle">
+            <i class="bi bi-shop"></i>
+        </div>
+        <h2>La caja está cerrada</h2>
+        <p>Para comenzar a vender en esta sucursal, es necesario aperturar un nuevo turno de caja.</p>
+        <button class="button-noir large" (click)="abrirCaja()">
+            Comenzar Turno
+        </button>
+    </div>
+</div>
+}
+
+@if (cajaService.isCajaAbierta()) {
+<div class="dashboard-grid fade-in">
+
+    <div class="kpi-section">
+        <div class="kpi-card main-kpi">
+            <div class="kpi-icon"><i class="bi bi-wallet2"></i></div>
+            <div class="kpi-info">
+                <span class="label">Efectivo en Caja (Teórico)</span>
+                <span class="value">{{ cajaService.resumenFinanciero()?.saldoEsperadoEnCaja | currency:'PEN':'symbol'
+                    }}</span>
+            </div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="kpi-icon income"><i class="bi bi-graph-up-arrow"></i></div>
+            <div class="kpi-info">
+                <span class="label">Ventas Totales</span>
+                <span class="value income-text">{{ cajaService.resumenFinanciero()?.totalVentasGlobal |
+                    currency:'PEN':'symbol' }}</span>
+            </div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="kpi-icon expense"><i class="bi bi-arrow-down-right"></i></div>
+            <div class="kpi-info">
+                <span class="label">Gastos Caja Chica</span>
+                <span class="value expense-text">{{ cajaService.resumenFinanciero()?.totalEgresosCajaChica |
+                    currency:'PEN':'symbol' }}</span>
+            </div>
+        </div>
+
+        <div class="kpi-card action-card" (click)="irAlPOS()">
+            <div class="action-content">
+                <i class="bi bi-shop-window"></i>
+                <span>Ir al Punto de Venta</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="table-container shadow-noir">
+        <div class="table-header">
+            <h3>Movimientos del Turno</h3>
+            <span class="text-sm text-secondary">{{ today | date:'fullDate' }}</span>
+        </div>
+
+        <p-table [value]="movimientoService.movimientos()" [rows]="10" [paginator]="true"
+            styleClass="p-datatable-sm p-datatable-gridlines noir-table">
+            <ng-template pTemplate="header">
+                <tr>
+                    <th style="width: 100px">Hora</th>
+                    <th>Concepto / Descripción</th>
+                    <th style="width: 120px">Tipo</th>
+                    <th style="width: 120px" class="text-right">Monto</th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-mov>
+                <tr>
+                    <td class="text-secondary">{{ mov.fecha | date:'HH:mm' }}</td>
+
+                    <td>
+                        <span class="font-medium">{{ mov.descripcion }}</span>
+                        <span style="display: block; font-size: 0.75rem; color: #6b7280; margin-top: 4px;"
+                            class="text-xs text-secondary block ml-1">{{ mov.usuarioNombre }}</span>
+                    </td>
+
+                    <td>
+                        <span class="badge"
+                            [ngClass]="{'bg-income': mov.tipo === 'INGRESO', 'bg-expense': mov.tipo === 'EGRESO'}">
+                            {{ mov.tipo }}
+                        </span>
+                    </td>
+
+                    <td class="text-right font-bold"
+                        [ngClass]="{'text-green-600': mov.tipo === 'INGRESO', 'text-red-600': mov.tipo === 'EGRESO'}">
+                        {{ mov.monto | currency:'PEN':'symbol' }}
+                    </td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="4" class="text-center p-4 text-secondary">
+                        No hay movimientos registrados en este turno aún.
+                    </td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </div>
+</div>
+}
+
+<app-caja-control-modal [(visible)]="showControlModal" [type]="controlType" [cajaActivaId]="cajaService.cajaIdActual()"
+    [saldoEsperado]="cajaService.resumenFinanciero()?.saldoEsperadoEnCaja || 0" (onSave)="onOperationSuccess()"
+    [sucursalId]="currentSucursalId" [usuarioId]="currentUsuarioId">
+</app-caja-control-modal>
+
+<app-caja-movimiento-modal [(visible)]="showMovementModal" [usuarioId]="currentUsuarioId"
+    (onSave)="onOperationSuccess()">
+</app-caja-movimiento-modal>

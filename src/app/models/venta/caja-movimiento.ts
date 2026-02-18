@@ -18,10 +18,11 @@ export interface MovimientoCaja {
  * Corresponde a: MovivmientoCajaRequest
  */
 export interface CreateMovimientoCajaRequest {
-    cajaTurnoId: string;
+    cajaId: string;
     monto: number;
     descripcion: string;
     tipo: TipoMovimiento;
+    usuarioId: string;
 }
 
 /**
