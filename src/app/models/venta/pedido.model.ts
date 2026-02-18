@@ -61,3 +61,14 @@ export interface PedidoResumenDto {
     nombreCliente: string;
     codigoMesa: string;
 }
+
+// MODEL DE CARRITO AUXILIAR
+
+export interface CartItem {
+    productoId: string;
+    nombre: string;      // Para mostrar en la lista visual
+    precio: number;      // Para calcular subtotal visualmente
+    cantidad: number;
+    observaciones: string; // "Sin ají", "Bien cocido"
+    categoria?: string;  // Opcional, por si quieres agrupar visualmente
+}

@@ -1,0 +1,64 @@
+<p-dialog [header]="type === 'OPEN' ? 'Aperturar Caja' : 'Cerrar Turno'" [(visible)]="visible" [modal]="true"
+    [style]="{ width: '30rem', maxWidth: '90vw' }" [draggable]="false" [resizable]="false" (onHide)="close()">
+
+    <form [formGroup]="form" (ngSubmit)="submit()" class="form-container">
+
+        <div class="context-alert" [ngClass]="type === 'OPEN' ? 'info' : 'warning'">
+            <i class="bi" [ngClass]="type === 'OPEN' ? 'bi-info-circle' : 'bi-exclamation-triangle'"></i>
+            <div class="alert-text">
+                @if (type === 'OPEN') {
+                <p>Ingrese el monto de dinero base (sencillo) con el que inicia el turno.</p>
+                }
+                @if (type === 'CLOSE') {
+                <p>Cuente el dinero físico en el cajón. El sistema calculará el arqueo automáticamente.</p>
+                }
+            </div>
+        </div>
+
+        @if (type === 'CLOSE') {
+        <div class="summary-grid">
+            <div class="summary-item">
+                <span class="label">Sistema espera:</span>
+                <span class="value">{{ saldoEsperado | currency:'PEN':'symbol' }}</span>
+            </div>
+            <div class="summary-item">
+                <span class="label">Diferencia:</span>
+                <span class="value diff" [ngClass]="{
+                            'positive': diferencia() > 0, 
+                            'negative': diferencia() < 0,
+                            'neutral': diferencia() === 0
+                          }">
+                    {{ diferencia() | currency:'PEN':'symbol' }}
+                </span>
+            </div>
+        </div>
+        }
+
+        <div class="field">
+            <label class="label-noir">
+                {{ type === 'OPEN' ? 'Monto Inicial (Base)' : 'Dinero Físico (Solo Efectivo)' }}
+            </label>
+            <p-inputNumber formControlName="monto" mode="currency" currency="PEN" locale="es-PE" [min]="0"
+                styleClass="w-full" inputStyleClass="noir-input-number" placeholder="S/ 0.00">
+            </p-inputNumber>
+
+            @if (form.get('monto')?.invalid && form.get('monto')?.touched) {
+            <small class="error-text">El monto es obligatorio.</small>
+            }
+        </div>
+
+        <div class="field">
+            <label class="label-noir">Observaciones (Opcional)</label>
+            <textarea pInputTextarea formControlName="observacion" rows="3" class="noir-input"
+                placeholder="Ej: Se inicia con billetes de baja denominación..."></textarea>
+        </div>
+
+        <div class="footer-actions">
+            <button type="button" class="btn-cancel" (click)="close()">Cancelar</button>
+            <button type="submit" class="btn-save" [disabled]="form.invalid || loading()">
+                {{ loading() ? 'Procesando...' : (type === 'OPEN' ? 'Abrir Turno' : 'Cerrar Caja') }}
+            </button>
+        </div>
+
+    </form>
+</p-dialog>

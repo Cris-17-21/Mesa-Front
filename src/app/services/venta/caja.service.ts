@@ -14,7 +14,7 @@ export class CajaService {
   ) { }
 
   // URL base ajustada a tu Controller (@RequestMapping("/api/ventas/caja"))
-  private readonly apiUrl = `${environment.apiUrl}/api/ventas/caja`;
+  private readonly apiUrl = `${environment.apiUrl}/ventas/caja`;
 
   // =================================================================
   // 1. STATE (Signals) - La única fuente de verdad
@@ -39,7 +39,7 @@ export class CajaService {
    * Úsalo en el Guard de rutas o para deshabilitar botones de venta.
    */
   public readonly isCajaAbierta = computed(() =>
-    this._cajaActiva()?.estado === 'ABIERTO'
+    this._cajaActiva()?.estado === 'ABIERTA'
   );
 
   /**
@@ -58,21 +58,23 @@ export class CajaService {
    * Endpoint: GET /activa/{sucursalId}/{usuarioId}
    */
   verificarEstadoCaja(sucursalId: string, usuarioId: string): Observable<CajaTurnoDto | null> {
+    // VOLVEMOS A LA RUTA CON BARRAS '/' QUE ES LA QUE TU BACKEND ACEPTA
     return this.http.get<CajaTurnoDto>(`${this.apiUrl}/activa/${sucursalId}/${usuarioId}`).pipe(
-      tap({
-        next: (caja) => {
-          // Si el backend devuelve 200 OK con datos
-          this._cajaActiva.set(caja);
-        },
-        error: (err) => {
-          // Manejo silencioso: Si da error o 404, asumimos que no hay caja
-          console.warn('No se encontró caja activa o hubo error', err);
-          this._cajaActiva.set(null);
+      tap((caja) => {
+        // Si el backend devuelve 204 (No Content), Angular pasa 'caja' como null.
+        // Si devuelve 200 (OK), 'caja' es el objeto JSON.
+
+        if (caja) {
+          console.log('✅ Caja activa encontrada (RECUPERADA):', caja);
+          this._cajaActiva.set(caja); // Esto actualizará la vista a "Cerrar Caja"
+        } else {
+          console.log('ℹ️ No hay caja activa (Backend devolvió 204/null)');
+          this._cajaActiva.set(null); // Esto mostrará "Abrir Caja"
         }
       }),
-      // Si el backend devuelve 204 No Content, Angular devuelve null en el body.
-      // Nos aseguramos de limpiar el estado.
-      catchError(() => {
+      catchError((err) => {
+        console.warn('⚠️ Error consultando estado de caja:', err);
+        // Si hay error, asumimos cerrado para no romper la app
         this._cajaActiva.set(null);
         return of(null);
       })

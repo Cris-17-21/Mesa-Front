@@ -1,0 +1,326 @@
+/* --- HEADER --- */
+.main-header {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+@media (min-width: 768px) {
+    .main-header {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: flex-end;
+    }
+}
+
+.header-titles h1 {
+    margin-bottom: 5px;
+    font-weight: 700;
+    font-size: 2rem;
+    color: #18181b;
+}
+
+.subtitle {
+    margin: 0;
+    color: #71717a;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+/* Indicadores de Estado */
+.status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    border-radius: 99px;
+}
+
+.status-indicator.closed {
+    background-color: #f4f4f5;
+    color: #71717a;
+}
+
+.status-indicator.open {
+    background-color: #dcfce7;
+    color: #166534;
+}
+
+.status-indicator i {
+    font-size: 0.6rem;
+}
+
+/* --- BOTONES STYLE NOIR --- */
+.button-noir {
+    background-color: #18181b;
+    border: 1px solid #18181b;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.button-noir:hover {
+    background-color: #3f3f46;
+    transform: translateY(-1px);
+}
+
+.button-noir.delete-hover:hover {
+    background-color: #ef4444;
+    border-color: #ef4444;
+}
+
+.button-outline {
+    background-color: white;
+    border: 1px solid #e4e4e7;
+    color: #18181b;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.button-outline:hover {
+    border-color: #18181b;
+    background-color: #fafafa;
+}
+
+/* --- EMPTY STATE --- */
+.empty-state-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 400px;
+    background: white;
+    border-radius: 12px;
+    border: 1px dashed #e4e4e7;
+}
+
+.empty-content {
+    text-align: center;
+    max-width: 400px;
+}
+
+.icon-circle {
+    width: 80px;
+    height: 80px;
+    background-color: #f4f4f5;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+}
+
+.icon-circle i {
+    font-size: 2rem;
+    color: #18181b;
+}
+
+.empty-content h2 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    color: #18181b;
+}
+
+.empty-content p {
+    color: #71717a;
+    margin-bottom: 2rem;
+}
+
+.button-noir.large {
+    width: 100%;
+    justify-content: center;
+    padding: 1rem;
+    font-size: 1rem;
+}
+
+/* --- DASHBOARD GRID & KPIS --- */
+.dashboard-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.kpi-section {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1rem;
+}
+
+.kpi-card {
+    background: white;
+    border: 1px solid #e4e4e7;
+    border-radius: 12px;
+    padding: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: transform 0.2s ease;
+}
+
+.kpi-card:hover {
+    border-color: #d4d4d8;
+}
+
+/* Estilo especial para saldo principal */
+.kpi-card.main-kpi {
+    background: #18181b;
+    color: white;
+    border: none;
+}
+
+.kpi-card.main-kpi .label {
+    color: #a1a1aa;
+}
+
+.kpi-card.main-kpi .value {
+    color: white;
+}
+
+.kpi-card.main-kpi .kpi-icon {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.kpi-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    background: #f4f4f5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    color: #18181b;
+}
+
+.kpi-icon.income {
+    background: #ecfdf5;
+    color: #059669;
+}
+
+.kpi-icon.expense {
+    background: #fef2f2;
+    color: #dc2626;
+}
+
+.kpi-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.kpi-info .label {
+    font-size: 0.75rem;
+    color: #71717a;
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+}
+
+.kpi-info .value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #18181b;
+    line-height: 1.2;
+}
+
+/* Action Card (Ir al POS) */
+.action-card {
+    background: linear-gradient(135deg, #f4f4f5 0%, #ffffff 100%);
+    cursor: pointer;
+    border: 1px dashed #a1a1aa;
+    justify-content: center;
+}
+
+.action-card:hover {
+    background: #f4f4f5;
+    transform: translateY(-2px);
+}
+
+.action-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    color: #18181b;
+    font-weight: 600;
+}
+
+/* --- TABLA --- */
+.table-container {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #e4e4e7;
+    overflow: hidden;
+    padding: 1.5rem;
+}
+
+.table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.table-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: #18181b;
+}
+
+.shadow-noir {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+/* Badge en tabla */
+.badge {
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.bg-income {
+    background: #ecfdf5;
+    color: #059669;
+}
+
+.bg-expense {
+    background: #fef2f2;
+    color: #dc2626;
+}
+
+/* Animación de entrada */
+.fade-in {
+    animation: fadeIn 0.4s ease-out forwards;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

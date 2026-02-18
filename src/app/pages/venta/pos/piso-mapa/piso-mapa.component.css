@@ -1,0 +1,192 @@
+.piso-container {
+    padding: 20px;
+    background-color: #f8f9fa;
+    min-height: 100vh;
+}
+
+/* HEADER */
+.piso-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    background: white;
+    padding: 15px 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.leyenda {
+    display: flex;
+    gap: 15px;
+    margin-top: 5px;
+}
+
+.badge {
+    font-size: 0.85rem;
+    padding: 4px 10px;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.badge.libre {
+    background: #e6f9e9;
+    color: #28a745;
+}
+
+.badge.ocupada {
+    background: #fdeaea;
+    color: #dc3545;
+}
+
+.badge.union {
+    background: #fff3cd;
+    color: #856404;
+}
+
+/* BOTONES */
+.actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.btn-refresh {
+    border: 1px solid #ddd;
+    background: white;
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.btn-secondary {
+    background: #222;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.btn-confirm {
+    background: #28a745;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.btn-cancel {
+    background: transparent;
+    border: 1px solid #ccc;
+    padding: 8px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+/* GRID */
+.mesas-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 20px;
+}
+
+/* TARJETA MESA */
+.mesa-card {
+    background: white;
+    border-radius: 12px;
+    height: 160px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    cursor: pointer;
+    border: 2px solid transparent;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+}
+
+.mesa-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* ESTADOS */
+.mesa-card.libre {
+    border-color: #28a745;
+}
+
+.mesa-card.libre .mesa-body {
+    color: #28a745;
+}
+
+.mesa-card.ocupada {
+    border-color: #dc3545;
+    background-color: #fffbfb;
+}
+
+.mesa-card.ocupada .mesa-body {
+    color: #dc3545;
+}
+
+.mesa-card.selected {
+    border-color: #007bff;
+    background-color: #f0f7ff;
+    transform: scale(0.95);
+}
+
+/* PARTES DE LA CARTA */
+.mesa-top {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    font-weight: bold;
+    color: #555;
+    border-bottom: 1px dashed #eee;
+}
+
+.mesa-body {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2.5rem;
+}
+
+.mesa-footer {
+    padding: 10px;
+    text-align: center;
+    background: #fafafa;
+    font-size: 0.9rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.monto {
+    font-weight: 800;
+    font-size: 1.1rem;
+    color: #333;
+}
+
+.cliente-name {
+    font-size: 0.8rem;
+    color: #666;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* OVERLAY SELECCION */
+.overlay-select {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: #007bff;
+    color: white;
+    padding: 5px 10px;
+    border-bottom-left-radius: 12px;
+}

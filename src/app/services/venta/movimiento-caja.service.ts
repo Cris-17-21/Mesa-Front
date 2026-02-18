@@ -14,7 +14,7 @@ export class MovimientoCajaService {
   ) { }
 
   // URL base ajustada a tu Controller (@RequestMapping("/api/movimientos-caja"))
-  private readonly apiUrl = `${environment.apiUrl}/api/movimientos-caja`;
+  private readonly apiUrl = `${environment.apiUrl}/movimientos-caja`;
 
   // =================================================================
   // STATE (Signals)

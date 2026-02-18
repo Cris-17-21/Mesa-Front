@@ -12,7 +12,7 @@ export class FacturacionService {
   constructor(private http: HttpClient) { }
 
   // Base URL: /api/facturacion
-  private readonly apiUrl = `${environment.apiUrl}/api/facturacion`;
+  private readonly apiUrl = `${environment.apiUrl}/facturacion`;
 
   // =================================================================
   // STATE (Signals)
