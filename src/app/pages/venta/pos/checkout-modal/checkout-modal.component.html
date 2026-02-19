@@ -1,1 +1,76 @@
-<p>checkout-modal works!</p>
+<div class="modal-card">
+
+    <div class="modal-header">
+        <h2>Cobrar Orden</h2>
+        <button class="btn-close" (click)="cancelar()">
+            <i class="bi bi-x-lg"></i>
+        </button>
+    </div>
+
+    <div class="modal-body">
+
+        <div class="total-display">
+            <span class="label">Total a Pagar</span>
+            <span class="amount">{{ total | currency:'PEN':'symbol' }}</span>
+        </div>
+
+        <div class="payment-methods">
+            <p>Seleccione Método:</p>
+            <div class="methods-grid">
+                <button class="btn-method" [class.active]="metodoSeleccionado() === 'EFECTIVO'"
+                    (click)="seleccionarMetodo('EFECTIVO')">
+                    <i class="bi bi-cash"></i> Efectivo
+                </button>
+
+                <button class="btn-method" [class.active]="metodoSeleccionado() === 'TARJETA'"
+                    (click)="seleccionarMetodo('TARJETA')">
+                    <i class="bi bi-credit-card"></i> Tarjeta
+                </button>
+
+                <button class="btn-method yape" [class.active]="metodoSeleccionado() === 'YAPE'"
+                    (click)="seleccionarMetodo('YAPE')">
+                    Yape
+                </button>
+
+                <button class="btn-method plin" [class.active]="metodoSeleccionado() === 'PLIN'"
+                    (click)="seleccionarMetodo('PLIN')">
+                    Plin
+                </button>
+            </div>
+        </div>
+
+        @if (metodoSeleccionado() === 'EFECTIVO') {
+        <div class="cash-control">
+            <label>Recibido:</label>
+            <div class="input-group">
+                <span class="currency-symbol">S/</span>
+                <input type="number" [ngModel]="montoRecibido()" (ngModelChange)="montoRecibido.set($event)"
+                    class="input-monto" placeholder="0.00">
+                <button class="btn-exacto" (click)="setMontoExacto()">Exacto</button>
+            </div>
+
+            <div class="vuelto-info" [class.negativo]="falta() > 0">
+                @if (falta() > 0) {
+                <span>Falta:</span>
+                <strong>{{ falta() | currency:'PEN' }}</strong>
+                } @else {
+                <span>Vuelto:</span>
+                <strong class="success">{{ vuelto() | currency:'PEN' }}</strong>
+                }
+            </div>
+        </div>
+        }
+    </div>
+
+    <div class="modal-footer">
+        <button class="btn-cancelar" (click)="cancelar()">Cancelar</button>
+
+        <button class="btn-pagar" [disabled]="procesando()" (click)="procesarPago()">
+            @if (procesando()) {
+            <span class="loader"></span> Procesando...
+            } @else {
+            <i class="bi bi-check-lg"></i> Finalizar Pago
+            }
+        </button>
+    </div>
+</div>

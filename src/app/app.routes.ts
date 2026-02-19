@@ -18,6 +18,7 @@ export const routes: Routes = [
         path: 'dashboard',
         loadComponent: () => import('./pages/dashboard/dashboard.component').then(m => m.DashboardComponent)
       },
+      // --- CONFIGURACIÓN ---
       {
         path: 'config',
         children: [
@@ -39,6 +40,7 @@ export const routes: Routes = [
           }
         ]
       },
+      // --- MAESTROS ---
       {
         path: 'maestros',
         children: [
@@ -64,6 +66,7 @@ export const routes: Routes = [
           }
         ]
       },
+      // --- VENTAS (AQUÍ HICE EL CAMBIO CLAVE) ---
       {
         path: 'ventas',
         children: [
@@ -72,25 +75,29 @@ export const routes: Routes = [
             loadComponent: () => import('./pages/venta/caja/caja.component').then(m => m.CajaComponent)
           },
           {
+            // RUTA PADRE: /ventas/pos
             path: 'pos',
             children: [
               {
-                path: 'orden',
-                loadComponent: () => import('./pages/venta/pos/orden/orden.component').then(m => m.OrdenComponent)
-              },
-              {
-                path: 'piso-mapa',
-                loadComponent: () => import('./pages/venta/pos/piso-mapa/piso-mapa.component').then(m => m.PisoMapaComponent)
+                // RUTA DEFAULT: /ventas/pos -> Muestra el MAPA
+                path: '',
+                loadComponent: () => import('./pages/venta/pos/piso-mapa/piso-mapa.component').then(m => m.PisoMapaComponent),
+                title: 'Selección de Mesa'
               }
             ]
+          },
+          {
+            path: 'pre-cuenta',
+            loadComponent: () => import('./pages/venta/pre-cuenta/pre-cuenta.component').then(m => m.PreCuentaComponent)
           }
         ]
       },
+      // --- COMPRAS ---
       {
         path: 'compras',
         children: [
           {
-            path: 'prooductos',
+            path: 'prooductos', // Ojo: tienes un typo aquí 'prooductos', tal vez quieras corregirlo a 'productos'
             loadComponent: () => import('./pages/compras/components/compra-list/compra-list.component').then(m => m.CompraListComponent)
           }
         ]

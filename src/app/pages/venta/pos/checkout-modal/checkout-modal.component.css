@@ -1,0 +1,199 @@
+/* El contenedor es una tarjeta flotante centrada (el padre pone el overlay) */
+.modal-card {
+    background: white;
+    /* O #1e1e1e si es dark mode */
+    width: 90%;
+    max-width: 450px;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    animation: slideUp 0.3s ease-out;
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-header {
+    background: #f8f9fa;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #eee;
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 1.2rem;
+}
+
+.btn-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+.modal-body {
+    padding: 20px;
+}
+
+/* TOTAL GIGANTE */
+.total-display {
+    text-align: center;
+    margin-bottom: 20px;
+    background: #e8f5e9;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #c8e6c9;
+}
+
+.total-display .label {
+    display: block;
+    font-size: 0.9rem;
+    color: #555;
+}
+
+.total-display .amount {
+    display: block;
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #2e7d32;
+}
+
+/* BOTONES METODOS */
+.methods-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.btn-method {
+    padding: 15px;
+    border: 2px solid #ddd;
+    background: white;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.btn-method.active {
+    border-color: #007bff;
+    background: #e7f1ff;
+    color: #007bff;
+    font-weight: bold;
+}
+
+.btn-method.yape.active {
+    border-color: #7209b7;
+    background: #f3e5f5;
+    color: #7209b7;
+}
+
+.btn-method.plin.active {
+    border-color: #00b4d8;
+    background: #e0f7fa;
+    color: #00b4d8;
+}
+
+/* EFECTIVO Y VUELTO */
+.cash-control {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px dashed #ccc;
+}
+
+.input-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 5px;
+}
+
+.input-monto {
+    flex: 1;
+    padding: 10px;
+    font-size: 1.5rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    text-align: right;
+}
+
+.btn-exacto {
+    padding: 10px 15px;
+    background: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.vuelto-info {
+    margin-top: 15px;
+    font-size: 1.2rem;
+    display: flex;
+    justify-content: space-between;
+}
+
+.vuelto-info strong {
+    font-size: 1.4rem;
+}
+
+.vuelto-info .success {
+    color: #2e7d32;
+}
+
+.vuelto-info.negativo {
+    color: #dc3545;
+}
+
+/* FOOTER */
+.modal-footer {
+    padding: 15px 20px;
+    background: #f8f9fa;
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.btn-cancelar {
+    padding: 12px 20px;
+    border: none;
+    background: #e0e0e0;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.btn-pagar {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    background: #28a745;
+    color: white;
+    border-radius: 6px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.btn-pagar:disabled {
+    background: #94d3a2;
+    cursor: not-allowed;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(50px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}

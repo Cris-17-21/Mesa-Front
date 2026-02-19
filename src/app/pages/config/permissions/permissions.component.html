@@ -61,8 +61,6 @@
 </header>
 
 
-<app-modal-permissions 
-    [(visible)]="displayModal" 
-    [permissionToEdit]="selectedPermission()" 
+<app-modal-permissions [(visible)]="displayModal" [permissionToEdit]="selectedPermission()"
     (onSave)="loadPermissions()">
 </app-modal-permissions>

@@ -1,1 +1,139 @@
-<p>dividir-cuenta-modal works!</p>
+<div class="modal-card">
+    <div class="modal-header">
+        <div class="header-left">
+            <button class="btn-back" (click)="onCerrar.emit()">
+                <i class="bi bi-arrow-left"></i> Regresar
+            </button>
+            <div class="header-text">
+                <h2>Gestión de Cuentas</h2>
+                <small>Divide la mesa o gestiona las cuentas existentes</small>
+            </div>
+        </div>
+        <button class="btn-close" (click)="onCerrar.emit()">
+            <i class="bi bi-x-lg"></i>
+        </button>
+    </div>
+
+    <div class="modal-body-grid">
+
+        <!-- COLUMNA IZQUIERDA: CREAR DIVISIÓN -->
+        <div class="column-split">
+            <div class="column-header">
+                <h3><i class="bi bi-pie-chart"></i> Nueva División</h3>
+                <span class="badge-info">Selecciona items para separar</span>
+            </div>
+
+            @if (loading()) {
+            <div class="loading-state">
+                <span class="loader"></span>
+                <p>Cargando detalles...</p>
+            </div>
+            } @else {
+
+            @if (!puedeDividir()) {
+            <div class="divide-warning">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                <p>No se puede dividir: debe haber al menos 2 unidades de productos en la mesa.</p>
+            </div>
+            }
+
+            <div class="items-list">
+                @for (item of itemsDisponibles(); track item.id) {
+                <div class="split-row" [class.selected]="getCantidadSeleccionada(item.id) > 0">
+                    <div class="item-info" (click)="toggleTodo(item)">
+                        <span class="name">{{ item.productoNombre }}</span>
+                        <div class="meta">
+                            <span class="price">S/ {{ item.precioUnitario | number:'1.2-2' }}</span>
+                            @if (item.observaciones) {
+                            <span class="obs"><i class="bi bi-chat-text"></i> {{ item.observaciones }}</span>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="split-controls">
+                        <span class="max-badge"
+                            [class.full]="getCantidadSeleccionada(item.id) === getMaxSeparable(item)">
+                            Disp: {{ getMaxSeparable(item) }}
+                        </span>
+                        <div class="stepper">
+                            <button class="btn-step" [disabled]="getCantidadSeleccionada(item.id) === 0"
+                                (click)="decrementar(item.id)">
+                                <i class="bi bi-dash"></i>
+                            </button>
+                            <span class="qty-display">{{ getCantidadSeleccionada(item.id) }}</span>
+                            <button class="btn-step"
+                                [disabled]="getCantidadSeleccionada(item.id) >= getMaxSeparable(item)"
+                                (click)="incrementar(item)">
+                                <i class="bi bi-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                } @empty {
+                <div class="empty-state">
+                    <i class="bi bi-check-circle-fill"></i>
+                    <p>No hay más items para dividir.</p>
+                </div>
+                }
+            </div>
+
+            <div class="column-footer">
+                <div class="summary">
+                    <span class="total">S/ {{ totalSeparado() | number:'1.2-2' }}</span>
+                    <small>{{ cantidadItemsSeleccionados() }} seleccionados</small>
+                </div>
+                <button class="btn-split"
+                    [disabled]="!puedeDividir() || cantidadItemsSeleccionados() === 0 || procesando()"
+                    (click)="confirmarDivision()">
+                    @if (procesando()) {
+                    <span class="loader-sm"></span>
+                    } @else {
+                    Separar <i class="bi bi-arrow-right-short"></i>
+                    }
+                </button>
+            </div>
+            }
+        </div>
+
+        <!-- COLUMNA DERECHA: CUENTAS EXISTENTES -->
+        <div class="column-accounts">
+            <div class="column-header">
+                <h3><i class="bi bi-receipt"></i> Cuentas de la Mesa</h3>
+                <span class="badge-info">{{ cuentasMesa().length }} cuentas detectadas</span>
+            </div>
+
+            <div class="accounts-list">
+                @for (cuenta of cuentasMesa(); track cuenta.id) {
+                <div class="account-card" [class.principal]="cuenta.id === pedidoId">
+                    <div class="acc-info">
+                        <div class="acc-header-row">
+                            <span class="acc-code">Pedido #{{ cuenta.codigoPedido }}</span>
+                            @if (cuenta.id === pedidoId) {
+                            <span class="badge-principal">Principal</span>
+                            }
+                        </div>
+                        <span class="acc-total">S/ {{ cuenta.totalFinal | number:'1.2-2' }}</span>
+                    </div>
+                    <button class="btn-acc-pay" (click)="abrirCobrar(cuenta)">
+                        <i class="bi bi-cash-stack"></i> Cobrar
+                    </button>
+                </div>
+                } @empty {
+                <div class="empty-state-side">
+                    <i class="bi bi-info-circle"></i>
+                    <p>No se encontraron cuentas.</p>
+                </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- OVERLAY DE COBRO -->
+    @if (showCheckout()) {
+    <div class="overlay-nested-account">
+        <app-checkout-modal [pedidoId]="selectedPedidoId()!" [total]="selectedPedidoTotal()"
+            (onCancelar)="showCheckout.set(false)" (onPagoExitoso)="onPagoExitoso($event)">
+        </app-checkout-modal>
+    </div>
+    }
+</div>
