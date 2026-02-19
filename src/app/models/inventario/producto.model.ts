@@ -4,12 +4,12 @@ export interface Producto {
     descripcion?: string;
     precioVenta: number;
     costoCompra?: number;
+    stock: number;
     idCategoria: number;
+    idTipos?: number[];
     nombreCategoria?: string;
-    idProveedor?: number;
+    idProveedor: number;
     razonSocialProveedor?: string;
-    tipo?: string;
-    pesoGramos?: number;
-    estado: boolean;
     imagen?: string;
+    estado: boolean;
 }

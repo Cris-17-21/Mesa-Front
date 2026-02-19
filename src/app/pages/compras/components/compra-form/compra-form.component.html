@@ -28,7 +28,7 @@
         <div class="card p-3 surface-50 border-round-md">
             <div class="flex justify-content-between align-items-center mb-3">
                 <h3 class="m-0 text-xl">Detalle de Productos</h3>
-                <p-button label="Agregar Producto" icon="pi pi-plus" size="small" [outlined]="true"
+                <p-button label="Agregar Producto" icon="bi bi-plus" size="small" [outlined]="true"
                     (onClick)="addDetalle()">
                 </p-button>
             </div>
@@ -65,7 +65,7 @@
                             {{ control.get('subtotal')?.value | currency:'PEN':'S/ ' }}
                         </td>
                         <td>
-                            <p-button icon="pi pi-trash" severity="danger" [text]="true" (onClick)="removeDetalle(i)">
+                            <p-button icon="bi bi-trash" severity="danger" [text]="true" (onClick)="removeDetalle(i)">
                             </p-button>
                         </td>
                     </tr>
@@ -81,7 +81,7 @@
 
         <div class="flex justify-content-end gap-2 mt-4">
             <p-button label="Cancelar" severity="secondary" (onClick)="onCancel()"></p-button>
-            <p-button label="Guardar Compra" icon="pi pi-check" type="submit"></p-button>
+            <p-button label="Guardar Compra" icon="bi bi-check" type="submit"></p-button>
         </div>
     </form>
 </div>
