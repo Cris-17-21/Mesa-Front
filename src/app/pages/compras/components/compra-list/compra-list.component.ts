@@ -1,8 +1,8 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
-import { CompraService } from '../../services/compra.service';
-import { Compra } from '../../models/compra.model';
+import { CompraService } from '../../../../services/compra/compra.service';
+import { Compra } from '../../../../models/compra/compra.model';
 
 // PrimeNG Imports
 import { TableModule } from 'primeng/table';

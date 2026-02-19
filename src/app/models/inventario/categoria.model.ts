@@ -1,5 +1,6 @@
-export interface CategoriaProducto {
+export interface Categoria {
     id: number;
     nombre: string;
-    empresaId: string; // En Java era String, aquí se mantiene
+    descripcion?: string;
+    empresaId?: string;
 }
