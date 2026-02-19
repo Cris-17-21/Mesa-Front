@@ -1,0 +1,321 @@
+import { Component, inject, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { TableModule } from 'primeng/table';
+import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
+import { DialogModule } from 'primeng/dialog';
+import { ToastModule } from 'primeng/toast';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { MessageService, ConfirmationService } from 'primeng/api';
+import { DropdownModule } from 'primeng/dropdown';
+import { CategoriaService } from '../../../services/inventario/categoria.service';
+import { TipoProductoService } from '../../../services/inventario/tipo-producto.service';
+import { Categoria } from '../../../models/inventario/categoria.model';
+import { TipoProducto } from '../../../models/inventario/tipo-producto.model';
+import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
+
+@Component({
+    selector: 'app-gestion-categoria-tipo',
+    standalone: true,
+    imports: [
+        CommonModule,
+        ReactiveFormsModule,
+        TableModule,
+        ButtonModule,
+        InputTextModule,
+        DialogModule,
+        ToastModule,
+        ConfirmDialogModule,
+        DropdownModule,
+        HasPermissionDirective
+    ],
+    providers: [MessageService, ConfirmationService],
+    template: `
+    <div class="card p-4">
+        <p-toast></p-toast>
+        <p-confirmDialog></p-confirmDialog>
+        
+        <h2 class="mb-4">Clasificación de Productos</h2>
+
+        <div class="grid">
+            <!-- Categorías (Izquierda) -->
+            <div class="col-12 md:col-6">
+                <div class="card h-full">
+                    <div class="flex justify-content-between align-items-center mb-3">
+                        <h3 class="m-0">Categorías</h3>
+                        <button *appHasPermission="'CREATE_CATEGORIA'" pButton label="Nueva" icon="bi bi-plus" (click)="openCategoriaDialog()"></button>
+                    </div>
+                    
+                    <p-table [value]="categorias" [scrollable]="true" scrollHeight="400px" selectionMode="single" [(selection)]="selectedCategoria" (onRowSelect)="onCategoriaSelect($event)" dataKey="id">
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th>Nombre</th>
+                                <th style="width: 100px">Acciones</th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-cat>
+                            <tr [pSelectableRow]="cat">
+                                <td>{{ cat.nombre }}</td>
+                                <td>
+                                    <button *appHasPermission="'UPDATE_CATEGORIA'" pButton icon="bi bi-pencil" class="p-button-rounded p-button-text p-button-warning mr-1" (click)="editCategoria(cat)"></button>
+                                    <button *appHasPermission="'DELETE_CATEGORIA'" pButton icon="bi bi-trash" class="p-button-rounded p-button-text p-button-danger" (click)="deleteCategoria(cat)"></button>
+                                </td>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="emptymessage">
+                            <tr><td colspan="2">No hay categorías.</td></tr>
+                        </ng-template>
+                    </p-table>
+                </div>
+            </div>
+
+            <!-- Tipos de Producto (Derecha) -->
+            <div class="col-12 md:col-6">
+                <div class="card h-full">
+                    <div class="flex justify-content-between align-items-center mb-3">
+                        <h3 class="m-0">Tipos de Producto</h3>
+                        <button *appHasPermission="'CREATE_TIPOPRODUCTO'" pButton label="Nuevo Tipo" icon="bi bi-plus" (click)="openTipoDialog()" [disabled]="!selectedCategoria && displayAllTypes"></button>
+                    </div>
+                     <div class="mb-2" *ngIf="selectedCategoria">
+                        <small class="text-secondary">Filtrado por: <strong>{{ selectedCategoria.nombre }}</strong></small>
+                        <button pButton icon="pi pi-times" class="p-button-rounded p-button-text p-button-sm ml-2" (click)="clearFilter()" pTooltip="Ver todos"></button>
+                    </div>
+
+                    <p-table [value]="filteredTipos" [scrollable]="true" scrollHeight="400px">
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th>Nombre</th>
+                                <th *ngIf="!selectedCategoria">Categoría</th>
+                                <th style="width: 100px">Acciones</th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-tipo>
+                            <tr>
+                                <td>{{ tipo.nombre }}</td>
+                                <td *ngIf="!selectedCategoria">{{ getCategoriaName(tipo.idCategoria) }}</td>
+                                <td>
+                                    <button *appHasPermission="'UPDATE_TIPOPRODUCTO'" pButton icon="bi bi-pencil" class="p-button-rounded p-button-text p-button-warning mr-1" (click)="editTipo(tipo)"></button>
+                                    <button *appHasPermission="'DELETE_TIPOPRODUCTO'" pButton icon="bi bi-trash" class="p-button-rounded p-button-text p-button-danger" (click)="deleteTipo(tipo)"></button>
+                                </td>
+                            </tr>
+                        </ng-template>
+                         <ng-template pTemplate="emptymessage">
+                            <tr><td colspan="3">No hay tipos registrados.</td></tr>
+                        </ng-template>
+                    </p-table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dialog Categoria -->
+        <p-dialog [(visible)]="categoriaDialog" [style]="{width: '400px'}" header="Categoría" [modal]="true">
+            <form [formGroup]="categoriaForm" (ngSubmit)="saveCategoria()">
+                <div class="field">
+                    <label for="catNombre">Nombre</label>
+                    <input type="text" pInputText id="catNombre" formControlName="nombre" class="w-full" autofocus />
+                </div>
+                <div class="field">
+                    <label for="catDesc">Descripción</label>
+                    <input type="text" pInputText id="catDesc" formControlName="descripcion" class="w-full" />
+                </div>
+                <div class="flex justify-content-end gap-2 mt-4">
+                    <button pButton label="Cancelar" class="p-button-text" (click)="categoriaDialog = false"></button>
+                    <button pButton label="Guardar" type="submit" [disabled]="categoriaForm.invalid"></button>
+                </div>
+            </form>
+        </p-dialog>
+
+        <!-- Dialog Tipo -->
+        <p-dialog [(visible)]="tipoDialog" [style]="{width: '400px'}" header="Tipo de Producto" [modal]="true">
+             <form [formGroup]="tipoForm" (ngSubmit)="saveTipo()">
+                <div class="field">
+                    <label for="tipoNombre">Nombre</label>
+                    <input type="text" pInputText id="tipoNombre" formControlName="nombre" class="w-full" autofocus />
+                </div>
+                 <div class="field">
+                    <label for="tipoCat">Categoría</label>
+                    <p-dropdown [options]="categorias" formControlName="idCategoria" optionLabel="nombre" optionValue="id" placeholder="Seleccione Categoría" [style]="{width: '100%'}" appendTo="body"></p-dropdown>
+                </div>
+                <div class="flex justify-content-end gap-2 mt-4">
+                    <button pButton label="Cancelar" class="p-button-text" (click)="tipoDialog = false"></button>
+                    <button pButton label="Guardar" type="submit" [disabled]="tipoForm.invalid"></button>
+                </div>
+            </form>
+        </p-dialog>
+    </div>
+    `,
+    styles: [`
+        :host { display: block; } 
+        .p-button-rounded { witdh: 2rem; height: 2rem; }
+    `]
+})
+export class GestionCategoriaTipoComponent implements OnInit {
+    private categoriaService = inject(CategoriaService);
+    private tipoService = inject(TipoProductoService);
+    private messageService = inject(MessageService);
+    private confirmationService = inject(ConfirmationService);
+    private fb = inject(FormBuilder);
+
+    categorias: Categoria[] = [];
+    tipos: TipoProducto[] = [];
+    filteredTipos: TipoProducto[] = [];
+
+    selectedCategoria: Categoria | null = null;
+    displayAllTypes = true;
+
+    // Forms
+    categoriaForm: FormGroup;
+    tipoForm: FormGroup;
+
+    // Dialogs
+    categoriaDialog = false;
+    tipoDialog = false;
+    isEditing = false;
+    currentId: number | null = null;
+
+    constructor() {
+        this.categoriaForm = this.fb.group({
+            nombre: ['', Validators.required],
+            descripcion: ['']
+        });
+
+        this.tipoForm = this.fb.group({
+            nombre: ['', Validators.required],
+            idCategoria: [null, Validators.required]
+        });
+    }
+
+    ngOnInit() {
+        this.loadData();
+    }
+
+    loadData() {
+        this.categoriaService.getAll().subscribe(data => this.categorias = data);
+        this.tipoService.getAll().subscribe(data => {
+            this.tipos = data;
+            this.filterTipos();
+        });
+    }
+
+    onCategoriaSelect(event: any) {
+        this.displayAllTypes = false;
+        this.filterTipos();
+    }
+
+    clearFilter() {
+        this.selectedCategoria = null;
+        this.displayAllTypes = true;
+        this.filterTipos();
+    }
+
+    filterTipos() {
+        if (this.selectedCategoria) {
+            this.filteredTipos = this.tipos.filter(t => t.idCategoria === this.selectedCategoria!.id);
+        } else {
+            this.filteredTipos = [...this.tipos];
+        }
+    }
+
+    getCategoriaName(id: number): string {
+        const cat = this.categorias.find(c => c.id === id);
+        return cat ? cat.nombre : 'Sin Categoría';
+    }
+
+    // --- Categoria CRUD ---
+    openCategoriaDialog() {
+        this.isEditing = false;
+        this.currentId = null;
+        this.categoriaForm.reset();
+        this.categoriaDialog = true;
+    }
+
+    editCategoria(cat: Categoria) {
+        this.isEditing = true;
+        this.currentId = cat.id;
+        this.categoriaForm.patchValue(cat);
+        this.categoriaDialog = true;
+    }
+
+    saveCategoria() {
+        if (this.categoriaForm.invalid) return;
+        const data = this.categoriaForm.value;
+
+        if (this.isEditing && this.currentId) {
+            this.categoriaService.update(this.currentId, data).subscribe(() => {
+                this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Categoría actualizada' });
+                this.loadData();
+                this.categoriaDialog = false;
+            });
+        } else {
+            this.categoriaService.create(data).subscribe(() => {
+                this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Categoría creada' });
+                this.loadData();
+                this.categoriaDialog = false;
+            });
+        }
+    }
+
+    deleteCategoria(cat: Categoria) {
+        this.confirmationService.confirm({
+            message: `¿Eliminar la categoría ${cat.nombre}?`,
+            accept: () => {
+                this.categoriaService.delete(cat.id).subscribe(() => {
+                    this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Categoría eliminada' });
+                    this.loadData();
+                    if (this.selectedCategoria?.id === cat.id) this.clearFilter();
+                });
+            }
+        });
+    }
+
+    // --- Tipo CRUD ---
+    openTipoDialog() {
+        this.isEditing = false;
+        this.currentId = null;
+        this.tipoForm.reset();
+        // Pre-select category if one is selected
+        if (this.selectedCategoria) {
+            this.tipoForm.patchValue({ idCategoria: this.selectedCategoria.id });
+        }
+        this.tipoDialog = true;
+    }
+
+    editTipo(tipo: TipoProducto) {
+        this.isEditing = true;
+        this.currentId = tipo.id;
+        this.tipoForm.patchValue(tipo);
+        this.tipoDialog = true;
+    }
+
+    saveTipo() {
+        if (this.tipoForm.invalid) return;
+        const data = this.tipoForm.value;
+
+        if (this.isEditing && this.currentId) {
+            this.tipoService.update(this.currentId, data).subscribe(() => {
+                this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Tipo actualizado' });
+                this.loadData();
+                this.tipoDialog = false;
+            });
+        } else {
+            this.tipoService.create(data).subscribe(() => {
+                this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Tipo creado' });
+                this.loadData();
+                this.tipoDialog = false;
+            });
+        }
+    }
+
+    deleteTipo(tipo: TipoProducto) {
+        this.confirmationService.confirm({
+            message: `¿Eliminar el tipo ${tipo.nombre}?`,
+            accept: () => {
+                this.tipoService.delete(tipo.id).subscribe(() => {
+                    this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Tipo eliminado' });
+                    this.loadData();
+                });
+            }
+        });
+    }
+}
