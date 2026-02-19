@@ -1,0 +1,178 @@
+<p-dialog [(visible)]="visible" [modal]="true" [style]="{ width: '95vw', maxWidth: '1200px' }" [draggable]="false"
+    (onHide)="close()" styleClass="noir-modal" [closable]="false">
+
+    <!-- HEADER IDÉNTICO A ORDEN -->
+    <div class="header-modal">
+        <div class="mesa-info">
+            <span class="modo-badge" [class.editar]="modo === 'EDITAR'">
+                {{ modo === 'NUEVO' ? 'Nueva' : 'Editando' }}
+            </span>
+            <h2>Delivery - {{ deliveryForm.get('nombreCliente')?.value || 'Nuevo Pedido' }}</h2>
+        </div>
+
+        <button class="btn-close" (click)="close()">
+            <i class="bi bi-x-lg"></i>
+        </button>
+    </div>
+
+    <div class="delivery-modal-body">
+
+        <!-- SELECTOR POS (LADO IZQUIERDO) -->
+        <div class="catalog-section-pos" [class.hidden-mobile]="vistaMovil() === 'CUENTA'">
+            <div class="toolbar-catalog-pos">
+                <div class="search-box-pos">
+                    <i class="bi bi-search search-icon-pos"></i>
+                    <input type="text" placeholder="Buscar producto..." (input)="onSearch($event)"
+                        [value]="terminoBusqueda()" class="search-input-pos">
+                </div>
+
+                <div class="categories-container-pos">
+                    <button class="cat-chip-pos" [class.active]="!categoriaSeleccionada()"
+                        (click)="seleccionarCategoria(null)">
+                        Todos
+                    </button>
+
+                    <div class="categories-scroll-pos">
+                        @for (cat of categorias(); track cat.id) {
+                        <button class="cat-chip-pos" [class.active]="categoriaSeleccionada()?.id === cat.id"
+                            (click)="seleccionarCategoria(cat)">
+                            {{ cat.nombre }}
+                        </button>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="products-grid-pos">
+                @for (prod of productosFiltrados(); track prod.idProducto) {
+                <div class="product-card-pos" (click)="agregarAlCarrito(prod)">
+                    <div class="prod-img-pos"
+                        [style.backgroundImage]="prod.imagen ? 'url(' + prod.imagen + ')' : 'none'">
+                        @if (!prod.imagen) {
+                        <i class="bi bi-image placeholder-icon-pos"></i>
+                        }
+                        <div class="add-btn-float-pos">+</div>
+                    </div>
+
+                    <div class="prod-info-pos">
+                        <h4>{{ prod.nombreProducto }}</h4>
+                        <span class="price-pos">S/ {{ prod.precioVenta | number:'1.2-2' }}</span>
+                    </div>
+                </div>
+                } @empty {
+                <div class="empty-search-pos">
+                    <i class="bi bi-basket"></i>
+                    <p>No se encontraron productos.</p>
+                </div>
+                }
+            </div>
+        </div>
+
+        <!-- REGISTRO Y COMANDA (LADO DERECHO) -->
+        <div class="ticket-section shadow-noir" [class.hidden-mobile]="vistaMovil() === 'MENU'">
+
+            <div class="customer-registration-box">
+                <form [formGroup]="deliveryForm" class="customer-form-pos">
+                    <span class="section-label">DATOS DE ENTREGA</span>
+                    <div class="form-grid-pos">
+                        <input pInputText formControlName="nombreCliente" placeholder="Nombre completo"
+                            class="noir-input-sm" />
+                        <input pInputText formControlName="telefono" placeholder="Teléfono" class="noir-input-sm" />
+                        <input pInputText formControlName="direccion" placeholder="Dirección de entrega"
+                            class="noir-input-sm full-width" />
+                    </div>
+                </form>
+            </div>
+
+            <div class="ticket-header-pos">
+                <h3>Comanda de Delivery</h3>
+                <span class="badge-count">{{ cart().length }} items</span>
+            </div>
+
+            <div class="ticket-items-pos">
+                @if (cart().length > 0) {
+                @for (item of cart(); track item.productoId; let i = $index) {
+                <div class="cart-item-pos" [class.item-locked]="esItemExistente(item.productoId)">
+                    <div class="item-qty-pos">
+                        <button class="btn-tiny-pos" [disabled]="esItemExistente(item.productoId)"
+                            (click)="updateQty(i, 1)">+</button>
+                        <span>{{ item.cantidad }}</span>
+                        <button class="btn-tiny-pos" [disabled]="esItemExistente(item.productoId)"
+                            (click)="updateQty(i, -1)">-</button>
+                    </div>
+
+                    <div class="item-detail-pos">
+                        <span class="item-name-pos">{{ item.nombre }}</span>
+                        <span class="item-subtotal-pos">S/ {{ (item.precio * item.cantidad) | number:'1.2-2' }}</span>
+                    </div>
+
+                    @if (esItemExistente(item.productoId)) {
+                    <span class="lock-icon-pos" title="Ya enviado a cocina"><i class="bi bi-lock-fill"></i></span>
+                    } @else {
+                    <button class="btn-delete-pos" (click)="removeItem(i)">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                    }
+                </div>
+                }
+                } @else {
+                <div class="empty-ticket-pos">
+                    <i class="bi bi-cart-x"></i>
+                    <p>La orden está vacía</p>
+                </div>
+                }
+            </div>
+
+            <div class="ticket-footer-pos">
+                <div class="summary-row-pos big-total-pos">
+                    <span>Total Delivery</span>
+                    <span>S/ {{ total() | number:'1.2-2' }}</span>
+                </div>
+
+                <div class="action-buttons-pos">
+                    <button class="btn-primary-large-pos" [disabled]="loading() || cart().length === 0"
+                        (click)="save()">
+                        <i class="bi bi-fire"></i>
+                        {{ modo === 'NUEVO' ? 'Confirmar Pedido' : 'Enviar a Cocina' }}
+                    </button>
+
+                    @if (modo === 'EDITAR' && pedidoId) {
+                    <div class="extra-actions-pos">
+                        <button class="btn-success-pos" (click)="abrirCobrar()">
+                            <i class="bi bi-cash-stack"></i> Cobrar
+                        </button>
+                    </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- NAVEGACIÓN MÓVIL (IDÉNTICO A ORDEN) -->
+    <div class="mobile-nav">
+        <button class="nav-btn" [class.active]="vistaMovil() === 'MENU'" (click)="vistaMovil.set('MENU')">
+            <i class="bi bi-grid-fill"></i>
+            <span>Menú</span>
+        </button>
+
+        <button class="nav-btn" [class.active]="vistaMovil() === 'CUENTA'" (click)="vistaMovil.set('CUENTA')">
+            <div class="icon-container-nav">
+                <i class="bi bi-receipt"></i>
+                <span class="badge-bubble" *ngIf="cart().length > 0">
+                    {{ cart().length }}
+                </span>
+            </div>
+            <span>Cuenta</span>
+        </button>
+    </div>
+
+    <!-- MODAL DE COBRO INTEGRADO -->
+    @if (showCheckout() && pedidoId) {
+    <div class="overlay-nested-pos">
+        <app-checkout-modal [pedidoId]="pedidoId" [total]="total()" (onCancelar)="showCheckout.set(false)"
+            (onPagoExitoso)="onCobroFinalizado($event)">
+        </app-checkout-modal>
+    </div>
+    }
+
+</p-dialog>

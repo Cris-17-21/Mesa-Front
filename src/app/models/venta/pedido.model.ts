@@ -1,9 +1,15 @@
+// --- REQUEST DTOs (Lo que envías al Backend) ---
+
 export interface PedidoRequestDto {
-    tipoEntrega: string; // 'MESA' | 'DELIVERY' | 'RECOJO'
+    tipoEntrega: string;
     sucursalId: string;
-    mesaId: string;
+    mesaId?: string;
     usuarioId: string;
     detalles: PedidoDetalleRequestDto[];
+    // Campos para Delivery
+    nombreCliente?: string;
+    telefono?: string;
+    direccion?: string;
 }
 
 export interface PedidoDetalleRequestDto {
@@ -11,6 +17,29 @@ export interface PedidoDetalleRequestDto {
     cantidad: number;
     observaciones?: string;
 }
+
+export interface RegistrarPagoDto {
+    pedidoId: string;
+    monto: number;       // Vital para validar montos en backend
+    metodoPago: string;
+    referencia?: string; // Opcional (ej: Numero de operación Yape)
+    detalleIds?: string[]; // Opcional (Si quisieras pagar solo ciertos items)
+}
+
+export interface SepararCuentaRequestDto {
+    pedidoOrigenId: string;
+    items: {
+        detalleId: string;
+        cantidad: number;
+    }[];
+}
+
+export interface UnionMesaRequestDto {
+    idPrincipal: string;
+    idsSecundarios: string[];
+}
+
+// --- RESPONSE DTOs (Lo que recibes) ---
 
 export interface PedidoResponseDto {
     id: string;
@@ -20,35 +49,23 @@ export interface PedidoResponseDto {
     totalFinal: number;
     fechaCreacion: string;
     nombreCliente: string;
+    telefono?: string; // Delivery
+    direccion?: string; // Delivery
     codigoMesa: string;
     detalles: PedidoDetalleResponseDto[];
     sucursalId: string;
 }
 
 export interface PedidoDetalleResponseDto {
-    id: string;
+    id: string; // Este es el detalleId
     productoNombre: string;
     cantidad: number;
-    cantidadPagada: number; // NUEVO: Vital para separar cuentas
+    cantidadPagada: number;
     precioUnitario: number;
     totalLinea: number;
     estadoPreparacion: string;
-    estadoPago: string; // 'PENDIENTE' | 'PARCIAL' | 'PAGADO'
+    estadoPago: string;
     observaciones?: string;
-}
-
-export interface RegistrarPagoDto {
-    pedidoId: string;
-    monto: number;
-    metodoPago: string;
-    referencia: string;
-    detalleIds: string[];
-}
-
-export interface SepararCuentaDto {
-    pedidoOrigenId: string;
-    detallesIds: string[];
-    nuevaMesaId?: string; // Opcional, si se mueven a otra mesa
 }
 
 export interface PedidoResumenDto {
@@ -60,15 +77,15 @@ export interface PedidoResumenDto {
     fechaCreacion: string;
     nombreCliente: string;
     codigoMesa: string;
+    mesaId: string;
 }
 
-// MODEL DE CARRITO AUXILIAR
+// --- MODELOS AUXILIARES (Frontend) ---
 
 export interface CartItem {
-    productoId: string;
-    nombre: string;      // Para mostrar en la lista visual
-    precio: number;      // Para calcular subtotal visualmente
+    productoId: string; // Ojo: Cambié a string si tus IDs son UUIDs
+    nombre: string;
+    precio: number;
     cantidad: number;
-    observaciones: string; // "Sin ají", "Bien cocido"
-    categoria?: string;  // Opcional, por si quieres agrupar visualmente
+    observaciones: string;
 }

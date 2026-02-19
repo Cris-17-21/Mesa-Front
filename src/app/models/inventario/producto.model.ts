@@ -1,8 +1,15 @@
 export interface Producto {
-    id: string;
-    nombre: string;
-    precio: number;
-    categoria: string; // 'ENTRADAS', 'FONDOS', 'BEBIDAS'
-    imagen?: string;   // URL de la imagen
-    stock?: number;
+    idProducto: number;
+    nombreProducto: string;
+    descripcion?: string;
+    precioVenta: number;
+    costoCompra?: number;
+    idCategoria: number;
+    nombreCategoria?: string;
+    idProveedor?: number;
+    razonSocialProveedor?: string;
+    tipo?: string;
+    pesoGramos?: number;
+    estado: boolean;
+    imagen?: string;
 }

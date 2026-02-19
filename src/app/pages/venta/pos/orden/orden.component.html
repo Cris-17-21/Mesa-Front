@@ -1,30 +1,55 @@
+<div class="header-modal">
+    <div class="mesa-info">
+        <span class="modo-badge" [class.editar]="modoInput === 'EDITAR'">
+            {{ modoInput === 'NUEVO' ? 'Nueva' : 'Editando' }}
+        </span>
+        <h2>Mesa {{ codigoMesaInput || mesaIdInput }}</h2>
+    </div>
+
+    <button class="btn-close" (click)="cerrarModal()">
+        <i class="bi bi-x-lg"></i>
+    </button>
+</div>
+
 <div class="pos-container">
 
-    <div class="catalog-section">
+    <div class="catalog-section" [class.hidden-mobile]="vistaMovil() === 'CUENTA'">
 
-        <div class="catalog-header">
-            <div class="search-bar">
-                <i class="bi bi-search"></i>
+        <div class="toolbar-catalog">
+            <div class="search-box">
+                <i class="bi bi-search search-icon"></i>
                 <input type="text" placeholder="Buscar producto..." (input)="onSearch($event)" class="search-input">
             </div>
 
-            <div class="categories-scroll">
-                @for (cat of categorias(); track cat) {
-                <button class="cat-chip" [class.active]="categoriaSeleccionada() === cat"
-                    (click)="seleccionarCategoria(cat)">
-                    {{ cat }}
+            <div class="categories-container">
+                <button class="cat-chip" [class.active]="!categoriaSeleccionada()" (click)="seleccionarCategoria(null)">
+                    Todos
                 </button>
-                }
+
+                <div class="categories-scroll">
+                    @for (cat of categorias(); track cat.id) {
+                    <button class="cat-chip" [class.active]="categoriaSeleccionada()?.id === cat.id"
+                        (click)="seleccionarCategoria(cat)">
+                        {{ cat.nombre }}
+                    </button>
+                    }
+                </div>
             </div>
         </div>
 
         <div class="products-grid">
-            @for (prod of productosFiltrados(); track prod.id) {
+            @for (prod of productosFiltrados(); track prod.idProducto) {
             <div class="product-card" (click)="agregarAlCarrito(prod)">
-                <div class="prod-img" [style.backgroundImage]="'url(' + prod.imagen + ')'"></div>
+                <div class="prod-img" [style.backgroundImage]="prod.imagen ? 'url(' + prod.imagen + ')' : 'none'">
+                    @if (!prod.imagen) {
+                    <i class="bi bi-image placeholder-icon"></i>
+                    }
+                    <div class="add-btn-float">+</div>
+                </div>
+
                 <div class="prod-info">
-                    <h4>{{ prod.nombre }}</h4>
-                    <span class="price">{{ prod.precio | currency:'PEN':'symbol' }}</span>
+                    <h4>{{ prod.nombreProducto }}</h4>
+                    <span class="price">{{ prod.precioVenta | currency:'PEN':'S/ ' }}</span>
                 </div>
             </div>
             } @empty {
@@ -36,52 +61,103 @@
         </div>
     </div>
 
+    <div class="ticket-section shadow-noir" [class.hidden-mobile]="vistaMovil() === 'MENU'">
 
-    <div class="ticket-section shadow-noir">
         <div class="ticket-header">
-            <h3>Nueva Orden</h3>
-            <span class="badge-count">{{ cartService.cantidadItems() }} items</span>
+            <h3>Comanda Actual</h3>
+            <span class="badge-count">{{ cantidadItemsCarrito() }} items</span>
         </div>
 
         <div class="ticket-items">
-            @if (cartService.hasItems()) {
-            @for (item of cartService.items(); track item.productoId) {
-            <div class="cart-item">
+            @if (carrito().length > 0) {
+            @for (item of carrito(); track item.productoId) {
+            <div class="cart-item" [class.item-locked]="esItemExistente(item.productoId)">
                 <div class="item-qty">
-                    <button class="btn-tiny" (click)="cartService.updateQuantity(item.productoId, -1)">-</button>
+                    <button class="btn-tiny" [disabled]="esItemExistente(item.productoId)"
+                        (click)="updateQuantity(item.productoId, 1)">+</button>
                     <span>{{ item.cantidad }}</span>
-                    <button class="btn-tiny" (click)="cartService.updateQuantity(item.productoId, 1)">+</button>
+                    <button class="btn-tiny" [disabled]="esItemExistente(item.productoId)"
+                        (click)="updateQuantity(item.productoId, -1)">-</button>
                 </div>
 
                 <div class="item-detail">
                     <span class="item-name">{{ item.nombre }}</span>
-                    <span class="item-subtotal">{{ (item.precio * item.cantidad) | currency:'PEN':'symbol' }}</span>
+                    <span class="item-subtotal">{{ (item.precio * item.cantidad) | currency:'PEN':'S/ ' }}</span>
                 </div>
 
-                <button class="btn-delete" (click)="cartService.removeItem(item.productoId)">
+                @if (esItemExistente(item.productoId)) {
+                <span class="lock-icon" title="Ya enviado a cocina"><i class="bi bi-lock-fill"></i></span>
+                } @else {
+                <button class="btn-delete" (click)="eliminarItem(item.productoId)">
                     <i class="bi bi-trash"></i>
                 </button>
+                }
             </div>
             }
             } @else {
             <div class="empty-ticket">
                 <i class="bi bi-cart-x"></i>
-                <p>La comanda está vacía</p>
-                <small>Selecciona productos del menú</small>
+                <p>La orden está vacía</p>
+                <small>Agrega productos del menú</small>
             </div>
             }
         </div>
 
         <div class="ticket-footer">
-            <div class="summary-row total">
-                <span>Total a Pagar</span>
-                <span>{{ cartService.total() | currency:'PEN':'symbol' }}</span>
+            <div class="summary-row big-total">
+                <span>{{ modoInput === 'NUEVO' ? 'Total' : 'Total Comanda' }}</span>
+                <span>{{ totalGeneral() | currency:'PEN':'S/ ' }}</span>
             </div>
 
-            <button class="btn-primary-large" [disabled]="!cartService.hasItems()">
-                <i class="bi bi-check-circle"></i> Confirmar Pedido
-            </button>
+            <div class="action-buttons">
+                <button class="btn-primary-large" [disabled]="carrito().length === 0" (click)="confirmarPedido()">
+                    <i class="bi bi-fire"></i>
+                    {{ modoInput === 'NUEVO' ? 'Confirmar Pedido' : 'Enviar a Cocina' }}
+                </button>
+
+                @if (modoInput === 'EDITAR') {
+                <div class="extra-actions">
+                    <button class="btn-secondary" (click)="abrirDividir()">
+                        <i class="bi bi-pie-chart"></i> Dividir
+                    </button>
+                    <button class="btn-success" (click)="abrirCobrar()">
+                        <i class="bi bi-cash-stack"></i> Cobrar
+                    </button>
+                </div>
+                }
+            </div>
         </div>
     </div>
-
 </div>
+
+<div class="mobile-nav">
+    <button class="nav-btn" [class.active]="vistaMovil() === 'MENU'" (click)="vistaMovil.set('MENU')">
+        <i class="bi bi-grid-fill"></i>
+        <span>Menú</span>
+    </button>
+
+    <button class="nav-btn" [class.active]="vistaMovil() === 'CUENTA'" (click)="vistaMovil.set('CUENTA')">
+        <div class="icon-container">
+            <i class="bi bi-receipt"></i>
+            <span class="badge-bubble" *ngIf="cantidadItemsCarrito() > 0">
+                {{ cantidadItemsCarrito() }}
+            </span>
+        </div>
+        <span>Cuenta</span>
+    </button>
+</div>
+
+@if (showCheckout()) {
+<div class="overlay-nested">
+    <app-checkout-modal [pedidoId]="pedidoIdInput!" [total]="totalGeneral()" (onCancelar)="showCheckout.set(false)"
+        (onPagoExitoso)="onCobroFinalizado($event)">
+    </app-checkout-modal>
+</div>
+}
+
+@if (showDividir()) {
+<div class="overlay-nested">
+    <app-dividir-cuenta-modal [pedidoId]="pedidoIdInput!" (onCerrar)="showDividir.set(false)">
+    </app-dividir-cuenta-modal>
+</div>
+}

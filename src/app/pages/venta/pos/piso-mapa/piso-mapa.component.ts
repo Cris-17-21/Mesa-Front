@@ -1,158 +1,240 @@
-import { CommonModule } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
-import { Router } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+
+// --- PrimeNG ---
+import { DropdownModule } from 'primeng/dropdown';
+import { ButtonModule } from 'primeng/button';
+import { TooltipModule } from 'primeng/tooltip';
+
+// --- Componentes ---
+import { OrdenComponent } from '../orden/orden.component';
+
+// --- Servicios y Modelos ---
 import { MesaService } from '../../../../services/maestro/mesa.service';
 import { PedidoService } from '../../../../services/venta/pedido.service';
+import { PisoService } from '../../../../services/maestro/piso.service';
+import { AuthService } from '../../../../core/auth/auth.service';
 import { Mesa } from '../../../../models/maestro/mesa.model';
+import { Piso } from '../../../../models/maestro/piso.model';
+import { UnionMesaRequestDto } from '../../../../models/venta/pedido.model';
+
+// --- Utils ---
 import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-piso-mapa',
   standalone: true,
-  imports: [CommonModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    DropdownModule,
+    ButtonModule,
+    TooltipModule,
+    OrdenComponent
+  ],
   templateUrl: './piso-mapa.component.html',
   styleUrl: './piso-mapa.component.css'
 })
 export class PisoMapaComponent implements OnInit {
 
-  private router = inject(Router);
+  // --- Inyecciones ---
   private mesaService = inject(MesaService);
   private pedidoService = inject(PedidoService);
+  private pisoService = inject(PisoService);
+  private authService = inject(AuthService);
 
-  // ESTADO
+  // --- Señales de Estado ---
+  pisos = signal<Piso[]>([]);
   mesas = signal<Mesa[]>([]);
-  pisoIdActual = signal<string>('ID_DE_TU_PISO_AQUI'); // ⚠️ DEBES PONER UN ID REAL O OBTENERLO DE UN SELECTOR
+  pisoSeleccionado = signal<string | null>(null);
+  sucursalId = signal<string | null>(null);
 
-  // MODO UNIÓN
+  // --- Control de Modales ---
+  mesaSeleccionadaParaModal = signal<any>(null); // Mesa actual para el modal de orden
+
+  // --- Control de Unión de Mesas ---
   modoUnion = signal(false);
-  seleccionUnion = signal<string[]>([]); // IDs de mesas seleccionadas para unir
+  seleccionUnion = signal<string[]>([]);
 
-  // COMPUTED: Cruzamos Mesas con Pedidos Activos
-  // Esto nos permite saber qué mesa tiene qué pedido y cuánto dinero lleva
+  // --- COMPUTED: Lógica Visual (Colores y Estados) ---
   mesasView = computed(() => {
     const listaMesas = this.mesas();
     const listaPedidos = this.pedidoService.pedidosActivos();
 
     return listaMesas.map(mesa => {
-      // Buscamos si hay un pedido activo para esta mesa (match por Código de Mesa)
-      const pedidoActivo = listaPedidos.find(p => p.codigoMesa === mesa.codigoMesa);
+      // 1. Detectar si es hija (unida) y buscar a su padre
+      const esUnida = !!mesa.idPrincipal;
+      let nombreMesaPadre = '';
+
+      if (esUnida) {
+        // Buscamos en la lista de mesas cuál es la mesa "papá"
+        const mesaPadre = listaMesas.find(m => m.id === mesa.idPrincipal);
+        nombreMesaPadre = mesaPadre ? mesaPadre.codigoMesa : 'Principal';
+      }
+
+      // 2. Determinar ID para buscar el pedido
+      const idParaBuscar = mesa.idPrincipal ? mesa.idPrincipal : mesa.id;
+
+      const pedidoActivo = listaPedidos.find(p =>
+        p.mesaId === idParaBuscar || p.codigoMesa === mesa.codigoMesa
+      );
+
+      const esOcupada = !!pedidoActivo;
 
       return {
         ...mesa,
-        esOcupada: !!pedidoActivo || mesa.estado === 'OCUPADA',
-        pedidoId: pedidoActivo?.id,
-        total: pedidoActivo?.totalFinal || 0,
-        cliente: pedidoActivo?.nombreCliente || 'Cliente'
+        esOcupada,
+        esUnida,
+        nombreMesaPadre,
+
+        // Estilos
+        bgStyle: esOcupada ? '#fff5f5' : '#ffffff',
+        textStyle: esOcupada ? '#dc3545' : '#198754',
+
+        pedidoId: pedidoActivo ? pedidoActivo.id : null,   // ← el fix: ID del pedido activo
+        total: pedidoActivo ? pedidoActivo.totalFinal : 0,
+        idTrack: mesa.id || mesa.codigoMesa
       };
     });
   });
 
   ngOnInit() {
-    this.cargarDatos();
+    this.cargarDatosIniciales();
   }
 
-  cargarDatos() {
-    // 1. Obtener Mesas del Piso (Asegúrate de tener un ID de piso válido)
-    this.mesaService.getMesasByPiso(this.pisoIdActual()).subscribe({
+  // --- Carga de Datos ---
+  cargarDatosIniciales() {
+    const sucursal = this.getSucursal();
+    if (!sucursal.sucursalId) return;
+
+    this.sucursalId.set(sucursal.sucursalId);
+
+    // 1. Cargar Pisos
+    this.pisoService.getPisosBySucursal(sucursal.sucursalId).subscribe({
+      next: (pisosData) => {
+        this.pisos.set(pisosData);
+
+        // Autoselección
+        if (pisosData.length > 0 && !this.pisoSeleccionado()) {
+          this.seleccionarPiso(pisosData[0].id);
+        } else if (this.pisoSeleccionado()) {
+          this.cargarMesas(this.pisoSeleccionado()!);
+        }
+      },
+      error: (err) => console.error('Error cargando pisos', err)
+    });
+
+    // 2. Actualizar pedidos activos (para pintar las mesas ocupadas)
+    this.pedidoService.listarActivos(sucursal.sucursalId).subscribe();
+  }
+
+  onPisoChange(event: any) {
+    this.seleccionarPiso(event.value);
+  }
+
+  seleccionarPiso(pisoId: string) {
+    this.pisoSeleccionado.set(pisoId);
+    this.cargarMesas(pisoId);
+  }
+
+  cargarMesas(pisoId: string) {
+    this.mesaService.getMesasByPiso(pisoId).subscribe({
       next: (data) => this.mesas.set(data),
       error: (err) => console.error('Error cargando mesas', err)
     });
-
-    // 2. Obtener Pedidos Activos (Necesitas el ID de la sucursal del usuario logueado)
-    const sucursalId = 'ID_SUCURSAL_USER'; // ⚠️ OBTENER DEL AUTH SERVICE
-    this.pedidoService.listarActivos(sucursalId).subscribe();
   }
 
-  // =========================================================
-  // LOGICA DE INTERACCIÓN (CLIC EN MESA)
-  // =========================================================
+  // --- Interacción con Mesas ---
   onMesaClick(mesa: any) {
-
-    // --- MODO UNIÓN ---
+    // A: Modo Unión Activado
     if (this.modoUnion()) {
       this.toggleSeleccionUnion(mesa);
       return;
     }
 
-    // --- MODO NORMAL ---
-    if (mesa.esOcupada && mesa.pedidoId) {
-      // 1. Mesa Ocupada -> IR A EDITAR PEDIDO
-      this.router.navigate(['/pos'], {
-        queryParams: {
-          mesaId: mesa.id,
-          pedidoId: mesa.pedidoId,
-          modo: 'EDITAR'
-        }
-      });
-    } else {
-      // 2. Mesa Libre -> IR A CREAR PEDIDO
-      this.router.navigate(['/pos'], {
-        queryParams: {
-          mesaId: mesa.id,
-          modo: 'NUEVO'
-        }
-      });
-    }
+    // B: Modo Normal -> Abrir Modal Orden
+    this.mesaSeleccionadaParaModal.set(mesa);
   }
 
-  // =========================================================
-  // LOGICA DE UNIÓN DE MESAS
-  // =========================================================
+  cerrarModalOrden() {
+    this.mesaSeleccionadaParaModal.set(null);
+    // Recargar para ver cambios de estado (Libre -> Ocupada)
+    this.cargarDatosIniciales();
+  }
+
+  // --- Lógica de Unión ---
   toggleModoUnion() {
     this.modoUnion.update(v => !v);
-    this.seleccionUnion.set([]); // Limpiar selección al cambiar modo
+    this.seleccionUnion.set([]); // Limpiar selección al entrar/salir
   }
 
   toggleSeleccionUnion(mesa: any) {
-    // Solo permitir seleccionar si tienen el mismo estado (o lógica que prefieras)
     this.seleccionUnion.update(prev => {
       if (prev.includes(mesa.id)) {
-        return prev.filter(id => id !== mesa.id); // Deseleccionar
+        return prev.filter(id => id !== mesa.id);
       } else {
-        return [...prev, mesa.id]; // Seleccionar
+        return [...prev, mesa.id];
       }
     });
   }
 
   confirmarUnion() {
     const seleccion = this.seleccionUnion();
+
     if (seleccion.length < 2) {
-      Swal.fire('Atención', 'Selecciona al menos 2 mesas para unir', 'warning');
+      Swal.fire('Atención', 'Selecciona al menos 2 mesas para unir.', 'warning');
       return;
     }
 
-    // La primera seleccionada será la PRINCIPAL (a donde se mueve todo)
-    const [idPrincipal, ...idsSecundarios] = seleccion;
+    const [mesaPrincipalId, ...mesasSecundarias] = seleccion;
 
     Swal.fire({
       title: '¿Unir Mesas?',
-      text: `Se unificarán ${idsSecundarios.length} mesas a la principal.`,
+      text: `Se unirán las mesas seleccionadas a la primera seleccionada.`,
       icon: 'question',
       showCancelButton: true,
-      confirmButtonText: 'Sí, unir'
+      confirmButtonText: 'Sí, unir',
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33'
     }).then((result) => {
       if (result.isConfirmed) {
-
-        // Llamamos al servicio de MesaService (o PedidoService según tu backend)
-        // Usando tu interfaz UnionMesa
-        const sucursalId = 'ID_SUCURSAL_USER'; // ⚠️
-
-        const dto = {
-          idPrincipal: idPrincipal,
-          idsSecundarios: idsSecundarios
-        };
-
-        // NOTA: Usamos PedidoService si es para unir cuentas, 
-        // o MesaService si es unión física. Usaré PedidoService según tu código anterior.
-        this.pedidoService.unirMesas(dto, sucursalId).subscribe({
-          next: () => {
-            Swal.fire('Éxito', 'Mesas unidas correctamente', 'success');
-            this.toggleModoUnion(); // Salir del modo
-            this.cargarDatos(); // Recargar mapa
-          },
-          error: () => Swal.fire('Error', 'No se pudo unir las mesas', 'error')
-        });
+        this.ejecutarUnion(mesaPrincipalId, mesasSecundarias[0]); // Asumiendo unión de pares por ahora
       }
     });
+  }
+
+  private ejecutarUnion(principalId: string, secundariaId: string) {
+    const sucursalId = this.sucursalId();
+    if (!sucursalId) return;
+
+    const dto: UnionMesaRequestDto = {
+      idPrincipal: principalId,
+      idsSecundarios: [secundariaId]
+    };
+
+    this.pedidoService.unirMesas(dto, sucursalId).subscribe({
+      next: () => {
+        Swal.fire('Éxito', 'Mesas unidas correctamente', 'success');
+        this.toggleModoUnion();
+        this.cargarDatosIniciales(); // Refrescar mapa
+      },
+      error: (err) => {
+        const msg = err.error?.message || 'No se pudo unir las mesas.';
+        Swal.fire('Error', msg, 'error');
+      }
+    });
+  }
+
+  // --- Utilidades ---
+  private getSucursal() {
+    const token = this.authService.getToken();
+    if (!token) return { sucursalId: null };
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return { sucursalId: payload.sucursalId };
+    } catch (e) {
+      return { sucursalId: null };
+    }
   }
 }

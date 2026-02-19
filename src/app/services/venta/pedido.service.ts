@@ -1,9 +1,15 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { computed, Injectable, signal } from '@angular/core';
 import { environment } from '../../core/environment/environment';
-import { PedidoDetalleRequestDto, PedidoRequestDto, PedidoResponseDto, PedidoResumenDto } from '../../models/venta/pedido.model';
+import {
+  PedidoRequestDto,
+  PedidoResponseDto,
+  PedidoResumenDto,
+  PedidoDetalleRequestDto,
+  SepararCuentaRequestDto,
+  UnionMesaRequestDto // Asegúrate de importar esto
+} from '../../models/venta/pedido.model';
 import { Observable, tap } from 'rxjs';
-import { UnionMesa } from '../../models/maestro/mesa.model';
 
 @Injectable({
   providedIn: 'root'
@@ -15,128 +21,102 @@ export class PedidoService {
   private readonly apiUrl = `${environment.apiUrl}/ventas/pedidos`;
 
   // =================================================================
-  // 1. STATE (Signals) - La única fuente de verdad
+  // 1. STATE & COMPUTED
   // =================================================================
-
-  // Lista ligera para el "Mapa de Mesas" (Solo resumen: ID, Mesa, Estado, Total)
   private _pedidosActivos = signal<PedidoResumenDto[]>([]);
-
-  // El pedido completo que se está editando en la pantalla de "Comanda"
   private _pedidoSeleccionado = signal<PedidoResponseDto | null>(null);
-
-  // =================================================================
-  // 2. COMPUTED (Selectores)
-  // =================================================================
 
   public readonly pedidosActivos = this._pedidosActivos.asReadonly();
   public readonly pedidoSeleccionado = this._pedidoSeleccionado.asReadonly();
 
-  /**
-   * Computed: Calcula el total del pedido seleccionado automáticamente.
-   * Útil para mostrarlo en el botón gigante de "Cobrar"
-   */
   public readonly totalPedidoActual = computed(() =>
     this._pedidoSeleccionado()?.totalFinal || 0
   );
 
-  /**
-   * Computed: Devuelve los items (detalles) del pedido actual.
-   * Si es null, devuelve array vacío.
-   */
   public readonly itemsPedidoActual = computed(() =>
     this._pedidoSeleccionado()?.detalles || []
   );
 
   // =================================================================
-  // 3. ACTIONS (Métodos HTTP)
+  // 2. ACTIONS
   // =================================================================
 
-  /**
-   * Crea un pedido nuevo (Mesa nueva o Delivery).
-   * POST /api/ventas/pedidos
-   */
   crearPedido(dto: PedidoRequestDto): Observable<PedidoResponseDto> {
     return this.http.post<PedidoResponseDto>(this.apiUrl, dto).pipe(
       tap((nuevoPedido) => {
-        // Al crear, lo establecemos como seleccionado inmediatamente
         this._pedidoSeleccionado.set(nuevoPedido);
-        // Y actualizamos la lista de activos (añadiendo un resumen ficticio o recargando)
         this.recargarListaActivos(dto.sucursalId);
       })
     );
   }
 
-  /**
-   * Obtiene todos los pedidos activos para pintar el mapa de mesas.
-   * GET /api/ventas/pedidos/activos/{sucursalId}
-   */
   listarActivos(sucursalId: string): Observable<PedidoResumenDto[]> {
     return this.http.get<PedidoResumenDto[]>(`${this.apiUrl}/activos/${sucursalId}`).pipe(
       tap((lista) => this._pedidosActivos.set(lista))
     );
   }
 
-  /**
-   * Carga el detalle completo de una mesa para editarla (Comanda).
-   * GET /api/ventas/pedidos/{id}
-   */
   seleccionarPedido(id: string): Observable<PedidoResponseDto> {
-    // Primero limpiamos el seleccionado anterior para evitar "flasheos" de datos viejos
-    this._pedidoSeleccionado.set(null);
-
+    this._pedidoSeleccionado.set(null); // Limpiar previo
     return this.http.get<PedidoResponseDto>(`${this.apiUrl}/${id}`).pipe(
       tap((pedido) => this._pedidoSeleccionado.set(pedido))
     );
   }
 
-  /**
-   * Agrega platos/bebidas a una mesa existente.
-   * PATCH /api/ventas/pedidos/{id}/detalles
-   */
   agregarDetalles(pedidoId: string, items: PedidoDetalleRequestDto[]): Observable<PedidoResponseDto> {
     return this.http.patch<PedidoResponseDto>(`${this.apiUrl}/${pedidoId}/detalles`, items).pipe(
       tap((pedidoActualizado) => {
-        // Actualizamos la señal: La UI de la comanda se repinta sola con los nuevos items
         this._pedidoSeleccionado.set(pedidoActualizado);
       })
     );
   }
 
   /**
-   * Une dos mesas.
-   * POST /api/ventas/pedidos/unir-mesas
+   * ESTE FALTABA: Separa items a una nueva cuenta.
+   * POST /api/ventas/pedidos/separar-cuenta
    */
-  unirMesas(dto: UnionMesa, sucursalId: string): Observable<void> {
-    return this.http.post<void>(`${this.apiUrl}/unir-mesas`, dto).pipe(
+  separarCuenta(dto: SepararCuentaRequestDto): Observable<PedidoResponseDto> {
+    return this.http.post<PedidoResponseDto>(`${this.apiUrl}/separar-cuenta`, dto).pipe(
       tap(() => {
-        // Al unir mesas, IDs cambian y mesas desaparecen. Es obligatorio recargar la lista.
-        this.listarActivos(sucursalId).subscribe();
-        this._pedidoSeleccionado.set(null); // Limpiamos selección por seguridad
+        // Al separar, el pedido original cambia (menos items), hay que recargarlo
+        // Ojo: dto.pedidoOrigenId es el pedido actual
+        this.seleccionarPedido(dto.pedidoOrigenId).subscribe();
       })
     );
   }
 
   /**
-   * Paga la cuenta (Cierre simple).
-   * POST /api/ventas/pedidos/{id}/pagar?metodoPago=XXX
+   * Unir dos mesas.
    */
-  registrarPago(pedidoId: string, metodoPago: string, sucursalId: string): Observable<void> {
-    // Usamos HttpParams para el @RequestParam
-    const params = new HttpParams().set('metodoPago', metodoPago);
-
-    return this.http.post<void>(`${this.apiUrl}/${pedidoId}/pagar`, null, { params }).pipe(
+  unirMesas(dto: UnionMesaRequestDto, sucursalId: string): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/unir-mesas`, dto).pipe(
       tap(() => {
-        // Éxito: Quitamos el pedido de la lista de activos localmente (Optimistic UI)
-        this._pedidosActivos.update(lista => lista.filter(p => p.id !== pedidoId));
-
-        // Limpiamos la selección
+        this.recargarListaActivos(sucursalId);
         this._pedidoSeleccionado.set(null);
       })
     );
   }
 
-  // --- Helper Privado ---
+  /**
+   * Registrar Pago (Cierre).
+   * Nota: Si decides usar el DTO completo en el backend, cambia null por el objeto body.
+   */
+  registrarPago(pedidoId: string, metodoPago: string, sucursalId: string): Observable<void> {
+    const params = new HttpParams().set('metodoPago', metodoPago);
+
+    return this.http.post<void>(`${this.apiUrl}/${pedidoId}/pagar`, null, { params }).pipe(
+      tap(() => {
+        // Optimistic UI: Remover de la lista activa
+        this._pedidosActivos.update(lista => lista.filter(p => p.id !== pedidoId));
+        this._pedidoSeleccionado.set(null);
+      })
+    );
+  }
+
+  // --- Helpers ---
   private recargarListaActivos(sucursalId: string) {
-    this.listarActivos(sucursalId).subscribe();
+    if (sucursalId) {
+      this.listarActivos(sucursalId).subscribe();
+    }
   }
 }

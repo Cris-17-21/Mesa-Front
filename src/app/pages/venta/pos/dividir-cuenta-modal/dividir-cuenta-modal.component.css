@@ -1,0 +1,441 @@
+/* Contenedor Modal */
+.modal-card {
+    background: white;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* Header */
+.modal-header {
+    background: #fff;
+    padding: 0 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #eee;
+    height: 60px;
+    /* Igual al modal de orden */
+    flex-shrink: 0;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.btn-back {
+    background: #1a1a1a;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+}
+
+.btn-back:hover {
+    background: #333;
+    transform: translateX(-3px);
+}
+
+.header-text h2 {
+    margin: 0;
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: #1a1a1a;
+}
+
+.header-text small {
+    color: #a1a1aa;
+    font-size: 0.85rem;
+}
+
+.btn-close {
+    background: #f4f4f5;
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.btn-close:hover {
+    background: #fee2e2;
+    color: #ef4444;
+}
+
+/* Grid de Columnas */
+.modal-body-grid {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    overflow: hidden;
+    background: #f8f9fa;
+}
+
+/* Columnas Base */
+.column-split,
+.column-accounts {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.column-header {
+    padding: 15px 20px;
+    background: #fff;
+    border-bottom: 1px solid #eee;
+}
+
+.column-header h3 {
+    margin: 0 0 4px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.badge-info {
+    font-size: 0.75rem;
+    color: #71717a;
+}
+
+/* Lista de Items (Izquierda) */
+.column-split {
+    border-right: 1px solid #eee;
+    background: #fff;
+}
+
+.items-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0;
+}
+
+.split-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    border-bottom: 1px solid #f8fafc;
+    transition: background 0.2s;
+}
+
+.split-row.selected {
+    background-color: #f0f9ff;
+    border-left: 4px solid #0ea5e9;
+}
+
+.item-info {
+    flex: 1;
+    cursor: pointer;
+}
+
+.item-info .name {
+    display: block;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #18181b;
+}
+
+.item-info .meta {
+    font-size: 0.8rem;
+    color: #71717a;
+    margin-top: 2px;
+}
+
+.item-info .obs {
+    color: #f59e0b;
+    font-style: italic;
+}
+
+.split-controls {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+}
+
+.max-badge {
+    font-size: 0.65rem;
+    background: #f4f4f5;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.max-badge.full {
+    background: #fee2e2;
+    color: #ef4444;
+}
+
+.stepper {
+    display: flex;
+    align-items: center;
+    border: 1px solid #e4e4e7;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.btn-step {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: #fff;
+    color: #0ea5e9;
+    cursor: pointer;
+}
+
+.btn-step:disabled {
+    color: #d4d4d8;
+}
+
+.qty-display {
+    width: 30px;
+    text-align: center;
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+
+/* Footer Columna Izquierda */
+.column-footer {
+    padding: 20px;
+    background: #fff;
+    border-top: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+}
+
+.summary .total {
+    display: block;
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #0ea5e9;
+}
+
+.btn-split {
+    background: #18181b;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-split:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Columna Derecha: Cuentas */
+.column-accounts {
+    background: #f8fafc;
+}
+
+/* Mensaje de Advertencia */
+.divide-warning {
+    margin: 15px 20px;
+    padding: 12px 16px;
+    background: #fffbeb;
+    border: 1px solid #fef3c7;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #92400e;
+}
+
+.divide-warning i {
+    font-size: 1.2rem;
+}
+
+.divide-warning p {
+    margin: 0;
+    font-size: 0.85rem;
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+.accounts-list {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.account-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 15px;
+    border: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.account-card.principal {
+    border-color: #0ea5e9;
+    background: #f0f9ff;
+}
+
+.acc-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.acc-header-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.badge-principal {
+    background: #0ea5e9;
+    color: white;
+    font-size: 0.6rem;
+    font-weight: 800;
+    padding: 2px 6px;
+    border-radius: 4px;
+    text-transform: uppercase;
+}
+
+.acc-code {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+}
+
+.acc-total {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #1e293b;
+}
+
+.btn-acc-pay {
+    background: #10b981;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.2s;
+}
+
+.btn-acc-pay:hover {
+    background: #059669;
+}
+
+.empty-state-side {
+    text-align: center;
+    padding: 40px 20px;
+    color: #94a3b8;
+}
+
+.empty-state-side i {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+    display: block;
+}
+
+/* Overlay de Cobro */
+.overlay-nested-account {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 100;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(2px);
+}
+
+/* Responsividad */
+@media (max-width: 900px) {
+    .modal-card {
+        width: 100%;
+        height: 100vh;
+        border-radius: 0;
+    }
+
+    .modal-body-grid {
+        grid-template-columns: 1fr;
+        overflow-y: auto;
+    }
+
+    .column-split {
+        border-right: none;
+        height: auto;
+        overflow: visible;
+    }
+
+    .column-accounts {
+        height: auto;
+        overflow: visible;
+        border-top: 2px solid #eee;
+    }
+}
+
+/* Animaciones */
+@keyframes slideUp {
+    from {
+        transform: translateY(50px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.loader-sm {
+    width: 14px;
+    height: 14px;
+    border: 2px solid #fff;
+    border-bottom-color: transparent;
+    border-radius: 50%;
+    display: inline-block;
+    animation: rotation 1s linear infinite;
+}
+
+@keyframes rotation {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}

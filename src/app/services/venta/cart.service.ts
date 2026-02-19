@@ -116,4 +116,8 @@ export class CartService {
       observaciones: item.observaciones || ''
     }));
   }
+
+  clearCart() {
+    this._items.set([]); // O this.items = [] si no usas signals ahí
+  }
 }

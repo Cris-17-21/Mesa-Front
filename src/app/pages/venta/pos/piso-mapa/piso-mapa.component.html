@@ -1,73 +1,144 @@
 <div class="piso-container">
 
-    <div class="piso-header">
-        <div class="info">
-            <h2>Salón Principal</h2>
-            <div class="leyenda">
-                <span class="badge libre"><i class="bi bi-check-circle"></i> Libre</span>
-                <span class="badge ocupada"><i class="bi bi-record-circle"></i> Ocupada</span>
-                <span class="badge union" *ngIf="modoUnion()">Seleccionando...</span>
-            </div>
+    <div class="control-header">
+
+        <div class="selector-area">
+            <p-dropdown [options]="pisos()" optionLabel="nombre" optionValue="id" [ngModel]="pisoSeleccionado()"
+                (onChange)="onPisoChange($event)" placeholder="Seleccione un Ambiente" styleClass="w-full dropdown-piso"
+                [autoDisplayFirst]="false">
+
+                <ng-template pTemplate="selectedItem" let-selectedOption>
+                    <div class="dropdown-item-content">
+                        <i class="bi bi-geo-alt-fill text-primary"></i>
+                        <span class="font-bold">{{ selectedOption.nombre }}</span>
+                    </div>
+                </ng-template>
+
+                <ng-template let-piso pTemplate="item">
+                    <div class="dropdown-item-content">
+                        <i class="bi bi-layers"></i>
+                        <div>{{ piso.nombre }}</div>
+                    </div>
+                </ng-template>
+            </p-dropdown>
         </div>
 
-        <div class="actions">
-            <button class="btn-refresh" (click)="cargarDatos()" title="Actualizar">
-                <i class="bi bi-arrow-clockwise"></i>
-            </button>
+        <div class="actions-area">
 
-            <div class="union-controls" *ngIf="modoUnion(); else btnUnir">
-                <span class="selection-count">{{ seleccionUnion().length }} seleccionadas</span>
-                <button class="btn-confirm" (click)="confirmarUnion()">
-                    <i class="bi bi-check-lg"></i> Confirmar
-                </button>
-                <button class="btn-cancel" (click)="toggleModoUnion()">Cancelar</button>
+            @if (!modoUnion()) {
+            <div class="leyenda-group">
+                <div class="status-item"><span class="dot libre"></span> Libre</div>
+                <div class="status-item"><span class="dot ocupada"></span> Ocupada</div>
             </div>
+            }
 
-            <ng-template #btnUnir>
-                <button class="btn-secondary" (click)="toggleModoUnion()">
-                    <i class="bi bi-intersect"></i> Unir Mesas
+            <div class="btn-group">
+                <button pButton icon="bi bi-arrow-clockwise" class="p-button-rounded p-button-text p-button-secondary"
+                    (click)="cargarDatosIniciales()" pTooltip="Actualizar Mapa" tooltipPosition="bottom">
                 </button>
-            </ng-template>
+
+                @if (modoUnion()) {
+                <span class="union-counter">{{ seleccionUnion().length }} selec.</span>
+
+                <button pButton label="Confirmar" icon="bi bi-check-circle" class="p-button-success p-button-sm"
+                    (click)="confirmarUnion()">
+                </button>
+
+                <button pButton label="Cancelar" icon="bi bi-x" class="p-button-outlined p-button-danger p-button-sm"
+                    (click)="toggleModoUnion()">
+                </button>
+                } @else {
+                <button pButton label="Unir Mesas" icon="bi bi-intersect"
+                    class="p-button-outlined p-button-secondary p-button-sm btn-unir-responsive"
+                    (click)="toggleModoUnion()">
+                </button>
+
+                <button pButton icon="bi bi-intersect"
+                    class="p-button-rounded p-button-secondary p-button-outlined btn-unir-mobile"
+                    (click)="toggleModoUnion()">
+                </button>
+                }
+            </div>
         </div>
     </div>
 
-    <div class="mesas-grid">
+    @if (mesas().length > 0) {
+    <div class="mesas-grid-container">
+
         @for (mesa of mesasView(); track mesa.id) {
-        <div class="mesa-card" [class.ocupada]="mesa.esOcupada" [class.libre]="!mesa.esOcupada"
-            [class.selected]="seleccionUnion().includes(mesa.id)" (click)="onMesaClick(mesa)">
+        <div class="mesa-card scalein animation-duration-300"
+            [style.background-color]="mesa.esOcupada ? mesa.bgStyle : ''" [ngClass]="{
+                        'ocupada': mesa.esOcupada, 
+                        'libre': !mesa.esOcupada,
+                        'selected-union': seleccionUnion().includes(mesa.id)
+                     }" (click)="onMesaClick(mesa)">
 
-            <div class="mesa-top">
-                <span class="mesa-code">{{ mesa.codigoMesa }}</span>
-                <span class="mesa-cap"><i class="bi bi-people-fill"></i> {{ mesa.capacidad }}</span>
+            <div class="card-header" [style.color]="mesa.textStyle">
+                <span class="mesa-code">{{ mesa.codigoMesa }}
+                    @if (mesa.esUnida) {
+                    <i class="bi bi-link-45deg" style="font-size: 1.2rem; margin-left: 5px;"></i>
+                    }
+                </span>
+                <span class="mesa-cap">
+                    <i class="bi bi-person-fill"></i> {{ mesa.capacidad }}
+                </span>
             </div>
 
-            <div class="mesa-body">
-                @if (mesa.idPrincipal && mesa.idPrincipal !== mesa.id) {
-                <i class="bi bi-link link-icon"></i>
-                } @else {
-                <i class="bi bi-display"></i>
-                }
-            </div>
-
-            <div class="mesa-footer">
+            <div class="card-body">
                 @if (mesa.esOcupada) {
-                <span class="cliente-name">{{ mesa.cliente }}</span>
-                <span class="monto">{{ mesa.total | currency:'PEN':'symbol' }}</span>
+                <div class="info-ocupada">
+
+                    <span class="precio-texto" [style.color]="mesa.textStyle">
+                        {{ mesa.total | currency:'PEN':'S/ ' }}
+                    </span>
+
+                    @if(mesa.esUnida){
+                    <div class="estado-badge unida" [style.color]="mesa.textStyle">
+                        <i class="bi bi-link-45deg"></i> Unida a {{ mesa.nombreMesaPadre }}
+                    </div>
+                    } @else {
+                    <div class="estado-badge" [style.color]="mesa.textStyle">
+                        Ocupado
+                    </div>
+                    }
+
+                </div>
                 } @else {
-                <span class="status-text">Disponible</span>
+                <div class="info-libre">
+                    <i class="bi bi-display" style="font-size: 2rem; color: #198754; opacity: 0.5;"></i>
+                    <span style="color: #198754; font-weight: 500;">Libre</span>
+                </div>
                 }
             </div>
 
-            <div class="overlay-select" *ngIf="seleccionUnion().includes(mesa.id)">
-                <i class="bi bi-check-lg"></i>
+            @if (seleccionUnion().includes(mesa.id)) {
+            <div class="check-overlay">
+                <i class="bi bi-check-circle-fill"></i>
             </div>
-
-        </div>
-        } @empty {
-        <div class="no-data">
-            <p>No hay mesas configuradas en este piso.</p>
+            }
         </div>
         }
     </div>
+    } @else {
+    <div class="empty-state">
+        <div class="empty-content">
+            <i class="bi bi-map"></i>
+            <h3>Sin Mesas</h3>
+            <p>Selecciona un piso o configura las mesas.</p>
+        </div>
+    </div>
+    }
+
+    @if (mesaSeleccionadaParaModal()) {
+    <div class="modal-overlay">
+        <div class="modal-content">
+            <app-orden [codigoMesaInput]="mesaSeleccionadaParaModal().codigoMesa"
+                [mesaIdInput]="mesaSeleccionadaParaModal().id" [pedidoIdInput]="mesaSeleccionadaParaModal().pedidoId"
+                [modoInput]="mesaSeleccionadaParaModal().esOcupada ? 'EDITAR' : 'NUEVO'"
+                (onCerrar)="cerrarModalOrden()">
+            </app-orden>
+        </div>
+    </div>
+    }
 
 </div>
