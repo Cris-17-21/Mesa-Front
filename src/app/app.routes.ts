@@ -97,8 +97,40 @@ export const routes: Routes = [
         path: 'compras',
         children: [
           {
-            path: 'prooductos', // Ojo: tienes un typo aquí 'prooductos', tal vez quieras corregirlo a 'productos'
+            path: '',
             loadComponent: () => import('./pages/compras/components/compra-list/compra-list.component').then(m => m.CompraListComponent)
+          },
+          {
+            path: 'gestion/nuevo',
+            loadComponent: () => import('./pages/compras/components/compra-form/compra-form.component').then(m => m.CompraFormComponent)
+          },
+          {
+            path: 'proveedores',
+            loadComponent: () => import('./pages/compras/proveedor/proveedor.component').then(m => m.ProveedorComponent)
+          },
+          {
+            path: 'proveedor/nuevo',
+            loadComponent: () => import('./pages/compras/proveedor/modal-proveedor/modal-proveedor.component').then(m => m.ModalProveedorComponent)
+          },
+          {
+            path: 'proveedor/editar/:id',
+            loadComponent: () => import('./pages/compras/proveedor/modal-proveedor/modal-proveedor.component').then(m => m.ModalProveedorComponent)
+          },
+          {
+            path: 'productos',
+            loadComponent: () => import('./pages/compras/producto/producto.component').then(m => m.ProductoComponent)
+          },
+          {
+            path: 'productos/nuevo',
+            loadComponent: () => import('./pages/compras/producto/modal-producto/modal-producto.component').then(m => m.ModalProductoComponent)
+          },
+          {
+            path: 'productos/editar/:id',
+            loadComponent: () => import('./pages/compras/producto/modal-producto/modal-producto.component').then(m => m.ModalProductoComponent)
+          },
+          {
+            path: 'clasificacion',
+            loadComponent: () => import('./pages/compras/gestion-categoria-tipo/gestion-categoria-tipo.component').then(m => m.GestionCategoriaTipoComponent)
           }
         ]
       }

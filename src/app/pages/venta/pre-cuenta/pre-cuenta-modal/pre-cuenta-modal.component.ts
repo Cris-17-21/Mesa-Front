@@ -94,12 +94,12 @@ export class PreCuentaModalComponent implements OnChanges {
     const empresaId = this.authService.getClaim('empresaId');
     if (empresaId) {
       // Categorías
-      this.categoriaService.getCategoriasByEmpresa(empresaId).subscribe(data => {
+      this.categoriaService.getCategoriasByEmpresa(empresaId).subscribe((data: any[]) => {
         this.categorias.set(data);
       });
 
       // Productos
-      this.productoService.getProductoByEmpresaId(empresaId).subscribe(data => {
+      this.productoService.getProductoByEmpresaId(empresaId).subscribe((data: Producto[]) => {
         this.allProducts.set(data);
         this.aplicarFiltros();
       });
