@@ -2,9 +2,9 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { CompraService } from '../../services/compra.service';
-import { DetalleCompra } from '../../models/detalle-compra.model';
-import { Compra } from '../../models/compra.model';
+import { CompraService } from '../../../../services/compra/compra.service';
+import { DetalleCompra } from '../../../../models/compra/detalle-compra.model';
+import { Compra } from '../../../../models/compra/compra.model';
 
 // PrimeNG Imports
 import { InputTextModule } from 'primeng/inputtext';
