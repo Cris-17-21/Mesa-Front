@@ -7,8 +7,8 @@ import { RouterModule, Router } from '@angular/router';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ToastModule } from 'primeng/toast';
 import { ConfirmationService, MessageService } from 'primeng/api';
-import { ProveedorService } from '../../../services/compras/proveedor.service';
-import { Proveedor } from '../../../models/compras/proveedor.model';
+import { ProveedorService } from '../../../services/compra/proveedor.service';
+import { Proveedor } from '../../../models/compra/proveedor.model';
 import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
 
 @Component({
@@ -43,7 +43,7 @@ import { HasPermissionDirective } from '../../../core/directives/has-permission.
                     <td>{{ proveedor.telefono }}</td>
                     <td>{{ proveedor.direccion }}</td>                    
                     <td>
-                        <button *appHasPermission="'UPDATE_PROVEEDOR'" pButton icon="bi bi-pencil" class="p-button-rounded p-button-text p-button-warning mr-2" (click)="editProveedor(proveedor.idProveedor)"></button>
+                        <button *appHasPermission="'UPDATE_PROVEEDOR'" pButton icon="bi bi-pencil" class="p-button-rounded p-button-text p-button-warning mr-2" (click)="editProveedor(proveedor.id)"></button>
                         <button *appHasPermission="'DELETE_PROVEEDOR'" pButton icon="bi bi-trash" class="p-button-rounded p-button-text p-button-danger" (click)="deleteProveedor(proveedor)"></button>
                     </td>
                 </tr>
@@ -71,7 +71,7 @@ export class ProveedorComponent implements OnInit {
     loadProveedores() {
         this.proveedorService.getAllProveedores().subscribe({
             next: (data) => this.proveedores = data,
-            error: (err) => console.error('Error loading proveedores', err)
+            error: (err: any) => console.error('Error loading proveedores', err)
         });
     }
 
@@ -89,12 +89,12 @@ export class ProveedorComponent implements OnInit {
             header: 'Confirmar Eliminación',
             icon: 'pi pi-exclamation-triangle',
             accept: () => {
-                this.proveedorService.deleteProveedor(proveedor.idProveedor).subscribe({
+                this.proveedorService.deleteProveedor(proveedor.id).subscribe({
                     next: () => {
                         this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Proveedor eliminado' });
                         this.loadProveedores();
                     },
-                    error: () => {
+                    error: (err: any) => {
                         this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo eliminar el proveedor' });
                     }
                 });

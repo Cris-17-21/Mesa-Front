@@ -88,4 +88,5 @@ export interface CartItem {
     precio: number;
     cantidad: number;
     observaciones: string;
+    categoria?: string;
 }
