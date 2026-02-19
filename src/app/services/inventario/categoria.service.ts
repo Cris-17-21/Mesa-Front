@@ -27,4 +27,8 @@ export class CategoriaService {
   delete(id: number): Observable<void> {
     return this.http.delete<void>(`${this.API_URL}/${id}`);
   }
+
+  getCategoriasByEmpresa(empresaId: string): Observable<Categoria[]> {
+    return this.http.get<Categoria[]>(`${this.API_URL}/empresa/${empresaId}`);
+  }
 }

@@ -2,7 +2,8 @@ import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
-import { ProveedorService } from '../../../../services/compras/proveedor.service';
+import { ProveedorService } from '../../../../services/compra/proveedor.service';
+import { Proveedor } from '../../../../models/compra/proveedor.model';
 import { InputTextModule } from 'primeng/inputtext';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
@@ -87,7 +88,7 @@ export class ModalProveedorComponent implements OnInit {
 
     loadProveedor(id: number) {
         this.proveedorService.getProveedorById(id).subscribe({
-            next: (data) => this.form.patchValue(data),
+            next: (data: Proveedor) => this.form.patchValue(data),
             error: () => {
                 this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo cargar el proveedor' });
                 this.router.navigate(['/compras/proveedores']);

@@ -86,10 +86,10 @@ export class OrdenComponent implements OnInit {
 
   cargarDatosMaestros() {
     if (!this.currentEmpresaId) return;
-    this.categoriaService.getCategoriasByEmpresa(this.currentEmpresaId).subscribe(data => {
+    this.categoriaService.getCategoriasByEmpresa(this.currentEmpresaId).subscribe((data: any[]) => {
       this.categorias.set(data);
     });
-    this.productoService.getProductoByEmpresaId(this.currentEmpresaId).subscribe(data => {
+    this.productoService.getProductoByEmpresaId(this.currentEmpresaId).subscribe((data: Producto[]) => {
       this.productos.set(data);
       this.aplicarFiltros();
     });

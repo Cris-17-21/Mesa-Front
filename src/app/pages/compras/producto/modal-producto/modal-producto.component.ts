@@ -5,7 +5,7 @@ import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { ProductoService } from '../../../../services/inventario/producto.service';
 import { CategoriaService } from '../../../../services/inventario/categoria.service';
 import { TipoProductoService } from '../../../../services/inventario/tipo-producto.service';
-import { ProveedorService } from '../../../../services/compras/proveedor.service';
+import { ProveedorService } from '../../../../services/compra/proveedor.service';
 import { InputTextModule } from 'primeng/inputtext';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
@@ -16,7 +16,7 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { MessageService } from 'primeng/api';
 import { Categoria } from '../../../../models/inventario/categoria.model';
 import { TipoProducto } from '../../../../models/inventario/tipo-producto.model';
-import { Proveedor } from '../../../../models/compras/proveedor.model';
+import { Proveedor } from '../../../../models/compra/proveedor.model';
 
 @Component({
     selector: 'app-modal-producto',
@@ -63,7 +63,7 @@ import { Proveedor } from '../../../../models/compras/proveedor.model';
                 <!-- Proveedor -->
                 <div class="col-12 md:col-6 field">
                     <label for="idProveedor" class="block font-bold mb-2">Proveedor</label>
-                    <p-dropdown [options]="proveedores" formControlName="idProveedor" optionLabel="razonSocial" optionValue="idProveedor" placeholder="Seleccione Proveedor" [style]="{width: '100%'}" [filter]="true" filterBy="razonSocial"></p-dropdown>
+                    <p-dropdown [options]="proveedores" formControlName="idProveedor" optionLabel="razonSocial" optionValue="id" placeholder="Seleccione Proveedor" [style]="{width: '100%'}" [filter]="true" filterBy="razonSocial"></p-dropdown>
                 </div>
 
                 <!-- Precio Venta -->
