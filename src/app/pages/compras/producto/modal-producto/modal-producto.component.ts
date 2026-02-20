@@ -57,7 +57,7 @@ import { Proveedor } from '../../../../models/compra/proveedor.model';
                 <!-- Tipos (Dependiente de Categoría) -->
                 <div class="col-12 md:col-6 field">
                     <label for="idTipos" class="block font-bold mb-2">Tipos de Producto</label>
-                    <p-multiSelect [options]="filteredTipos" formControlName="idTipos" optionLabel="nombre" optionValue="id" placeholder="Seleccione Tipos" [style]="{width: '100%'}"></p-multiSelect>
+                    <p-multiSelect [options]="filteredTipos" formControlName="idTipos" optionLabel="nombreTipo" optionValue="idTipo" placeholder="Seleccione Tipos" [style]="{width: '100%'}"></p-multiSelect>
                 </div>
 
                 <!-- Proveedor -->
