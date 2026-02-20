@@ -11,6 +11,7 @@ import { MessageService, ConfirmationService } from 'primeng/api';
 import { DropdownModule } from 'primeng/dropdown';
 import { CategoriaService } from '../../../services/inventario/categoria.service';
 import { TipoProductoService } from '../../../services/inventario/tipo-producto.service';
+import { AuthService } from '../../../core/auth/auth.service';
 import { Categoria } from '../../../models/inventario/categoria.model';
 import { TipoProducto } from '../../../models/inventario/tipo-producto.model';
 import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
@@ -153,6 +154,7 @@ import { HasPermissionDirective } from '../../../core/directives/has-permission.
 export class GestionCategoriaTipoComponent implements OnInit {
     private categoriaService = inject(CategoriaService);
     private tipoService = inject(TipoProductoService);
+    private authService = inject(AuthService);
     private messageService = inject(MessageService);
     private confirmationService = inject(ConfirmationService);
     private fb = inject(FormBuilder);
@@ -239,7 +241,23 @@ export class GestionCategoriaTipoComponent implements OnInit {
 
     saveCategoria() {
         if (this.categoriaForm.invalid) return;
-        const data = this.categoriaForm.value;
+        const formValue = this.categoriaForm.value;
+
+        // CRÍTICO: El backend requiere empresaId para asociar la categoría
+        const empresaId = this.authService.getClaim('empresaId');
+        if (!empresaId) {
+            this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se encontró la empresa. Por favor, cierra sesión y vuelve a entrar.' });
+            return;
+        }
+
+        // CORRECCIÓN: El backend DTO espera 'nombreCategoria', no 'nombre'
+        const data: any = {
+            nombreCategoria: formValue.nombre,
+            empresaId: empresaId
+        };
+
+        // DEBUG: verificar payload
+        console.log('Payload Categoría (corregido):', data);
 
         if (this.isEditing && this.currentId) {
             this.categoriaService.update(this.currentId, data).subscribe(() => {
