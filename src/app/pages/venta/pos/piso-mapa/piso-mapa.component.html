@@ -88,9 +88,16 @@
                 @if (mesa.esOcupada) {
                 <div class="info-ocupada">
 
-                    <span class="precio-texto" [style.color]="mesa.textStyle">
-                        {{ mesa.total | currency:'PEN':'S/ ' }}
-                    </span>
+                    <div class="total-row">
+                        <span class="precio-texto" [style.color]="mesa.textStyle">
+                            {{ mesa.total | currency:'PEN':'S/ ' }}
+                        </span>
+                        @if (mesa.cantidadCuentas > 1) {
+                        <span class="accounts-badge" [pTooltip]="mesa.cantidadCuentas + ' cuentas en esta mesa'">
+                            <i class="bi bi-layers-half"></i> {{ mesa.cantidadCuentas }}
+                        </span>
+                        }
+                    </div>
 
                     @if(mesa.esUnida){
                     <div class="estado-badge unida" [style.color]="mesa.textStyle">
