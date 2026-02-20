@@ -1,5 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
@@ -11,12 +12,14 @@ import { AuthService } from '../../../../core/auth/auth.service';
 import { UserService } from '../../../../services/user/user.service';
 import { ProductoService } from '../../../../services/inventario/producto.service';
 import { CategoriaService } from '../../../../services/inventario/categoria.service';
+import { CajaService } from '../../../../services/venta/caja.service';
 import { PedidoRequestDto, PedidoDetalleRequestDto, CartItem, PedidoResponseDto } from '../../../../models/venta/pedido.model';
 import { Producto } from '../../../../models/inventario/producto.model';
 import { CheckoutModalComponent } from '../checkout-modal/checkout-modal.component';
 import { DividirCuentaModalComponent } from '../dividir-cuenta-modal/dividir-cuenta-modal.component';
 import Swal from 'sweetalert2';
 import { firstValueFrom } from 'rxjs';
+import { Categoria } from '../../../../models/inventario/categoria.model';
 
 @Component({
   selector: 'app-orden',
@@ -35,6 +38,8 @@ export class OrdenComponent implements OnInit {
   private productoService = inject(ProductoService);
   private categoriaService = inject(CategoriaService);
   private userService = inject(UserService);
+  private cajaService = inject(CajaService);
+  private router = inject(Router);
 
   @Input() mesaIdInput!: string;
   @Input() pedidoIdInput: string | null = null;
@@ -74,20 +79,31 @@ export class OrdenComponent implements OnInit {
 
   async cargarDatosSesion() {
     try {
-      const token = this.authService.getToken();
-      if (!token) return;
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      this.currentEmpresaId = payload.empresaId;
-      this.currentSucursalId = payload.sucursalId;
+      this.currentEmpresaId = this.authService.getClaim('empresaId');
+      this.currentSucursalId = this.authService.getClaim('sucursalId');
+
       const userResponse = await firstValueFrom(this.userService.getUserMe());
       this.currentUsuarioId = userResponse.user.id;
-    } catch (e) { }
+
+      // Sincronizar estado de caja
+      if (this.currentSucursalId && this.currentUsuarioId) {
+        await firstValueFrom(this.cajaService.verificarEstadoCaja(this.currentSucursalId, this.currentUsuarioId));
+      }
+
+      console.log('📦 Sesión cargada:', { empresa: this.currentEmpresaId, sucursal: this.currentSucursalId, usuario: this.currentUsuarioId, cajaAbierta: this.cajaService.isCajaAbierta() });
+    } catch (e) {
+      console.error('❌ Error cargando sesión:', e);
+    }
   }
 
   cargarDatosMaestros() {
     if (!this.currentEmpresaId) return;
     this.categoriaService.getCategoriasByEmpresa(this.currentEmpresaId).subscribe((data: any[]) => {
-      this.categorias.set(data);
+      this.categorias.set(data.map(c => ({
+        ...c,
+        id: c.idCategoria,
+        nombre: c.nombreCategoria
+      })));
     });
     this.productoService.getProductoByEmpresaId(this.currentEmpresaId).subscribe((data: Producto[]) => {
       this.productos.set(data);
@@ -131,7 +147,7 @@ export class OrdenComponent implements OnInit {
     let lista = this.productos();
     const cat = this.categoriaSeleccionada();
     const term = this.terminoBusqueda();
-    if (cat) lista = lista.filter(p => p.idCategoria.toString() === cat.id.toString());
+    if (cat) lista = lista.filter(p => p.idCategoria === cat.id);
     if (term) lista = lista.filter(p => p.nombreProducto.toLowerCase().includes(term));
     this.productosFiltrados.set(lista);
   }
@@ -189,6 +205,32 @@ export class OrdenComponent implements OnInit {
   confirmarPedido() {
     if (this.carrito().length === 0) return;
 
+    console.log('🔍 Validando caja. Estado actual:', this.cajaService.isCajaAbierta());
+
+    if (!this.currentSucursalId || !this.currentUsuarioId) {
+      console.error('❌ Error: Datos de sesión incompletos', { sucursal: this.currentSucursalId, usuario: this.currentUsuarioId });
+      Swal.fire('Error de Sesión', 'No se pudo recuperar la información de la sucursal o usuario. Reintente iniciando sesión.', 'error');
+      return;
+    }
+
+    // VALIDACIÓN DE CAJA ABIERTA
+    if (!this.cajaService.isCajaAbierta()) {
+      Swal.fire({
+        title: 'Caja Cerrada',
+        text: 'Debe abrir caja para poder registrar pedidos. ¿Ir al módulo de caja?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, ir a caja',
+        cancelButtonText: 'Cancelar'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          this.onCerrar.emit(); // Cerrar el modal actual
+          this.router.navigate(['/ventas/caja']);
+        }
+      });
+      return;
+    }
+
     // En modo EDITAR, solo enviamos los ítems NUEVOS (no los pre-cargados del pedido)
     const itemsAEnviar = this.modoInput === 'EDITAR'
       ? this.carrito().filter(i => !this.itemsExistentesIds.has(i.productoId))
@@ -201,6 +243,12 @@ export class OrdenComponent implements OnInit {
 
     const detalles: PedidoDetalleRequestDto[] = itemsAEnviar.map(i => ({ productoId: i.productoId, cantidad: i.cantidad, observaciones: i.observaciones }));
 
+    const payload = this.modoInput === 'NUEVO'
+      ? { tipoEntrega: 'MESA', sucursalId: this.currentSucursalId!, mesaId: this.mesaIdInput, usuarioId: this.currentUsuarioId!, detalles }
+      : detalles;
+
+    console.log('🚀 Enviando pedido:', { modo: this.modoInput, payload });
+
     Swal.fire({
       title: '¿Confirmar envío?',
       text: 'Se enviará la orden a cocina',
@@ -210,15 +258,21 @@ export class OrdenComponent implements OnInit {
     }).then(r => {
       if (r.isConfirmed) {
         const obs = this.modoInput === 'NUEVO'
-          ? this.pedidoService.crearPedido({ tipoEntrega: 'MESA', sucursalId: this.currentSucursalId!, mesaId: this.mesaIdInput, usuarioId: this.currentUsuarioId!, detalles })
-          : this.pedidoService.agregarDetalles(this.pedidoIdInput!, detalles);
+          ? this.pedidoService.crearPedido(payload as any)
+          : this.pedidoService.agregarDetalles(this.pedidoIdInput!, payload as any);
 
         obs.subscribe({
           next: () => {
             Swal.fire('Éxito', 'Pedido procesado', 'success');
             this.onCerrar.emit();
           },
-          error: () => Swal.fire('Error', 'No se pudo procesar', 'error')
+          error: (err) => {
+            const msg = err.error?.message || 'No se pudo procesar el pedido';
+            Swal.fire('Error', msg, 'error');
+            if (msg.includes('ABRIR CAJA')) {
+              this.router.navigate(['/ventas/caja']);
+            }
+          }
         });
       }
     });
