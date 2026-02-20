@@ -92,7 +92,7 @@ import { HasPermissionDirective } from '../../../core/directives/has-permission.
                         </ng-template>
                         <ng-template pTemplate="body" let-tipo>
                             <tr>
-                                <td>{{ tipo.nombre }}</td>
+                                <td>{{ tipo.nombreTipo }}</td>
                                 <td *ngIf="!selectedCategoria">{{ getCategoriaName(tipo.idCategoria) }}</td>
                                 <td>
                                     <button *appHasPermission="'UPDATE_TIPOPRODUCTO'" pButton icon="bi bi-pencil" class="p-button-rounded p-button-text p-button-warning mr-1" (click)="editTipo(tipo)"></button>
@@ -131,7 +131,7 @@ import { HasPermissionDirective } from '../../../core/directives/has-permission.
              <form [formGroup]="tipoForm" (ngSubmit)="saveTipo()">
                 <div class="field">
                     <label for="tipoNombre">Nombre</label>
-                    <input type="text" pInputText id="tipoNombre" formControlName="nombre" class="w-full" autofocus />
+                    <input type="text" pInputText id="tipoNombre" formControlName="nombreTipo" class="w-full" autofocus />
                 </div>
                  <div class="field">
                     <label for="tipoCat">Categoría</label>
@@ -181,7 +181,7 @@ export class GestionCategoriaTipoComponent implements OnInit {
         });
 
         this.tipoForm = this.fb.group({
-            nombre: ['', Validators.required],
+            nombreTipo: ['', Validators.required],
             idCategoria: [null, Validators.required]
         });
     }
@@ -283,7 +283,7 @@ export class GestionCategoriaTipoComponent implements OnInit {
 
     editTipo(tipo: TipoProducto) {
         this.isEditing = true;
-        this.currentId = tipo.id;
+        this.currentId = tipo.idTipo;
         this.tipoForm.patchValue(tipo);
         this.tipoDialog = true;
     }
@@ -309,9 +309,9 @@ export class GestionCategoriaTipoComponent implements OnInit {
 
     deleteTipo(tipo: TipoProducto) {
         this.confirmationService.confirm({
-            message: `¿Eliminar el tipo ${tipo.nombre}?`,
+            message: `¿Eliminar el tipo ${tipo.nombreTipo}?`,
             accept: () => {
-                this.tipoService.delete(tipo.id).subscribe(() => {
+                this.tipoService.delete(tipo.idTipo).subscribe(() => {
                     this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Tipo eliminado' });
                     this.loadData();
                 });

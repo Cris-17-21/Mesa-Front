@@ -1,5 +1,6 @@
 export interface TipoProducto {
-    id: number;
-    nombre: string;
+    idTipo: number;
+    nombreTipo: string;
     idCategoria: number;
+    // nombreCategoria?: string; // Optional if needed
 }
