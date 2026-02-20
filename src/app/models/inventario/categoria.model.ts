@@ -1,6 +1,6 @@
 export interface Categoria {
-    id: number;
-    nombre: string;
+    idCategoria: number;
+    nombreCategoria: string;
     descripcion?: string;
     empresaId?: string;
 }

@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+﻿import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TableModule } from 'primeng/table';
@@ -39,73 +39,69 @@ import { HasPermissionDirective } from '../../../core/directives/has-permission.
         
         <h2 class="mb-4">Clasificación de Productos</h2>
 
-        <div class="grid">
+        <div class="panel-contenedor">
             <!-- Categorías (Izquierda) -->
-            <div class="col-12 md:col-6">
-                <div class="card h-full">
-                    <div class="flex justify-content-between align-items-center mb-3">
-                        <h3 class="m-0">Categorías</h3>
-                        <button *appHasPermission="'CREATE_CATEGORIA'" pButton label="Nueva" icon="bi bi-plus" (click)="openCategoriaDialog()"></button>
-                    </div>
-                    
-                    <p-table [value]="categorias" [scrollable]="true" scrollHeight="400px" selectionMode="single" [(selection)]="selectedCategoria" (onRowSelect)="onCategoriaSelect($event)" dataKey="id">
-                        <ng-template pTemplate="header">
-                            <tr>
-                                <th>Nombre</th>
-                                <th style="width: 100px">Acciones</th>
-                            </tr>
-                        </ng-template>
-                        <ng-template pTemplate="body" let-cat>
-                            <tr [pSelectableRow]="cat">
-                                <td>{{ cat.nombre }}</td>
-                                <td>
-                                    <button *appHasPermission="'UPDATE_CATEGORIA'" pButton icon="bi bi-pencil" class="p-button-rounded p-button-text p-button-warning mr-1" (click)="editCategoria(cat)"></button>
-                                    <button *appHasPermission="'DELETE_CATEGORIA'" pButton icon="bi bi-trash" class="p-button-rounded p-button-text p-button-danger" (click)="deleteCategoria(cat)"></button>
-                                </td>
-                            </tr>
-                        </ng-template>
-                        <ng-template pTemplate="emptymessage">
-                            <tr><td colspan="2">No hay categorías.</td></tr>
-                        </ng-template>
-                    </p-table>
+            <div class="panel-card">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                    <h3 style="margin:0">Categorías</h3>
+                    <button *appHasPermission="'CREATE_CATEGORIA'" pButton label="Nueva" icon="bi bi-plus" (click)="openCategoriaDialog()"></button>
                 </div>
+                
+                <p-table [value]="categorias" [scrollable]="true" scrollHeight="400px" selectionMode="single" [(selection)]="selectedCategoria" (onRowSelect)="onCategoriaSelect($event)" dataKey="idCategoria">
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th>Nombre</th>
+                            <th style="width: 100px">Acciones</th>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-cat>
+                        <tr [pSelectableRow]="cat">
+                            <td>{{ cat.nombreCategoria }}</td>
+                            <td>
+                                <button *appHasPermission="'UPDATE_CATEGORIA'" pButton icon="bi bi-pencil" class="p-button-rounded p-button-text p-button-warning mr-1" (click)="editCategoria(cat)"></button>
+                                <button *appHasPermission="'DELETE_CATEGORIA'" pButton icon="bi bi-trash" class="p-button-rounded p-button-text p-button-danger" (click)="deleteCategoria(cat)"></button>
+                            </td>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="emptymessage">
+                        <tr><td colspan="2">No hay categorías.</td></tr>
+                    </ng-template>
+                </p-table>
             </div>
 
             <!-- Tipos de Producto (Derecha) -->
-            <div class="col-12 md:col-6">
-                <div class="card h-full">
-                    <div class="flex justify-content-between align-items-center mb-3">
-                        <h3 class="m-0">Tipos de Producto</h3>
-                        <button *appHasPermission="'CREATE_TIPOPRODUCTO'" pButton label="Nuevo Tipo" icon="bi bi-plus" (click)="openTipoDialog()" [disabled]="!selectedCategoria && displayAllTypes"></button>
-                    </div>
-                     <div class="mb-2" *ngIf="selectedCategoria">
-                        <small class="text-secondary">Filtrado por: <strong>{{ selectedCategoria.nombre }}</strong></small>
-                        <button pButton icon="pi pi-times" class="p-button-rounded p-button-text p-button-sm ml-2" (click)="clearFilter()" pTooltip="Ver todos"></button>
-                    </div>
-
-                    <p-table [value]="filteredTipos" [scrollable]="true" scrollHeight="400px">
-                        <ng-template pTemplate="header">
-                            <tr>
-                                <th>Nombre</th>
-                                <th *ngIf="!selectedCategoria">Categoría</th>
-                                <th style="width: 100px">Acciones</th>
-                            </tr>
-                        </ng-template>
-                        <ng-template pTemplate="body" let-tipo>
-                            <tr>
-                                <td>{{ tipo.nombreTipo }}</td>
-                                <td *ngIf="!selectedCategoria">{{ getCategoriaName(tipo.idCategoria) }}</td>
-                                <td>
-                                    <button *appHasPermission="'UPDATE_TIPOPRODUCTO'" pButton icon="bi bi-pencil" class="p-button-rounded p-button-text p-button-warning mr-1" (click)="editTipo(tipo)"></button>
-                                    <button *appHasPermission="'DELETE_TIPOPRODUCTO'" pButton icon="bi bi-trash" class="p-button-rounded p-button-text p-button-danger" (click)="deleteTipo(tipo)"></button>
-                                </td>
-                            </tr>
-                        </ng-template>
-                         <ng-template pTemplate="emptymessage">
-                            <tr><td colspan="3">No hay tipos registrados.</td></tr>
-                        </ng-template>
-                    </p-table>
+            <div class="panel-card">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                    <h3 style="margin:0">Tipos de Producto</h3>
+                    <button *appHasPermission="'CREATE_TIPOPRODUCTO'" pButton label="Nuevo Tipo" icon="bi bi-plus" (click)="openTipoDialog()"></button>
                 </div>
+                <div style="margin-bottom:0.5rem;" *ngIf="selectedCategoria">
+                    <small style="color:#6c757d">Filtrado por: <strong>{{ selectedCategoria.nombreCategoria }}</strong></small>
+                    <button pButton icon="pi pi-times" class="p-button-rounded p-button-text p-button-sm" style="margin-left:0.5rem" (click)="clearFilter()" pTooltip="Ver todos"></button>
+                </div>
+
+                <p-table [value]="filteredTipos" [scrollable]="true" scrollHeight="400px">
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th>Nombre</th>
+                            <th *ngIf="!selectedCategoria">Categoría</th>
+                            <th style="width: 100px">Acciones</th>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-tipo>
+                        <tr>
+                            <td>{{ tipo.nombreTipo }}</td>
+                            <td *ngIf="!selectedCategoria">{{ getCategoriaName(tipo.idCategoria) }}</td>
+                            <td>
+                                <button *appHasPermission="'UPDATE_TIPOPRODUCTO'" pButton icon="bi bi-pencil" class="p-button-rounded p-button-text p-button-warning mr-1" (click)="editTipo(tipo)"></button>
+                                <button *appHasPermission="'DELETE_TIPOPRODUCTO'" pButton icon="bi bi-trash" class="p-button-rounded p-button-text p-button-danger" (click)="deleteTipo(tipo)"></button>
+                            </td>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="emptymessage">
+                        <tr><td colspan="3">No hay tipos registrados.</td></tr>
+                    </ng-template>
+                </p-table>
             </div>
         </div>
 
@@ -136,7 +132,7 @@ import { HasPermissionDirective } from '../../../core/directives/has-permission.
                 </div>
                  <div class="field">
                     <label for="tipoCat">Categoría</label>
-                    <p-dropdown [options]="categorias" formControlName="idCategoria" optionLabel="nombre" optionValue="id" placeholder="Seleccione Categoría" [style]="{width: '100%'}" appendTo="body"></p-dropdown>
+                    <p-dropdown [options]="categorias" formControlName="idCategoria" optionLabel="nombreCategoria" optionValue="idCategoria" placeholder="Seleccione Categoría" [style]="{width: '100%'}" appendTo="body"></p-dropdown>
                 </div>
                 <div class="flex justify-content-end gap-2 mt-4">
                     <button pButton label="Cancelar" class="p-button-text" (click)="tipoDialog = false"></button>
@@ -147,8 +143,21 @@ import { HasPermissionDirective } from '../../../core/directives/has-permission.
     </div>
     `,
     styles: [`
-        :host { display: block; } 
-        .p-button-rounded { witdh: 2rem; height: 2rem; }
+        :host { display: block; }
+        .panel-contenedor {
+            display: flex;
+            gap: 1.5rem;
+            align-items: flex-start;
+        }
+        .panel-card {
+            flex: 1;
+            background: #fff;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 1.25rem;
+            min-width: 0;
+        }
+        .p-button-rounded { width: 2rem; height: 2rem; }
     `]
 })
 export class GestionCategoriaTipoComponent implements OnInit {
@@ -213,15 +222,15 @@ export class GestionCategoriaTipoComponent implements OnInit {
 
     filterTipos() {
         if (this.selectedCategoria) {
-            this.filteredTipos = this.tipos.filter(t => t.idCategoria === this.selectedCategoria!.id);
+            this.filteredTipos = this.tipos.filter(t => t.idCategoria === this.selectedCategoria!.idCategoria);
         } else {
             this.filteredTipos = [...this.tipos];
         }
     }
 
     getCategoriaName(id: number): string {
-        const cat = this.categorias.find(c => c.id === id);
-        return cat ? cat.nombre : 'Sin Categoría';
+        const cat = this.categorias.find(c => c.idCategoria === id);
+        return cat ? cat.nombreCategoria : 'Sin Categoría';
     }
 
     // --- Categoria CRUD ---
@@ -234,8 +243,8 @@ export class GestionCategoriaTipoComponent implements OnInit {
 
     editCategoria(cat: Categoria) {
         this.isEditing = true;
-        this.currentId = cat.id;
-        this.categoriaForm.patchValue(cat);
+        this.currentId = cat.idCategoria;
+        this.categoriaForm.patchValue({ nombre: cat.nombreCategoria });
         this.categoriaDialog = true;
     }
 
@@ -276,12 +285,12 @@ export class GestionCategoriaTipoComponent implements OnInit {
 
     deleteCategoria(cat: Categoria) {
         this.confirmationService.confirm({
-            message: `¿Eliminar la categoría ${cat.nombre}?`,
+            message: `¿Eliminar la categoría ${cat.nombreCategoria}?`,
             accept: () => {
-                this.categoriaService.delete(cat.id).subscribe(() => {
+                this.categoriaService.delete(cat.idCategoria).subscribe(() => {
                     this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Categoría eliminada' });
                     this.loadData();
-                    if (this.selectedCategoria?.id === cat.id) this.clearFilter();
+                    if (this.selectedCategoria?.idCategoria === cat.idCategoria) this.clearFilter();
                 });
             }
         });
@@ -294,7 +303,7 @@ export class GestionCategoriaTipoComponent implements OnInit {
         this.tipoForm.reset();
         // Pre-select category if one is selected
         if (this.selectedCategoria) {
-            this.tipoForm.patchValue({ idCategoria: this.selectedCategoria.id });
+            this.tipoForm.patchValue({ idCategoria: this.selectedCategoria.idCategoria });
         }
         this.tipoDialog = true;
     }
