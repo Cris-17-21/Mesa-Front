@@ -104,12 +104,13 @@
 
             <div class="accounts-list">
                 @for (cuenta of cuentasMesa(); track cuenta.id) {
-                <div class="account-card" [class.principal]="cuenta.id === pedidoId">
+                <div class="account-card" [class.activa]="cuenta.id === idCuentaActiva()"
+                    (click)="seleccionarCuenta(cuenta.id)">
                     <div class="acc-info">
                         <div class="acc-header-row">
                             <span class="acc-code">Pedido #{{ cuenta.codigoPedido }}</span>
-                            @if (cuenta.id === pedidoId) {
-                            <span class="badge-principal">Principal</span>
+                            @if (cuenta.id === idCuentaActiva()) {
+                            <span class="badge-principal">Seleccionado</span>
                             }
                         </div>
                         <span class="acc-total">S/ {{ cuenta.totalFinal | number:'1.2-2' }}</span>

@@ -29,6 +29,7 @@ export class DividirCuentaModalComponent implements OnInit {
   procesando = signal(false);
 
   // --- NUEVOS ESTADOS ---
+  idCuentaActiva = signal<string>('');
   pedidoActual = signal<PedidoResponseDto | null>(null);
   cuentasMesa = signal<PedidoResumenDto[]>([]);
   showCheckout = signal(false);
@@ -67,19 +68,22 @@ export class DividirCuentaModalComponent implements OnInit {
   });
 
   ngOnInit() {
+    this.idCuentaActiva.set(this.pedidoId);
     this.cargarItemsYFiltros();
   }
 
   cargarItemsYFiltros() {
     this.loading.set(true);
-    // 1. Cargar items del pedido actual
-    this.pedidoService.seleccionarPedido(this.pedidoId).subscribe({
+    const targetId = this.idCuentaActiva();
+
+    // 1. Cargar items del pedido seleccionado
+    this.pedidoService.seleccionarPedido(targetId).subscribe({
       next: (pedido) => {
         this.pedidoActual.set(pedido);
         const itemsValidos = pedido.detalles.filter(d => (d.cantidad - d.cantidadPagada) > 0);
         this.itemsDisponibles.set(itemsValidos);
 
-        // 2. Cargar todas las cuentas de la mesa (incluyendo la actual)
+        // 2. Cargar todas las cuentas de la mesa para el listado lateral
         this.actualizarCuentasMesa(pedido.codigoMesa);
 
         this.loading.set(false);
@@ -89,6 +93,15 @@ export class DividirCuentaModalComponent implements OnInit {
         this.onCerrar.emit();
       }
     });
+  }
+
+  seleccionarCuenta(id: string) {
+    if (this.idCuentaActiva() === id) return;
+
+    // Limpiar selección actual antes de cambiar
+    this.seleccion.set(new Map());
+    this.idCuentaActiva.set(id);
+    this.cargarItemsYFiltros();
   }
 
   actualizarCuentasMesa(codigoMesa: string) {
@@ -188,7 +201,7 @@ export class DividirCuentaModalComponent implements OnInit {
     }));
 
     const dto: SepararCuentaRequestDto = {
-      pedidoOrigenId: this.pedidoId,
+      pedidoOrigenId: this.idCuentaActiva(),
       items: itemsParaDto
     };
 
