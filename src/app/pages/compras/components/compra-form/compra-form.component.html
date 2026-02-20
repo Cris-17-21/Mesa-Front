@@ -1,88 +1,186 @@
-<div class="card">
-    <h2 class="text-2xl font-bold mb-4">Nueva Compra</h2>
+<div class="compra-page">
+    <p-toast></p-toast>
 
-    <form [formGroup]="compraForm" (ngSubmit)="onSubmit()" class="flex flex-column gap-4">
+    <div class="compra-header">
+        <h2>Nueva Compra</h2>
+        <button type="button" class="btn-cancel-header" (click)="onCancel()">×</button>
+    </div>
 
-        <!-- Header Section -->
-        <div class="grid p-fluid">
-            <div class="col-12 md:col-6">
-                <label class="block mb-2 font-bold">Proveedor</label>
-                <p-dropdown [options]="proveedores" formControlName="proveedorId" optionLabel="label"
-                    optionValue="value" placeholder="Seleccione un proveedor" [showClear]="true">
-                </p-dropdown>
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+
+        <!-- ===== DETALLES DE LA COMPRA ===== -->
+        <div class="seccion-card">
+            <div class="seccion-titulo">
+                <span class="icono">🪪</span>
+                <h3>Detalles de la Compra</h3>
             </div>
+            <hr class="linea-roja" />
 
-            <div class="col-12 md:col-3">
-                <label class="block mb-2 font-bold">Fecha</label>
-                <p-calendar formControlName="fecha" [showIcon]="true" dateFormat="dd/mm/yy">
-                </p-calendar>
-            </div>
+            <div class="form-grid">
+                <!-- Proveedor -->
+                <div class="field col-2">
+                    <label>Proveedor</label>
+                    <div class="proveedor-wrapper">
+                        <input type="text" class="campo-input"
+                            placeholder="Escribe para buscar por razón social, nombre com..."
+                            [(ngModel)]="proveedorBusqueda" [ngModelOptions]="{standalone: true}"
+                            (input)="filtrarProveedores()" (focus)="filtrarProveedores()" autocomplete="off" />
+                        <button *ngIf="selectedProveedor" type="button" class="btn-clear"
+                            (click)="limpiarProveedor()">×</button>
 
-            <div class="col-12 md:col-3">
-                <label class="block mb-2 font-bold">Nro. Comprobante</label>
-                <input pInputText formControlName="nroComprobante" placeholder="Ej. F001-123" />
+                        <div class="proveedor-dropdown" *ngIf="showProveedorList && proveedoresFiltrados.length > 0">
+                            <div class="prov-item" *ngFor="let p of proveedoresFiltrados"
+                                (click)="seleccionarProveedor(p)">
+                                <strong>{{ p.razonSocial }}</strong>
+                                <small>RUC {{ p.ruc }} · {{ p.telefono }}</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RUC Proveedor -->
+                <div class="field col-2">
+                    <label>RUC del Proveedor</label>
+                    <input type="text" class="campo-input" readonly [value]="selectedProveedor?.ruc || ''"
+                        placeholder="Ej: 20123456789" />
+                </div>
+
+                <!-- Fecha Pedido -->
+                <div class="field">
+                    <label>Fecha de Pedido *</label>
+                    <input type="date" class="campo-input" [value]="today" readonly />
+                </div>
+
+                <!-- Fecha Entrega -->
+                <div class="field">
+                    <label>Fecha Entrega Esperada</label>
+                    <input type="date" class="campo-input" formControlName="fechaEntregaEsperada" />
+                </div>
+
+                <!-- Método de Pago -->
+                <div class="field">
+                    <label>Método de Pago</label>
+                    <select class="campo-input" formControlName="idTipoPago">
+                        <option [ngValue]="null">Seleccionar método</option>
+                        <option *ngFor="let t of tiposPago" [ngValue]="t.idTipoPago">{{ t.tipoPago }}</option>
+                    </select>
+                </div>
+
+                <!-- Referencia -->
+                <div class="field">
+                    <label>Referencia/N° Cotización</label>
+                    <input type="text" class="campo-input" formControlName="referencia"
+                        placeholder="Ej: COT-2025-001" />
+                </div>
+
+                <!-- Observaciones (full width) -->
+                <div class="field col-full">
+                    <label>Observaciones</label>
+                    <textarea class="campo-input" rows="3" formControlName="observaciones"
+                        placeholder="Notas adicionales..."></textarea>
+                </div>
             </div>
         </div>
 
-        <!-- Details Section -->
-        <div class="card p-3 surface-50 border-round-md">
-            <div class="flex justify-content-between align-items-center mb-3">
-                <h3 class="m-0 text-xl">Detalle de Productos</h3>
-                <p-button label="Agregar Producto" icon="bi bi-plus" size="small" [outlined]="true"
-                    (onClick)="addDetalle()">
-                </p-button>
+        <!-- ===== PRODUCTOS DE LA COMPRA ===== -->
+        <div class="seccion-card">
+            <div class="seccion-titulo">
+                <span class="icono">📦</span>
+                <h3>Productos de la Compra</h3>
+            </div>
+            <hr class="linea-roja" />
+
+            <!-- Filas de detalle -->
+            <div formArrayName="detalles">
+                <div class="detalle-row" *ngFor="let ctrl of detalles.controls; let i = index" [formGroupName]="i">
+                    <div class="detalle-grid">
+                        <!-- Producto selector -->
+                        <div class="field detalle-producto">
+                            <label>Producto</label>
+                            <select class="campo-input" formControlName="idProducto" (change)="onProductoChange(i)">
+                                <option [ngValue]="null">Seleccionar producto...</option>
+                                <option *ngFor="let p of productos" [ngValue]="p.idProducto">{{ p.nombreProducto }}
+                                </option>
+                            </select>
+                        </div>
+
+                        <!-- Cantidad -->
+                        <div class="field detalle-cant">
+                            <label>Cantidad</label>
+                            <input type="number" class="campo-input" formControlName="cantidadPedida" min="1" />
+                        </div>
+
+                        <!-- Costo unitario -->
+                        <div class="field detalle-precio">
+                            <label>Costo Unit.</label>
+                            <input type="number" class="campo-input" formControlName="costoUnitario" min="0"
+                                step="0.01" />
+                        </div>
+
+                        <!-- Subtotal -->
+                        <div class="field detalle-sub">
+                            <label>Subtotal</label>
+                            <input type="text" class="campo-input subtotal-readonly" readonly
+                                [value]="'S/ ' + (ctrl.get('subtotalLinea')?.value | number:'1.2-2')" />
+                        </div>
+
+                        <!-- Eliminar -->
+                        <div class="field detalle-del">
+                            <label>&nbsp;</label>
+                            <button type="button" class="btn-eliminar" (click)="quitarProducto(i)"
+                                title="Eliminar producto">
+                                🗑
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <p-table [value]="detalles.controls" styleClass="p-datatable-sm">
-                <ng-template pTemplate="header">
-                    <tr>
-                        <th style="width: 40%">Producto</th>
-                        <th style="width: 15%">Cantidad</th>
-                        <th style="width: 15%">Precio Unit.</th>
-                        <th style="width: 15%">Subtotal</th>
-                        <th style="width: 15%">Acción</th>
-                    </tr>
-                </ng-template>
-                <ng-template pTemplate="body" let-control let-i="rowIndex">
-                    <tr [formGroup]="control">
-                        <td>
-                            <p-dropdown [options]="productos" formControlName="productoId" optionLabel="label"
-                                optionValue="value" placeholder="Seleccionar..." appendTo="body"
-                                [style]="{'width':'100%'}">
-                            </p-dropdown>
-                        </td>
-                        <td>
-                            <p-inputNumber formControlName="cantidad" [min]="1" [showButtons]="true"
-                                buttonLayout="horizontal" [step]="1">
-                            </p-inputNumber>
-                        </td>
-                        <td>
-                            <p-inputNumber formControlName="precioUnitario" mode="currency" currency="PEN"
-                                locale="es-PE">
-                            </p-inputNumber>
-                        </td>
-                        <td class="font-bold text-right">
-                            {{ control.get('subtotal')?.value | currency:'PEN':'S/ ' }}
-                        </td>
-                        <td>
-                            <p-button icon="bi bi-trash" severity="danger" [text]="true" (onClick)="removeDetalle(i)">
-                            </p-button>
-                        </td>
-                    </tr>
-                </ng-template>
-            </p-table>
+            <button type="button" class="btn-agregar-producto" (click)="agregarProducto()">
+                + Agregar Producto
+            </button>
+
+            <!-- IGV Toggle -->
+            <div class="igv-row">
+                <label class="switch-label">
+                    <div class="toggle-track" [class.on]="aplicaIgv" (click)="aplicaIgv = !aplicaIgv">
+                        <div class="toggle-thumb"></div>
+                    </div>
+                    <div>
+                        <strong>Aplicar IGV (18%)</strong>
+                        <div class="igv-hint">Divide el importe total entre 1.18 para obtener la base imponible</div>
+                    </div>
+                </label>
+            </div>
+
+            <!-- Totales -->
+            <div class="totales-section">
+                <div class="total-row">
+                    <span>Subtotal:</span>
+                    <span>S/ {{ subtotal | number:'1.2-2' }}</span>
+                </div>
+                <div class="total-row" *ngIf="aplicaIgv">
+                    <span>IGV (18%):</span>
+                    <span>S/ {{ igvAmount | number:'1.2-2' }}</span>
+                </div>
+                <hr />
+                <div class="total-row total-final">
+                    <span><strong>Total:</strong></span>
+                    <span><strong>S/ {{ total | number:'1.2-2' }}</strong></span>
+                </div>
+            </div>
         </div>
 
-        <!-- Footer / Totals -->
-        <div class="flex justify-content-end align-items-center gap-4 mt-3 p-3">
-            <span class="text-xl">Total a Pagar:</span>
-            <span class="text-3xl font-bold text-primary">{{ calculateTotal() | currency:'PEN':'S/ ' }}</span>
+        <!-- ===== ACCIONES ===== -->
+        <div class="acciones-footer">
+            <button type="button" class="btn-sec" (click)="onCancel()">Cancelar</button>
+            <button type="submit" class="btn-primary" [disabled]="enviando">
+                {{ enviando ? 'Guardando...' : 'Guardar Compra' }}
+            </button>
         </div>
 
-        <div class="flex justify-content-end gap-2 mt-4">
-            <p-button label="Cancelar" severity="secondary" (onClick)="onCancel()"></p-button>
-            <p-button label="Guardar Compra" icon="bi bi-check" type="submit"></p-button>
-        </div>
     </form>
 </div>
-<p-toast></p-toast>
+
+<!-- Click outside closes proveedor dropdown -->
+<div class="overlay-transparent" *ngIf="showProveedorList" (click)="showProveedorList = false"></div>

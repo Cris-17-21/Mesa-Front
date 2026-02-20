@@ -101,8 +101,18 @@ export const routes: Routes = [
             loadComponent: () => import('./pages/compras/components/compra-list/compra-list.component').then(m => m.CompraListComponent)
           },
           {
-            path: 'gestion/nuevo',
-            loadComponent: () => import('./pages/compras/components/compra-form/compra-form.component').then(m => m.CompraFormComponent)
+            path: 'gestion',
+            children: [
+              {
+                path: '',
+                redirectTo: 'nuevo',
+                pathMatch: 'full'
+              },
+              {
+                path: 'nuevo',
+                loadComponent: () => import('./pages/compras/components/compra-form/compra-form.component').then(m => m.CompraFormComponent)
+              }
+            ]
           },
           {
             path: 'proveedores',
