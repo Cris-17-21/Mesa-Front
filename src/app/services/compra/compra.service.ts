@@ -1,56 +1,65 @@
-import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
-import { Compra } from '../../models/compra/compra.model';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { environment } from '../../core/environment/environment';
 
-@Injectable({
-    providedIn: 'root'
-})
+export interface DetallePedidoCompraDto {
+    idDetallePedido?: number;
+    idProducto: number;
+    nombreProducto?: string;
+    cantidadPedida: number;
+    costoUnitario: number;
+    subtotalLinea: number;
+}
+
+export interface PedidoCompraDto {
+    idPedidoCompra?: number;
+    idProveedor: number;
+    razonSocialProveedor?: string;
+    fechaEntregaEsperada?: string | null;
+    idTipoPago?: number | null;
+    nombreTipoPago?: string;
+    referencia?: string;
+    observaciones?: string;
+    estadoPedido?: string;
+    totalPedido?: number;
+    aplicaIgv: boolean;
+    detalles: DetallePedidoCompraDto[];
+}
+
+export interface TiposPagoDto {
+    idTipoPago: number;
+    tipoPago: string;
+}
+
+@Injectable({ providedIn: 'root' })
 export class CompraService {
+    private http = inject(HttpClient);
+    private API_URL = `${environment.apiUrl}/compras`;
+    private TIPOS_PAGO_URL = `${environment.apiUrl}/tipos-pago`;
 
-    // Mock data para simular backend por ahora
-    private compras: Compra[] = [
-        {
-            id: 1,
-            proveedorId: 101,
-            proveedorNombre: 'Distribuidora Alimentos SAC',
-            fecha: new Date().toISOString(),
-            nroComprobante: 'F001-12345',
-            total: 1500.50,
-            estado: 'PAGADO',
-            detalles: []
-        },
-        {
-            id: 2,
-            proveedorId: 102,
-            proveedorNombre: 'Bebidas del Norte',
-            fecha: new Date().toISOString(),
-            nroComprobante: 'B002-98765',
-            total: 500.00,
-            estado: 'PENDIENTE',
-            detalles: []
-        }
-    ];
-
-    constructor() { }
-
-    getCompras(): Observable<Compra[]> {
-        return of(this.compras);
+    getAll(): Observable<PedidoCompraDto[]> {
+        return this.http.get<PedidoCompraDto[]>(this.API_URL);
     }
 
-    getCompraById(id: number): Observable<Compra | undefined> {
-        const compra = this.compras.find(c => c.id === id);
-        return of(compra);
+    getById(id: number): Observable<PedidoCompraDto> {
+        return this.http.get<PedidoCompraDto>(`${this.API_URL}/${id}`);
     }
 
-    createCompra(compra: Compra): Observable<Compra> {
-        compra.id = this.compras.length + 1;
-        compra.fecha = new Date().toISOString();
-        this.compras.push(compra);
-        return of(compra);
+    create(dto: PedidoCompraDto): Observable<PedidoCompraDto> {
+        return this.http.post<PedidoCompraDto>(this.API_URL, dto);
     }
 
-    deleteCompra(id: number): Observable<boolean> {
-        this.compras = this.compras.filter(c => c.id !== id);
-        return of(true);
+    delete(id: number): Observable<void> {
+        return this.http.delete<void>(`${this.API_URL}/${id}`);
     }
+
+    getTiposPago(): Observable<TiposPagoDto[]> {
+        return this.http.get<TiposPagoDto[]>(this.TIPOS_PAGO_URL);
+    }
+
+    // Legacy shims (keep compra-list working)
+    getCompras = this.getAll.bind(this);
+    createCompra(dto: any) { return this.create(dto); }
+    deleteCompra(id: number) { return this.delete(id); }
 }

@@ -1,8 +1,7 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
-import { CompraService } from '../../../../services/compra/compra.service';
-import { Compra } from '../../../../models/compra/compra.model';
+import { CompraService, PedidoCompraDto } from '../../../../services/compra/compra.service';
 
 // PrimeNG Imports
 import { TableModule } from 'primeng/table';
@@ -35,7 +34,7 @@ export class CompraListComponent implements OnInit {
     private compraService = inject(CompraService);
     private router = inject(Router);
 
-    compras: Compra[] = [];
+    compras: PedidoCompraDto[] = [];
     loading: boolean = true;
 
     ngOnInit() {
@@ -44,7 +43,7 @@ export class CompraListComponent implements OnInit {
 
     loadCompras() {
         this.loading = true;
-        this.compraService.getCompras().subscribe({
+        this.compraService.getAll().subscribe({
             next: (data) => {
                 this.compras = data;
                 this.loading = false;
@@ -57,15 +56,18 @@ export class CompraListComponent implements OnInit {
     }
 
     createCompra() {
-        this.router.navigate(['/compras/nuevo']);
+        this.router.navigate(['/compras/gestion/nuevo']);
     }
 
     getSeverity(estado: string): "success" | "secondary" | "info" | "warning" | "danger" | "contrast" | undefined {
         switch (estado) {
+            case 'Pagado':
             case 'PAGADO':
                 return 'success';
+            case 'Pendiente':
             case 'PENDIENTE':
                 return 'warning';
+            case 'Anulado':
             case 'ANULADO':
                 return 'danger';
             default:
