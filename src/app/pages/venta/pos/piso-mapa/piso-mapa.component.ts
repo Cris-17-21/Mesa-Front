@@ -68,19 +68,22 @@ export class PisoMapaComponent implements OnInit {
       let nombreMesaPadre = '';
 
       if (esUnida) {
-        // Buscamos en la lista de mesas cuál es la mesa "papá"
         const mesaPadre = listaMesas.find(m => m.id === mesa.idPrincipal);
         nombreMesaPadre = mesaPadre ? mesaPadre.codigoMesa : 'Principal';
       }
 
-      // 2. Determinar ID para buscar el pedido
+      // 2. Determinar ID para buscar los pedidos
       const idParaBuscar = mesa.idPrincipal ? mesa.idPrincipal : mesa.id;
 
-      const pedidoActivo = listaPedidos.find(p =>
+      // Buscamos TODOS los pedidos vinculados a esta mesa (pueden ser varios por división)
+      const pedidosDeMesa = listaPedidos.filter(p =>
         p.mesaId === idParaBuscar || p.codigoMesa === mesa.codigoMesa
       );
 
-      const esOcupada = !!pedidoActivo;
+      const esOcupada = pedidosDeMesa.length > 0;
+
+      // Calculamos el total de TODAS las cuentas de la mesa
+      const totalAcumulado = pedidosDeMesa.reduce((sum, p) => sum + p.totalFinal, 0);
 
       return {
         ...mesa,
@@ -92,9 +95,11 @@ export class PisoMapaComponent implements OnInit {
         bgStyle: esOcupada ? '#fff5f5' : '#ffffff',
         textStyle: esOcupada ? '#dc3545' : '#198754',
 
-        pedidoId: pedidoActivo ? pedidoActivo.id : null,   // ← el fix: ID del pedido activo
-        total: pedidoActivo ? pedidoActivo.totalFinal : 0,
-        idTrack: mesa.id || mesa.codigoMesa
+        // pedidoId: tomamos el primero para que al abrir el modal cargue una cuenta válida
+        pedidoId: esOcupada ? pedidosDeMesa[0].id : null,
+        total: totalAcumulado,
+        idTrack: mesa.id || mesa.codigoMesa,
+        cantidadCuentas: pedidosDeMesa.length
       };
     });
   });

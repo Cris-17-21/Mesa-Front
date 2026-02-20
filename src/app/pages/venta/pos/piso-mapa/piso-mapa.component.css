@@ -201,26 +201,47 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 4px;
-    /* Espacio entre precio y texto */
+    gap: 2px;
+    width: 100%;
 }
 
-/* Estilo del Precio */
+.total-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    margin-bottom: 2px;
+}
+
+/* Estilo del Precio Responsivo */
 .precio-texto {
-    font-size: 1.5rem;
-    /* Grande */
+    font-size: clamp(1.1rem, 5vw, 1.4rem);
     font-weight: 800;
-    /* Muy negrita */
-    line-height: 1.2;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.accounts-badge {
+    background: #dc3545;
+    color: white;
+    font-size: 0.65rem;
+    font-weight: 800;
+    padding: 2px 5px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    flex-shrink: 0;
 }
 
 /* Estilo del texto "Ocupado" o "Unida a..." */
 .estado-badge {
-    font-size: 0.85rem;
+    font-size: 0.75rem;
     font-weight: 600;
     text-transform: uppercase;
-    opacity: 0.9;
-    letter-spacing: 0.5px;
+    opacity: 0.8;
+    letter-spacing: 0.3px;
 }
 
 /* Estilo específico para mesas unidas (opcional, cursiva o diferente) */
