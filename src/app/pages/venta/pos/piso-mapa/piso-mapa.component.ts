@@ -85,6 +85,8 @@ export class PisoMapaComponent implements OnInit {
       // Calculamos el total de TODAS las cuentas de la mesa
       const totalAcumulado = pedidosDeMesa.reduce((sum, p) => sum + p.totalFinal, 0);
 
+      console.log(`📍 Mesa ${mesa.codigoMesa}:`, { idParaBuscar, pedidosEncontrados: pedidosDeMesa.length, primerPedido: pedidosDeMesa[0] });
+
       return {
         ...mesa,
         esOcupada,
@@ -131,7 +133,9 @@ export class PisoMapaComponent implements OnInit {
     });
 
     // 2. Actualizar pedidos activos (para pintar las mesas ocupadas)
-    this.pedidoService.listarActivos(sucursal.sucursalId).subscribe();
+    this.pedidoService.listarActivos(sucursal.sucursalId).subscribe(pedidos => {
+      console.log('📋 Pedidos activos recuperados:', pedidos);
+    });
   }
 
   onPisoChange(event: any) {
