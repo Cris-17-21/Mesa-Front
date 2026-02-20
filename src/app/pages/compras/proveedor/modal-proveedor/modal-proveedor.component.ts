@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { ProveedorService } from '../../../../services/compra/proveedor.service';
+import { ConsultaService } from '../../../../services/auxiliar/consulta.service';
 import { Proveedor } from '../../../../models/compra/proveedor.model';
 import { InputTextModule } from 'primeng/inputtext';
 import { ButtonModule } from 'primeng/button';
@@ -21,12 +22,29 @@ import { MessageService } from 'primeng/api';
         <h2>{{ isEditing ? 'Editar' : 'Nuevo' }} Proveedor</h2>
         
         <form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-column gap-3">
+            <!-- Campo RUC/DNI con botón de búsqueda -->
             <div class="field">
-                <label for="ruc" class="block font-bold mb-2">RUC</label>
-                <input id="ruc" type="text" pInputText formControlName="ruc" class="w-full"/>
+                <label for="ruc" class="block font-bold mb-2">RUC / DNI</label>
+                <div style="display:flex; gap:0.5rem; align-items:center;">
+                    <input id="ruc" type="text" pInputText formControlName="ruc"
+                           class="w-full"
+                           placeholder="11 dígitos (RUC) o 8 dígitos (DNI)"
+                           maxlength="11"/>
+                    <button pButton type="button"
+                            icon="pi pi-search"
+                            class="p-button-outlined"
+                            pTooltip="Buscar en SUNAT/RENIEC"
+                            [loading]="buscando"
+                            (click)="buscarDocumento()">
+                    </button>
+                </div>
+                <small class="text-danger" *ngIf="form.get('ruc')?.invalid && form.get('ruc')?.touched">
+                    Ingresa 8 dígitos (DNI) o 11 dígitos (RUC)
+                </small>
             </div>
+
             <div class="field">
-                <label for="razonSocial" class="block font-bold mb-2">Razón Social</label>
+                <label for="razonSocial" class="block font-bold mb-2">Razón Social / Nombre</label>
                 <input id="razonSocial" type="text" pInputText formControlName="razonSocial" class="w-full"/>
             </div>
             <div class="field">
@@ -58,6 +76,7 @@ import { MessageService } from 'primeng/api';
 export class ModalProveedorComponent implements OnInit {
     private fb = inject(FormBuilder);
     private proveedorService = inject(ProveedorService);
+    private consultaService = inject(ConsultaService);
     private router = inject(Router);
     private route = inject(ActivatedRoute);
     private messageService = inject(MessageService);
@@ -65,10 +84,11 @@ export class ModalProveedorComponent implements OnInit {
     form: FormGroup;
     isEditing = false;
     currentId: number | null = null;
+    buscando = false;
 
     constructor() {
         this.form = this.fb.group({
-            ruc: ['', [Validators.required, Validators.minLength(11), Validators.maxLength(11)]],
+            ruc: ['', [Validators.required, Validators.pattern(/^\d{8}$|^\d{11}$/)]],
             razonSocial: ['', Validators.required],
             direccion: [''],
             telefono: [''],
@@ -94,6 +114,47 @@ export class ModalProveedorComponent implements OnInit {
                 this.router.navigate(['/compras/proveedores']);
             }
         });
+    }
+
+    buscarDocumento() {
+        const doc: string = (this.form.get('ruc')?.value || '').trim();
+
+        if (doc.length === 11) {
+            // Búsqueda por RUC en SUNAT
+            this.buscando = true;
+            this.consultaService.consultaRuc(doc).subscribe({
+                next: (ruc) => {
+                    this.form.patchValue({
+                        razonSocial: ruc.razon_social,
+                        direccion: ruc.direccion
+                    });
+                    this.messageService.add({ severity: 'success', summary: 'RUC encontrado', detail: ruc.razon_social });
+                    this.buscando = false;
+                },
+                error: () => {
+                    this.messageService.add({ severity: 'error', summary: 'No encontrado', detail: 'No se encontró el RUC en SUNAT' });
+                    this.buscando = false;
+                }
+            });
+        } else if (doc.length === 8) {
+            // Búsqueda por DNI en RENIEC
+            this.buscando = true;
+            this.consultaService.consultaDni(doc).subscribe({
+                next: (dni) => {
+                    this.form.patchValue({
+                        razonSocial: dni.full_name
+                    });
+                    this.messageService.add({ severity: 'success', summary: 'DNI encontrado', detail: dni.full_name });
+                    this.buscando = false;
+                },
+                error: () => {
+                    this.messageService.add({ severity: 'error', summary: 'No encontrado', detail: 'No se encontró el DNI en RENIEC' });
+                    this.buscando = false;
+                }
+            });
+        } else {
+            this.messageService.add({ severity: 'warn', summary: 'Aviso', detail: 'Ingresa 8 dígitos (DNI) o 11 dígitos (RUC) antes de buscar' });
+        }
     }
 
     onSubmit() {
