@@ -35,7 +35,7 @@ import { MessageService } from 'primeng/api';
         .seccion-card { background:#fff; border:1px solid #dee2e6; border-radius:10px; padding:1.5rem; margin-bottom:1.5rem; }
         .seccion-titulo { display:flex; align-items:center; gap:.6rem; margin-bottom:.5rem; }
         .seccion-titulo h3 { margin:0; font-size:1.1rem; }
-        .linea-roja { border:none; border-top:2px solid #c0392b; margin-bottom:1.2rem; }
+        .linea-roja { border:none; border-top:2px solid #a9b9b9ee; margin-bottom:1.2rem; }
         .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
         .field { display:flex; flex-direction:column; gap:.3rem; }
         .field label { font-weight:600; font-size:.85rem; color:#495057; }
@@ -221,7 +221,7 @@ export class CompraFormComponent implements OnInit {
 
         const v = this.form.value;
         const dto: PedidoCompraDto = {
-            idProveedor: this.selectedProveedor.id,
+            idProveedor: this.selectedProveedor.idProveedor,
             fechaEntregaEsperada: v.fechaEntregaEsperada
                 ? this.formatDate(v.fechaEntregaEsperada)
                 : null,

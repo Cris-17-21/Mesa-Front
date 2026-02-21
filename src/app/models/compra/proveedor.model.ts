@@ -1,12 +1,12 @@
 export interface Proveedor {
-    id: number;
+    idProveedor: number;
     ruc: string;
     razonSocial: string;
+    nombreComercial?: string;
     direccion: string;
     telefono: string;
-    correo: string;
-    contacto: string;
-    estado: string;
+    correo?: string;
+    estado?: string;
 }
 
 export interface CreateProveedorDto {
@@ -14,8 +14,7 @@ export interface CreateProveedorDto {
     razonSocial: string;
     direccion: string;
     telefono: string;
-    correo: string;
-    contacto: string;
+    correo: string
 }
 
 export interface UpdateProveedorDto {
@@ -24,6 +23,5 @@ export interface UpdateProveedorDto {
     direccion?: string;
     telefono?: string;
     correo?: string;
-    contacto?: string;
     estado?: string;
 }

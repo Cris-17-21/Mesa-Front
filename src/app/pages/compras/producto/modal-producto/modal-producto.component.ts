@@ -51,7 +51,7 @@ import { Proveedor } from '../../../../models/compra/proveedor.model';
                 <!-- Categoría -->
                 <div class="col-12 md:col-6 field">
                     <label for="idCategoria" class="block font-bold mb-2">Categoría</label>
-                    <p-dropdown [options]="categorias" formControlName="idCategoria" optionLabel="nombre" optionValue="id" placeholder="Seleccione Categoría" [style]="{width: '100%'}" (onChange)="onCategoriaChange($event)"></p-dropdown>
+                    <p-dropdown [options]="categorias" formControlName="idCategoria" optionLabel="nombreCategoria" optionValue="idCategoria" placeholder="Seleccione Categoría" [style]="{width: '100%'}" (onChange)="onCategoriaChange($event)"></p-dropdown>
                 </div>
 
                 <!-- Tipos (Dependiente de Categoría) -->
@@ -63,7 +63,7 @@ import { Proveedor } from '../../../../models/compra/proveedor.model';
                 <!-- Proveedor -->
                 <div class="col-12 md:col-6 field">
                     <label for="idProveedor" class="block font-bold mb-2">Proveedor</label>
-                    <p-dropdown [options]="proveedores" formControlName="idProveedor" optionLabel="razonSocial" optionValue="id" placeholder="Seleccione Proveedor" [style]="{width: '100%'}" [filter]="true" filterBy="razonSocial"></p-dropdown>
+                    <p-dropdown [options]="proveedores" formControlName="idProveedor" optionLabel="razonSocial" optionValue="idProveedor" placeholder="Seleccione Proveedor" [style]="{width: '100%'}" [filter]="true" filterBy="razonSocial"></p-dropdown>
                 </div>
 
                 <!-- Precio Venta -->
