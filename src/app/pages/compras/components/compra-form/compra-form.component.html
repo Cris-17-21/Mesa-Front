@@ -98,9 +98,10 @@
                         <div class="field detalle-producto">
                             <label>Producto</label>
                             <select class="campo-input" formControlName="idProducto" (change)="onProductoChange(i)">
-                                <option [ngValue]="null">Seleccionar producto...</option>
-                                <option *ngFor="let p of productos" [ngValue]="p.idProducto">{{ p.nombreProducto }}
-                                </option>
+                                <option [ngValue]="null">{{ selectedProveedor ? 'Seleccionar producto...' : 'Primero
+                                    seleccione un proveedor' }}</option>
+                                <option *ngFor="let p of productosFiltrados" [ngValue]="p.idProducto">{{
+                                    p.nombreProducto }}</option>
                             </select>
                         </div>
 

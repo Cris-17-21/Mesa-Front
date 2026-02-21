@@ -98,6 +98,7 @@ export class CompraFormComponent implements OnInit {
     proveedores: Proveedor[] = [];
     proveedoresFiltrados: Proveedor[] = [];
     productos: Producto[] = [];
+    productosFiltrados: Producto[] = [];
     tiposPago: TiposPagoDto[] = [];
 
     proveedorBusqueda = '';
@@ -148,11 +149,23 @@ export class CompraFormComponent implements OnInit {
         this.selectedProveedor = p;
         this.proveedorBusqueda = p.razonSocial;
         this.showProveedorList = false;
+        // DEBUG: ver qué tiene this.productos
+        console.log('Proveedor seleccionado:', p.idProveedor, typeof p.idProveedor);
+        console.log('Total productos:', this.productos.length);
+        console.log('idProveedor de cada producto:', this.productos.map(pr => ({ id: pr.idProducto, nombre: pr.nombreProducto, idProv: pr.idProveedor, tipoProv: typeof pr.idProveedor })));
+        // Filtrar productos de este proveedor (Number() por si acaso viene string del API)
+        this.productosFiltrados = this.productos.filter(
+            prod => Number(prod.idProveedor) === Number(p.idProveedor)
+        );
+        console.log('Productos filtrados:', this.productosFiltrados.length);
+        // Limpiar selección de productos en las filas al cambiar proveedor
+        this.detalles.controls.forEach(ctrl => ctrl.patchValue({ idProducto: null, costoUnitario: 0, subtotalLinea: 0 }));
     }
 
     limpiarProveedor() {
         this.selectedProveedor = null;
         this.proveedorBusqueda = '';
+        this.productosFiltrados = [];
     }
 
     // --- Detalles FormArray ---
