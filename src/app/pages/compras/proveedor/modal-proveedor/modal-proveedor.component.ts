@@ -59,11 +59,6 @@ import { MessageService } from 'primeng/api';
                 <label for="correo" class="block font-bold mb-2">Correo</label>
                 <input id="correo" type="email" pInputText formControlName="correo" class="w-full"/>
             </div>
-            <div class="field">
-                <label for="contacto" class="block font-bold mb-2">Contacto</label>
-                <input id="contacto" type="text" pInputText formControlName="contacto" class="w-full"/>
-            </div>
-
             <div class="flex justify-content-end gap-2 mt-4">
                 <button pButton type="button" label="Cancelar" class="p-button-secondary" (click)="onCancel()"></button>
                 <button pButton type="submit" [label]="isEditing ? 'Actualizar' : 'Guardar'" [disabled]="form.invalid"></button>
@@ -92,8 +87,7 @@ export class ModalProveedorComponent implements OnInit {
             razonSocial: ['', Validators.required],
             direccion: [''],
             telefono: [''],
-            correo: ['', [Validators.email]],
-            contacto: ['']
+            correo: ['', [Validators.email]]
         });
     }
 

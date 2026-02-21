@@ -112,10 +112,6 @@ import { HasPermissionDirective } from '../../../core/directives/has-permission.
                     <label for="catNombre">Nombre</label>
                     <input type="text" pInputText id="catNombre" formControlName="nombre" class="w-full" autofocus />
                 </div>
-                <div class="field">
-                    <label for="catDesc">Descripción</label>
-                    <input type="text" pInputText id="catDesc" formControlName="descripcion" class="w-full" />
-                </div>
                 <div class="flex justify-content-end gap-2 mt-4">
                     <button pButton label="Cancelar" class="p-button-text" (click)="categoriaDialog = false"></button>
                     <button pButton label="Guardar" type="submit" [disabled]="categoriaForm.invalid"></button>
