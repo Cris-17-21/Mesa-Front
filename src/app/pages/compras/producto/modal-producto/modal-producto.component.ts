@@ -1,18 +1,12 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { ProductoService } from '../../../../services/inventario/producto.service';
 import { CategoriaService } from '../../../../services/inventario/categoria.service';
 import { TipoProductoService } from '../../../../services/inventario/tipo-producto.service';
 import { ProveedorService } from '../../../../services/compra/proveedor.service';
-import { InputTextModule } from 'primeng/inputtext';
-import { ButtonModule } from 'primeng/button';
-import { CardModule } from 'primeng/card';
 import { ToastModule } from 'primeng/toast';
-import { DropdownModule } from 'primeng/dropdown';
-import { MultiSelectModule } from 'primeng/multiselect';
-import { InputNumberModule } from 'primeng/inputnumber';
 import { MessageService } from 'primeng/api';
 import { Categoria } from '../../../../models/inventario/categoria.model';
 import { TipoProducto } from '../../../../models/inventario/tipo-producto.model';
@@ -24,71 +18,77 @@ import { Proveedor } from '../../../../models/compra/proveedor.model';
     imports: [
         CommonModule,
         ReactiveFormsModule,
-        InputTextModule,
-        ButtonModule,
-        CardModule,
-        ToastModule,
         RouterModule,
-        DropdownModule,
-        MultiSelectModule,
-        InputNumberModule
+        ToastModule
     ],
     providers: [MessageService],
     template: `
     <div class="card p-4" style="max-width: 800px; margin: 2rem auto;">
         <p-toast></p-toast>
         <h2>{{ isEditing ? 'Editar' : 'Nuevo' }} Producto</h2>
-        
-        <form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-column gap-3">
-            
-            <div class="grid">
+
+        <form [formGroup]="form" style="display:flex;flex-direction:column;gap:1rem;">
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+
                 <!-- Nombre -->
-                <div class="col-12 md:col-6 field">
-                    <label for="nombreProducto" class="block font-bold mb-2">Nombre del Producto</label>
-                    <input id="nombreProducto" type="text" pInputText formControlName="nombreProducto" class="w-full"/>
+                <div>
+                    <label style="display:block;font-weight:600;margin-bottom:.3rem;">Nombre del Producto *</label>
+                    <input type="text" formControlName="nombreProducto" style="width:100%;padding:.5rem;border:1px solid #ced4da;border-radius:6px;" placeholder="Ej: Coca-Cola 500ml"/>
                 </div>
 
                 <!-- Categoría -->
-                <div class="col-12 md:col-6 field">
-                    <label for="idCategoria" class="block font-bold mb-2">Categoría</label>
-                    <p-dropdown [options]="categorias" formControlName="idCategoria" optionLabel="nombreCategoria" optionValue="idCategoria" placeholder="Seleccione Categoría" [style]="{width: '100%'}" (onChange)="onCategoriaChange($event)"></p-dropdown>
+                <div>
+                    <label style="display:block;font-weight:600;margin-bottom:.3rem;">Categoría *</label>
+                    <select formControlName="idCategoria" style="width:100%;padding:.5rem;border:1px solid #ced4da;border-radius:6px;height:2.4rem;" (change)="onCategoriaChange($event)">
+                        <option [ngValue]="null">-- Seleccione --</option>
+                        <option *ngFor="let c of categorias" [value]="c.idCategoria">{{ c.nombreCategoria }}</option>
+                    </select>
                 </div>
 
-                <!-- Tipos (Dependiente de Categoría) -->
-                <div class="col-12 md:col-6 field">
-                    <label for="idTipos" class="block font-bold mb-2">Tipos de Producto</label>
-                    <p-multiSelect [options]="filteredTipos" formControlName="idTipos" optionLabel="nombreTipo" optionValue="idTipo" placeholder="Seleccione Tipos" [style]="{width: '100%'}"></p-multiSelect>
+                <!-- Tipos (multiselect nativo) -->
+                <div>
+                    <label style="display:block;font-weight:600;margin-bottom:.3rem;">Tipos de Producto</label>
+                    <select formControlName="idTipos" multiple style="width:100%;padding:.5rem;border:1px solid #ced4da;border-radius:6px;height:5rem;">
+                        <option *ngFor="let t of filteredTipos" [value]="t.idTipo">{{ t.nombreTipo }}</option>
+                    </select>
+                    <small style="color:#6c757d;">Ctrl+clic para seleccionar varios</small>
                 </div>
 
                 <!-- Proveedor -->
-                <div class="col-12 md:col-6 field">
-                    <label for="idProveedor" class="block font-bold mb-2">Proveedor</label>
-                    <p-dropdown [options]="proveedores" formControlName="idProveedor" optionLabel="razonSocial" optionValue="idProveedor" placeholder="Seleccione Proveedor" [style]="{width: '100%'}" [filter]="true" filterBy="razonSocial"></p-dropdown>
+                <div>
+                    <label style="display:block;font-weight:600;margin-bottom:.3rem;">Proveedor</label>
+                    <select formControlName="idProveedor" style="width:100%;padding:.5rem;border:1px solid #ced4da;border-radius:6px;height:2.4rem;">
+                        <option [ngValue]="null">-- Seleccione --</option>
+                        <option *ngFor="let p of proveedores" [value]="p.idProveedor">{{ p.razonSocial }}</option>
+                    </select>
                 </div>
 
                 <!-- Precio Venta -->
-                <div class="col-12 md:col-6 field">
-                    <label for="precioVenta" class="block font-bold mb-2">Precio Venta</label>
-                    <p-inputNumber id="precioVenta" formControlName="precioVenta" mode="currency" currency="PEN" locale="es-PE" class="w-full"></p-inputNumber>
+                <div>
+                    <label style="display:block;font-weight:600;margin-bottom:.3rem;">Precio Venta (S/) *</label>
+                    <input type="number" formControlName="precioVenta" style="width:100%;padding:.5rem;border:1px solid #ced4da;border-radius:6px;" placeholder="0.00" step="0.01" min="0"/>
                 </div>
 
                 <!-- Costo Compra -->
-                <div class="col-12 md:col-6 field">
-                    <label for="costoCompra" class="block font-bold mb-2">Costo Compra</label>
-                    <p-inputNumber id="costoCompra" formControlName="costoCompra" mode="currency" currency="PEN" locale="es-PE" class="w-full"></p-inputNumber>
+                <div>
+                    <label style="display:block;font-weight:600;margin-bottom:.3rem;">Costo Compra (S/)</label>
+                    <input type="number" formControlName="costoCompra" style="width:100%;padding:.5rem;border:1px solid #ced4da;border-radius:6px;" placeholder="0.00" step="0.01" min="0"/>
                 </div>
 
                 <!-- Stock -->
-                <div class="col-12 md:col-6 field">
-                    <label for="stock" class="block font-bold mb-2">Stock Inicial</label>
-                    <p-inputNumber id="stock" formControlName="stock" class="w-full"></p-inputNumber>
+                <div>
+                    <label style="display:block;font-weight:600;margin-bottom:.3rem;">Stock Inicial</label>
+                    <input type="number" formControlName="stock" style="width:100%;padding:.5rem;border:1px solid #ced4da;border-radius:6px;" placeholder="0" min="0"/>
                 </div>
+
             </div>
 
-            <div class="flex justify-content-end gap-2 mt-4">
-                <button pButton type="button" label="Cancelar" class="p-button-secondary" (click)="onCancel()"></button>
-                <button pButton type="submit" [label]="isEditing ? 'Actualizar' : 'Guardar'" [disabled]="form.invalid"></button>
+            <div style="display:flex;justify-content:flex-end;gap:.8rem;margin-top:1rem;">
+                <button type="button" (click)="onCancel()" style="padding:.5rem 1.5rem;border-radius:6px;border:1px solid #6c757d;background:#fff;color:#6c757d;cursor:pointer;">Cancelar</button>
+                <button type="button" (click)="onSubmit()" style="padding:.5rem 1.5rem;border-radius:6px;border:none;background:#3b82f6;color:#fff;cursor:pointer;font-weight:600;">{{ isEditing ? 'Actualizar' : 'Guardar' }}</button>
             </div>
+
         </form>
     </div>
     `,
@@ -115,13 +115,13 @@ export class ModalProductoComponent implements OnInit {
 
     constructor() {
         this.form = this.fb.group({
-            nombreProducto: ['', Validators.required],
-            idCategoria: [null, Validators.required],
+            nombreProducto: [''],
+            idCategoria: [null],
             idTipos: [[]],
-            idProveedor: [null, Validators.required],
-            precioVenta: [null, Validators.required],
+            idProveedor: [null],
+            precioVenta: [null],
             costoCompra: [null],
-            stock: [0, Validators.required],
+            stock: [0],
             estado: [true]
         });
     }
@@ -159,8 +159,9 @@ export class ModalProductoComponent implements OnInit {
     }
 
     onCategoriaChange(event: any) {
-        this.filterTipos(event.value);
-        this.form.patchValue({ idTipos: [] }); // Reset types when category changes
+        const categoryId = +(event.target?.value ?? event.value);
+        this.filterTipos(categoryId);
+        this.form.patchValue({ idTipos: [] });
     }
 
     filterTipos(categoryId: number) {
@@ -168,24 +169,18 @@ export class ModalProductoComponent implements OnInit {
     }
 
     onSubmit() {
-        if (this.form.invalid) return;
         const data = this.form.value;
+        alert('Guardando: ' + JSON.stringify(data));
 
         if (this.isEditing && this.currentId) {
             this.productoService.updateProducto(this.currentId, data).subscribe({
-                next: () => {
-                    this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Producto actualizado' });
-                    setTimeout(() => this.router.navigate(['/compras/productos']), 1000);
-                },
-                error: () => this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Error al actualizar' })
+                next: () => alert('Producto actualizado correctamente'),
+                error: (err) => alert('ERROR al actualizar: ' + JSON.stringify(err))
             });
         } else {
             this.productoService.createProducto(data).subscribe({
-                next: () => {
-                    this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Producto creado' });
-                    setTimeout(() => this.router.navigate(['/compras/productos']), 1000);
-                },
-                error: () => this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Error al crear' })
+                next: () => alert('Producto creado correctamente'),
+                error: (err) => alert('ERROR al crear: ' + JSON.stringify(err))
             });
         }
     }

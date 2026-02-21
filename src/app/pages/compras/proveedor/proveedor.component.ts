@@ -43,7 +43,7 @@ import { HasPermissionDirective } from '../../../core/directives/has-permission.
                     <td>{{ proveedor.telefono }}</td>
                     <td>{{ proveedor.direccion }}</td>                    
                     <td>
-                        <button *appHasPermission="'UPDATE_PROVEEDOR'" pButton icon="bi bi-pencil" class="p-button-rounded p-button-text p-button-warning mr-2" (click)="editProveedor(proveedor.id)"></button>
+                        <button *appHasPermission="'UPDATE_PROVEEDOR'" pButton icon="bi bi-pencil" class="p-button-rounded p-button-text p-button-warning mr-2" (click)="editProveedor(proveedor.idProveedor)"></button>
                         <button *appHasPermission="'DELETE_PROVEEDOR'" pButton icon="bi bi-trash" class="p-button-rounded p-button-text p-button-danger" (click)="deleteProveedor(proveedor)"></button>
                     </td>
                 </tr>
@@ -89,7 +89,7 @@ export class ProveedorComponent implements OnInit {
             header: 'Confirmar Eliminación',
             icon: 'pi pi-exclamation-triangle',
             accept: () => {
-                this.proveedorService.deleteProveedor(proveedor.id).subscribe({
+                this.proveedorService.deleteProveedor(proveedor.idProveedor).subscribe({
                     next: () => {
                         this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Proveedor eliminado' });
                         this.loadProveedores();
