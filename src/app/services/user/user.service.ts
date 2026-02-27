@@ -22,6 +22,11 @@ export class UserService {
     return this.http.get<User[]>(this.API_URL);
   };
 
+  // GET DE TODOS LOS USUARIOS ACTIVOS
+  getAllActiveUsers(): Observable<User[]> {
+    return this.http.get<User[]>(`${this.API_URL}/active`);
+  };
+
   //GET DE USUARIO
   getOptionalUser(id: string): Observable<User> {
     return this.http.get<User>(`${this.API_URL}/${id}`);

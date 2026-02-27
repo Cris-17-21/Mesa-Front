@@ -20,6 +20,11 @@ export class SucursalService {
     return this.http.get<Sucursal[]>(this.API_URL);
   };
 
+  // GET DE TODAS LAS SUCURSALES ACTIVAS
+  getAllActiveSucursales(): Observable<Sucursal[]> {
+    return this.http.get<Sucursal[]>(`${this.API_URL}/active`);
+  };
+
   // GET DE UNA SUCURSAL
   getOptionalSucursal(id: string): Observable<Sucursal> {
     return this.http.get<Sucursal>(`${this.API_URL}/${id}`)

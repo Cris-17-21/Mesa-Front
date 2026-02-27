@@ -225,17 +225,24 @@ export class ModalEmpresaComponent implements OnInit {
 
   private setupViewMode(data: Empresa | null) {
     if (!data) return;
-    this.wizardForm.patchValue(data);
-    this.wizardForm.disable();
+    this.wizardForm.enable();
+    this.wizardForm.patchValue({
+      empresa: data,
+    });
+    this.wizardForm.get('sucursal')?.disable();
+    this.wizardForm.get('user')?.disable();
     if (data.logoUrl) this.previewLogo.set(data.logoUrl);
   }
 
   private setupEditMode(data: Empresa | null) {
     if (!data) return;
     this.wizardForm.enable();
-    this.wizardForm.patchValue(data);
+    this.wizardForm.patchValue({
+      empresa: data,
+    });
     this.wizardForm.get('sucursal')?.disable();
     this.wizardForm.get('user')?.disable();
+    if (data.logoUrl) this.previewLogo.set(data.logoUrl);
   }
 
   private setupCreateMode() {

@@ -20,6 +20,11 @@ export class EmpresaService {
     return this.http.get<Empresa[]>(this.API_URL);
   };
 
+  // GET DE TODAS LAS EMPRESAS ACTIVAS
+  getAllActiveEmpresas(): Observable<Empresa[]> {
+    return this.http.get<Empresa[]>(`${this.API_URL}/active`);
+  };
+
   // GET DE UNA EMPRESA
   getOptionalEmpresa(id: string): Observable<Empresa> {
     return this.http.get<Empresa>(`${this.API_URL}/${id}`)

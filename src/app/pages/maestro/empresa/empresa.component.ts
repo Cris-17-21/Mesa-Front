@@ -49,7 +49,7 @@ export class EmpresaComponent implements OnInit {
   }
 
   loadEmpresas(): void {
-    this.empresaService.getAllEmpresas().subscribe({
+    this.empresaService.getAllActiveEmpresas().subscribe({
       next: (data) => this.empresas.set(data), // Actualizamos el signal
       error: (err) => this.errorMessage('No se pudo cargar las empresas', err)
     });
@@ -70,7 +70,17 @@ export class EmpresaComponent implements OnInit {
     this.loading.set(true);
 
     if (isEdit) {
-      this.empresaService.updateEmpresa(data, data.id)
+      const empresaId = this.selectedEmpresa()?.id;
+      if (!empresaId) {
+        this.errorMessage('Error interno: No se encontró la empresa a editar');
+        this.loading.set(false);
+        return;
+      }
+      const payloadActualizar = {
+        ...data.empresa,
+        id: empresaId
+      }
+      this.empresaService.updateEmpresa(payloadActualizar, empresaId)
         .pipe(finalize(() => this.loading.set(false)))
         .subscribe({
           next: () => {
@@ -109,7 +119,7 @@ export class EmpresaComponent implements OnInit {
   deleteEmpresa(id: string): void {
     Swal.fire({
       title: '¿Estás seguro?',
-      text: "Esta acción eliminará la empresa de forma permanente.",
+      text: "Esta acción eliminará la empresa de forma permanente y sus datos relacionados.",
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#ef4444',
