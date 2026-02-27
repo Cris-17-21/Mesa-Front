@@ -1,4 +1,4 @@
-import { Component, effect, inject, OnInit, signal, ChangeDetectionStrategy, model, input, output, DestroyRef } from '@angular/core';
+import { Component, effect, inject, OnInit, signal, ChangeDetectionStrategy, model, input, output, DestroyRef, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';

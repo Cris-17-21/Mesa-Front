@@ -44,6 +44,7 @@
     margin-top: -1rem !important;
 }
 
+
 /* ==========================================================================
    ESTRUCTURA Y LAYOUT
    ========================================================================== */
@@ -97,7 +98,7 @@
 }
 
 .wizard-steps-container {
-    margin-bottom: 2rem;
+    margin-bottom: 1rem;
     padding: 0 1rem;
 }
 
@@ -110,6 +111,13 @@
     color: #52525b;
     margin-bottom: 4px;
     display: block;
+}
+
+.optional {
+    font-weight: 400;
+    color: #a1a1aa;
+    font-size: 0.75rem;
+    margin-left: 0.7rem;
 }
 
 .noir-input {

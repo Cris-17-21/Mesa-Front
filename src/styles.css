@@ -1,6 +1,6 @@
 body {
-  font-family: 'Inter', sans-serif;
-  height: 100%;
+    font-family: 'Inter', sans-serif;
+    height: 100%;
 }
 
 /* 1. Botones Minimalistas */
@@ -20,9 +20,10 @@ body {
 }
 
 /* Encabezados: Texto sutil, fondo blanco */
-.p-datatable .p-datatable-thead > tr > th {
+.p-datatable .p-datatable-thead>tr>th {
     background-color: #ffffff !important;
-    color: #71717a !important; /* Gris Zinc 500 */
+    color: #71717a !important;
+    /* Gris Zinc 500 */
     font-size: 0.75rem;
     font-weight: 700;
     text-transform: uppercase;
@@ -32,17 +33,18 @@ body {
 }
 
 /* Cuerpo: Filas blancas con separadores finos */
-.p-datatable .p-datatable-tbody > tr {
+.p-datatable .p-datatable-tbody>tr {
     background-color: #ffffff !important;
     color: #18181b !important;
     transition: background 0.2s;
 }
 
-.p-datatable .p-datatable-tbody > tr:hover {
-    background-color: #fafafa !important; /* Hover casi imperceptible */
+.p-datatable .p-datatable-tbody>tr:hover {
+    background-color: #fafafa !important;
+    /* Hover casi imperceptible */
 }
 
-.p-datatable .p-datatable-tbody > tr > td {
+.p-datatable .p-datatable-tbody>tr>td {
     padding: 1rem !important;
     border-bottom: 1px solid #f4f4f5 !important;
 }
@@ -63,4 +65,23 @@ body {
 
 .swal2-container {
     z-index: 99999 !important;
+}
+
+/* PASO ACTIVO */
+.p-steps .p-steps-item.p-steps-item-active .p-steps-number {
+    background: #18181b !important;
+    border-color: #18181b !important;
+    color: #ffffff !important;
+}
+
+/* TEXTO ACTIVO */
+.p-steps .p-steps-item.p-steps-item-active .p-steps-title {
+    color: #18181b !important;
+    font-weight: 700 !important;
+}
+
+/* TODOS los pasos hasta el activo */
+.p-steps .p-steps-item[aria-current="step"],
+.p-steps .p-steps-item[aria-current="step"]~.p-steps-item {
+    /* solo ejemplo */
 }

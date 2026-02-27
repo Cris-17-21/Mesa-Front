@@ -16,7 +16,7 @@
             </h3>
 
             <div class="field flex-1">
-                <label for="rucInput" class="label-noir">N° Documento (RUC)</label>
+                <label for="rucInput" class="label-noir">N° Documento (RUC)*</label>
                 <div class="p-inputgroup">
                     <input id="rucInput" pInputText formControlName="ruc" class="noir-input" maxlength="11"
                         placeholder="11 dígitos" (keyup.enter)="consultarRuc()"
@@ -35,7 +35,7 @@
 
             <div class="field-row">
                 <div class="field flex-2">
-                    <label for="razonSocialInput" class="label-noir">Razón Social</label>
+                    <label for="razonSocialInput" class="label-noir">Razón Social*</label>
                     <input id="razonSocialInput" pInputText formControlName="razonSocial" class="noir-input"
                         [class.ng-invalid]="isFieldInvalid('empresa.razonSocial')" />
                     @if (isFieldInvalid('empresa.razonSocial')) {
@@ -45,13 +45,15 @@
             </div>
 
             <div class="field">
-                <label for="direccionFiscalInput" class="label-noir">Dirección Fiscal</label>
+                <label for="direccionFiscalInput" class="label-noir">Dirección Fiscal<span
+                        class="optional">(Opcional)</span></label>
                 <input id="direccionFiscalInput" pInputText formControlName="direccionFiscal" class="noir-input" />
             </div>
 
             <div class="field-row">
                 <div class="field flex-1">
-                    <label for="telefonoCorpInput" class="label-noir">Teléfono Corporativo</label>
+                    <label for="telefonoCorpInput" class="label-noir">Teléfono Corporativo<span
+                            class="optional">(Opcional)</span></label>
                     <input id="telefonoCorpInput" pInputText formControlName="telefono" class="noir-input"
                         placeholder="912345678" maxlength="9" />
                     @if (isFieldInvalid('empresa.telefono')) {
@@ -59,7 +61,8 @@
                     }
                 </div>
                 <div class="field flex-1">
-                    <label for="emailInput" class="label-noir">Email de Contacto</label>
+                    <label for="emailInput" class="label-noir">Email de Contacto<span
+                            class="optional">(Opcional)</span></label>
                     <input id="emailInput" pInputText formControlName="email" class="noir-input"
                         placeholder="ejemplo@corporacion.com" />
                     @if (isFieldInvalid('empresa.email')) {
@@ -69,7 +72,7 @@
             </div>
 
             <div class="field">
-                <label class="label-noir">Logo</label>
+                <label class="label-noir">Logo<span class="optional">(Opcional)</span></label>
                 <div class="logo-uploader" (click)="!isReadOnly() && fileInput.click()"
                     (keydown.enter)="!isReadOnly() && fileInput.click()" [class.disabled]="isReadOnly()"
                     [attr.tabindex]="isReadOnly() ? -1 : 0" role="button" aria-label="Subir logo de empresa">
@@ -92,7 +95,7 @@
             <h3 class="step-title">2. Detalles de la Sede Principal</h3>
 
             <div class="field">
-                <label for="nombreSedeInput" class="label-noir">Nombre Comercial de la Sede</label>
+                <label for="nombreSedeInput" class="label-noir">Nombre Comercial de la Sede*</label>
                 <input id="nombreSedeInput" pInputText formControlName="nombre" class="noir-input"
                     placeholder="Ej: Central Moyobamba" [class.ng-invalid]="isFieldInvalid('sucursal.nombre')" />
                 @if (isFieldInvalid('sucursal.nombre')) {
@@ -102,12 +105,14 @@
 
             <div class="field-row">
                 <div class="field flex-2">
-                    <label for="direccionSedeInput" class="label-noir">Dirección Física</label>
+                    <label for="direccionSedeInput" class="label-noir">Dirección Física<span
+                            class="optional">(Opcional)</span></label>
                     <input id="direccionSedeInput" pInputText formControlName="direccion" class="noir-input"
                         placeholder="Jr. Amorarca 712" />
                 </div>
                 <div class="field flex-1">
-                    <label for="telefonoSedeInput" class="label-noir">Teléfono Sede</label>
+                    <label for="telefonoSedeInput" class="label-noir">Teléfono Sede<span
+                            class="optional">(Opcional)</span></label>
                     <input id="telefonoSedeInput" pInputText formControlName="telefono" class="noir-input" maxlength="9"
                         placeholder="912345678" />
                     @if (isFieldInvalid('sucursal.telefono')) {
@@ -123,7 +128,7 @@
             <h3 class="step-title">3. Credenciales del Administrador</h3>
 
             <div class="field flex-1">
-                <label for="dniInput" class="label-noir">N° Documento (DNI)</label>
+                <label for="dniInput" class="label-noir">N° Documento (DNI)*</label>
                 <div class="p-inputgroup">
                     <input id="dniInput" pInputText formControlName="numeroDocumento" maxlength="8"
                         placeholder="8 dígitos" (keyup.enter)="consultarDni()" class="noir-input"
@@ -142,17 +147,17 @@
 
             <div class="field-row">
                 <div class="field flex-1">
-                    <label for="nombresInput" class="label-noir">Nombres</label>
+                    <label for="nombresInput" class="label-noir">Nombres*</label>
                     <input id="nombresInput" pInputText formControlName="nombres" class="noir-input"
                         [class.ng-invalid]="isFieldInvalid('user.nombres')" />
                 </div>
                 <div class="field flex-1">
-                    <label for="apPaternoInput" class="label-noir">Ap. Paterno</label>
+                    <label for="apPaternoInput" class="label-noir">Ap. Paterno*</label>
                     <input id="apPaternoInput" pInputText formControlName="apellidoPaterno" class="noir-input"
                         [class.ng-invalid]="isFieldInvalid('user.apellidoPaterno')" />
                 </div>
                 <div class="field flex-1">
-                    <label for="apMaternoInput" class="label-noir">Ap. Materno</label>
+                    <label for="apMaternoInput" class="label-noir">Ap. Materno*</label>
                     <input id="apMaternoInput" pInputText formControlName="apellidoMaterno" class="noir-input"
                         [class.ng-invalid]="isFieldInvalid('user.apellidoMaterno')" />
                 </div>
@@ -160,13 +165,14 @@
 
             <div class="field-row">
                 <div class="field flex-1">
-                    <label for="telefonoUserInput" class="label-noir">Teléfono</label>
+                    <label for="telefonoUserInput" class="label-noir">Teléfono<span
+                            class="optional">(Opcional)</span></label>
                     <input id="telefonoUserInput" pInputText formControlName="telefono" class="noir-input"
                         [class.ng-invalid]="isFieldInvalid('user.telefono')" placeholder="912334567" />
                     @if (isFieldInvalid('user.telefono')) { <small class="error-text">Teléfono inválido.</small> }
                 </div>
                 <div class="field flex-1">
-                    <label for="emailUserInput" class="label-noir">Email</label>
+                    <label for="emailUserInput" class="label-noir">Email<span class="optional">(Opcional)</span></label>
                     <input id="emailUserInput" pInputText type="email" formControlName="email" class="noir-input"
                         [class.ng-invalid]="isFieldInvalid('user.email')" placeholder="admin@gmail.com" />
                     @if (isFieldInvalid('user.email')) { <small class="error-text">Email inválido.</small> }
@@ -175,13 +181,13 @@
 
             <div class="field-row">
                 <div class="field flex-1">
-                    <label for="usernameInput" class="label-noir">Usuario (Login)</label>
+                    <label for="usernameInput" class="label-noir">Usuario (Login)*</label>
                     <input id="usernameInput" pInputText formControlName="username" class="noir-input"
                         [class.ng-invalid]="isFieldInvalid('user.username')" />
                     @if (isFieldInvalid('user.username')) { <small class="error-text">Usuario requerido.</small> }
                 </div>
                 <div class="field flex-1">
-                    <label for="passwordInput" class="label-noir">Password</label>
+                    <label for="passwordInput" class="label-noir">Contraseña*</label>
                     <input id="passwordInput" pInputText type="password" formControlName="password" class="noir-input"
                         [class.ng-invalid]="isFieldInvalid('user.password')" />
                     @if (isFieldInvalid('user.password')) { <small class="error-text">Mínimo 6 caracteres.</small> }
