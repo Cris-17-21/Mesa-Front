@@ -1,6 +1,7 @@
-import { Component, EventEmitter, inject, Input, OnChanges, OnInit, Output, signal, SimpleChanges } from '@angular/core';
+import { Component, effect, inject, OnInit, signal, ChangeDetectionStrategy, model, input, output, DestroyRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 // PrimeNG
 import { DialogModule } from 'primeng/dialog';
@@ -15,52 +16,55 @@ import { Empresa } from '../../../../models/maestro/empresa.model';
 import { RoleService } from '../../../../services/config/role.service';
 import { ConsultaService } from '../../../../services/auxiliar/consulta.service';
 
+export interface EmpresaWizardData {
+  isEdit: boolean;
+  data: any;
+}
+
 @Component({
   selector: 'app-modal-empresa',
   standalone: true,
   imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    DialogModule,
-    StepsModule,
-    ButtonModule,
-    InputTextModule,
-    SelectModule
+    CommonModule, ReactiveFormsModule, DialogModule,
+    StepsModule, ButtonModule, InputTextModule, SelectModule
   ],
   templateUrl: './modal-empresa.component.html',
-  styleUrl: './modal-empresa.component.css'
+  styleUrl: './modal-empresa.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush // 1. Activamos OnPush
 })
-export class ModalEmpresaComponent implements OnInit, OnChanges {
-  private fb = inject(FormBuilder);
-  private roleService = inject(RoleService);
-  private consultaService = inject(ConsultaService);
+export class ModalEmpresaComponent implements OnInit {
+  // Inyecciones
+  private readonly fb = inject(FormBuilder);
+  private readonly roleService = inject(RoleService);
+  private readonly consultaService = inject(ConsultaService);
+  private readonly destroyRef = inject(DestroyRef);
 
-  @Input() visible = false;
-  @Input() isReadOnly = false;
-  @Input() dataToEdit: Empresa | null = null;
-  @Output() visibleChange = new EventEmitter<boolean>();
-  @Output() onComplete = new EventEmitter<any>();
-  @Input() loading = false;
+  // Modelos
+  readonly visible = model(false);
+  readonly isReadOnly = input(false);
+  readonly dataToEdit = input<Empresa | null>(null);
+  readonly loading = input(false);
+  readonly onComplete = output<EmpresaWizardData>();
 
   // Signals para estado reactivo
-  currentStep = signal(0);
-  previewLogo = signal<string | null>(null);
-  adminRoleId = signal<string | null>(null);
-  searchingRuc = signal(false);
-  searchingDni = signal(false);
+  readonly currentStep = signal(0);
+  readonly previewLogo = signal<string | null>(null);
+  readonly adminRoleId = signal<string | null>(null);
+  readonly searchingRuc = signal(false);
+  readonly searchingDni = signal(false);
 
-  steps = signal<MenuItem[]>([
+  readonly steps = signal<MenuItem[]>([
     { label: 'Empresa' },
     { label: 'Sucursal' },
     { label: 'Administrador' }
   ]);
 
-  tiposDoc = [
+  readonly tiposDoc = [
     { label: 'DNI', value: 'DNI' },
     { label: 'RUC', value: 'RUC' }
   ];
 
-  wizardForm: FormGroup = this.fb.group({
+  readonly wizardForm: FormGroup = this.fb.group({
     empresa: this.fb.group({
       ruc: ['', [Validators.required, Validators.minLength(11), Validators.maxLength(11), Validators.pattern('^[0-9]*$')]],
       razonSocial: ['', Validators.required],
@@ -89,18 +93,24 @@ export class ModalEmpresaComponent implements OnInit, OnChanges {
     })
   });
 
-  ngOnInit() {
-    this.loadAdminRole();
-    this.setupDocValidation();
+  constructor() {
+    effect(() => {
+      if (this.visible()) {
+        this.resetWizard();
+        const data = this.dataToEdit();
+        if (this.isReadOnly()) {
+          this.setupViewMode(data);
+        } else if (data) {
+          this.setupEditMode(data);
+        } else {
+          this.setupCreateMode();
+        }
+      }
+    });
   }
 
-  ngOnChanges(changes: SimpleChanges) {
-    if (changes['visible']?.currentValue === true) {
-      this.resetWizard();
-      if (this.isReadOnly) this.setupViewMode();
-      else if (this.dataToEdit) this.setupEditMode();
-      else this.setupCreateMode();
-    }
+  ngOnInit() {
+    this.loadAdminRole();
   }
 
   // --- LÓGICA DE NAVEGACIÓN Y UX ---
@@ -125,9 +135,7 @@ export class ModalEmpresaComponent implements OnInit, OnChanges {
 
   private scrollToFirstInvalidControl(groupName: string) {
     setTimeout(() => {
-      const firstInvalidControl = document.querySelector(
-        `[formGroupName="${groupName}"] .ng-invalid`
-      );
+      const firstInvalidControl = document.querySelector(`[formGroupName="${groupName}"] .ng-invalid`);
       if (firstInvalidControl) {
         firstInvalidControl.scrollIntoView({ behavior: 'smooth', block: 'center' });
         (firstInvalidControl as HTMLElement).focus?.();
@@ -177,7 +185,6 @@ export class ModalEmpresaComponent implements OnInit, OnChanges {
     const file = input.files?.[0];
 
     if (file) {
-      // 1. Validamos el tipo de archivo por seguridad (QA Checklist)
       if (!file.type.startsWith('image/')) {
         console.error('El archivo seleccionado no es una imagen');
         return;
@@ -185,42 +192,25 @@ export class ModalEmpresaComponent implements OnInit, OnChanges {
 
       const reader = new FileReader();
       reader.onload = () => {
-        // 2. Actualizamos el Signal para la previsualización en el HTML
         this.previewLogo.set(reader.result as string);
-
-        // 3. Guardamos la referencia en el formulario
-        // Nota: Aquí guardas el nombre o la base64 según lo que espere tu Backend
         this.wizardForm.get('empresa.logoUrl')?.setValue(file.name);
       };
-
       reader.readAsDataURL(file);
     }
   }
 
   // --- MODOS Y CONFIGURACIÓN ---
 
-  private setupDocValidation() {
-    this.wizardForm.get('user.tipoDocumento')?.valueChanges.subscribe(tipo => {
-      const docControl = this.wizardForm.get('user.numeroDocumento');
-      const length = tipo === 'DNI' ? 8 : 11;
-      docControl?.setValidators([
-        Validators.required,
-        Validators.minLength(length),
-        Validators.maxLength(length),
-        Validators.pattern('^[0-9]*$')
-      ]);
-      docControl?.updateValueAndValidity();
-    });
-  }
-
   private loadAdminRole() {
-    this.roleService.getAllRoles().subscribe(roles => {
-      const role = roles.find(r => ['ADMIN', 'ADMIN_RESTAURANTE'].includes(r.name));
-      if (role) {
-        this.adminRoleId.set(role.id);
-        this.wizardForm.get('user.role')?.setValue(role.id);
-      }
-    });
+    this.roleService.getAllRoles()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(roles => {
+        const role = roles.find(r => ['ADMIN', 'ADMIN_RESTAURANTE'].includes(r.name));
+        if (role) {
+          this.adminRoleId.set(role.id);
+          this.wizardForm.get('user.role')?.setValue(role.id);
+        }
+      });
   }
 
   private resetWizard() {
@@ -233,27 +223,30 @@ export class ModalEmpresaComponent implements OnInit, OnChanges {
     });
   }
 
-  private setupViewMode() {
-    this.wizardForm.patchValue(this.dataToEdit!);
+  private setupViewMode(data: Empresa | null) {
+    if (!data) return;
+    this.wizardForm.patchValue(data);
     this.wizardForm.disable();
-    if (this.dataToEdit?.logoUrl) this.previewLogo.set(this.dataToEdit.logoUrl);
+    if (data.logoUrl) this.previewLogo.set(data.logoUrl);
   }
 
-  private setupEditMode() {
+  private setupEditMode(data: Empresa | null) {
+    if (!data) return;
     this.wizardForm.enable();
-    this.wizardForm.patchValue(this.dataToEdit!);
+    this.wizardForm.patchValue(data);
     this.wizardForm.get('sucursal')?.disable();
     this.wizardForm.get('user')?.disable();
   }
 
   private setupCreateMode() {
     this.wizardForm.enable();
+    this.wizardForm.get('user.tipoDocumento')?.disable(); // Respetando tu config inicial
   }
 
   // --- FINALIZACIÓN ---
 
   saveAll() {
-    if (this.loading) return;
+    if (this.loading()) return;
 
     if (this.wizardForm.invalid) {
       this.wizardForm.markAllAsTouched();
@@ -261,12 +254,11 @@ export class ModalEmpresaComponent implements OnInit, OnChanges {
       return;
     }
 
-    this.loading = true;
     const finalData = this.formatDataToUppercase(this.wizardForm.getRawValue());
 
     this.onComplete.emit({
       data: finalData,
-      isEdit: !!this.dataToEdit
+      isEdit: !!this.dataToEdit()
     });
   }
 
@@ -288,7 +280,7 @@ export class ModalEmpresaComponent implements OnInit, OnChanges {
   }
 
   close() {
-    this.visibleChange.emit(false);
+    this.visible.set(false);
   }
 
   isFieldInvalid(path: string): boolean {
