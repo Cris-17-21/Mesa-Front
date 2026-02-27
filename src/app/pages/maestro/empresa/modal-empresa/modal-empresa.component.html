@@ -5,22 +5,24 @@
         <p-steps [model]="steps()" [activeIndex]="currentStep()"></p-steps>
     </div>
 
-    <form [formGroup]="wizardForm" class="form-container">
+    <form [formGroup]="wizardForm" class="form-container" (submit)="saveAll()">
 
         <div *ngIf="currentStep() === 0 || isReadOnly" formGroupName="empresa" class="step-fade">
-            <h3 class="step-title">{{ dataToEdit ? 'Actualizar Información Fiscal' : '1. Información de la Empresa' }}
+            <h3 class="step-title">
+                {{ dataToEdit ? 'Actualizar Información Fiscal' : '1. Información de la Empresa' }}
             </h3>
 
             <div class="field flex-1">
                 <label class="label-noir">N° Documento (RUC)</label>
                 <div class="p-inputgroup">
                     <input pInputText formControlName="ruc" class="noir-input" maxlength="11" placeholder="11 dígitos"
-                        (keyup.enter)="consultarRuc()" />
-                    <button type="button" class="btn-search" (click)="consultarRuc()" [disabled]="loading()">
-                        <i class="bi bi-search" *ngIf="!loading()"></i>
-                        <i class="bi bi-arrow-repeat spin" *ngIf="loading()"></i> </button>
+                        (keyup.enter)="consultarRuc()" [class.ng-invalid]="isFieldInvalid('empresa.ruc')" />
+                    <button type="button" class="btn-search" (click)="consultarRuc()" [disabled]="searchingRuc()">
+                        <i class="bi bi-search" *ngIf="!searchingRuc()"></i>
+                        <i class="bi bi-arrow-repeat spin" *ngIf="searchingRuc()"></i>
+                    </button>
                 </div>
-                <small class="error-text" *ngIf="isFieldInvalid('empresa.ruc')">RUC debe tener 11 números.</small>
+                <small class="error-text" *ngIf="isFieldInvalid('empresa.ruc')">RUC inválido (11 dígitos).</small>
             </div>
 
             <div class="field-row">
@@ -28,35 +30,35 @@
                     <label class="label-noir">Razón Social</label>
                     <input pInputText formControlName="razonSocial" class="noir-input"
                         [class.ng-invalid]="isFieldInvalid('empresa.razonSocial')" />
+                    <small class="error-text" *ngIf="isFieldInvalid('empresa.razonSocial')">La razón social es
+                        obligatoria.</small>
                 </div>
             </div>
 
             <div class="field">
                 <label class="label-noir">Dirección Fiscal</label>
-                <input pInputText formControlName="direccionFiscal" class="noir-input"
-                    [class.ng-invalid]="isFieldInvalid('empresa.direccionFiscal')" />
+                <input pInputText formControlName="direccionFiscal" class="noir-input" />
             </div>
 
-            <div>
-                <div class="field-row">
-                    <div class="field flex-1">
-                        <label class="label-noir">Teléfono Corporativo</label>
-                        <input pInputText formControlName="telefono" class="noir-input" placeholder="Ej: 912345678"
-                            maxlength="9" />
-                        <small class="error-text" *ngIf="isFieldInvalid('empresa.telefono')">Teléfono inválido.</small>
-                    </div>
-                    <div class="field flex-1">
-                        <label class="label-noir">Email de Contacto</label>
-                        <input pInputText formControlName="email" class="noir-input"
-                            placeholder="ejemplo@corporacion.com" />
-                        <small class="error-text" *ngIf="isFieldInvalid('empresa.email')">Email inválido.</small>
-                    </div>
+            <div class="field-row">
+                <div class="field flex-1">
+                    <label class="label-noir">Teléfono Corporativo</label>
+                    <input pInputText formControlName="telefono" class="noir-input" placeholder="912345678"
+                        maxlength="9" />
+                    <small class="error-text" *ngIf="isFieldInvalid('empresa.telefono')">Debe tener 9 dígitos.</small>
+                </div>
+                <div class="field flex-1">
+                    <label class="label-noir">Email de Contacto</label>
+                    <input pInputText formControlName="email" class="noir-input"
+                        placeholder="ejemplo@corporacion.com" />
+                    <small class="error-text" *ngIf="isFieldInvalid('empresa.email')">Formato de email
+                        incorrecto.</small>
                 </div>
             </div>
 
-            <div class="field flex-1">
+            <div class="field">
                 <label class="label-noir">Logo</label>
-                <div class="logo-uploader" (click)="fileInput.click()">
+                <div class="logo-uploader" (click)="!isReadOnly && fileInput.click()" [class.disabled]="isReadOnly">
                     <img *ngIf="previewLogo()" [src]="previewLogo()" class="preview-img">
                     <div *ngIf="!previewLogo()" class="upload-placeholder">
                         <i class="bi bi-image"></i> <span>Subir Logo</span>
@@ -70,105 +72,99 @@
             <h3 class="step-title">2. Detalles de la Sede Principal</h3>
             <div class="field">
                 <label class="label-noir">Nombre Comercial de la Sede</label>
-                <input pInputText formControlName="nombre" class="noir-input" placeholder="Ej: Central Moyobamba" />
-                <small class="error-text" *ngIf="isFieldInvalid('sucursal.nombre')">Rellene el nombre de la
-                    sede.</small>
+                <input pInputText formControlName="nombre" class="noir-input" placeholder="Ej: Central Moyobamba"
+                    [class.ng-invalid]="isFieldInvalid('sucursal.nombre')" />
+                <small class="error-text" *ngIf="isFieldInvalid('sucursal.nombre')">El nombre es obligatorio.</small>
             </div>
             <div class="field-row">
                 <div class="field flex-2">
                     <label class="label-noir">Dirección Física</label>
                     <input pInputText formControlName="direccion" class="noir-input" placeholder="Jr. Amorarca 712" />
-                    <small class="error-text" *ngIf="isFieldInvalid('sucursal.direccion')">Rellene la dirección
-                        física.</small>
                 </div>
                 <div class="field flex-1">
                     <label class="label-noir">Teléfono Sede</label>
                     <input pInputText formControlName="telefono" class="noir-input" maxlength="9"
-                        placeholder="Ej: 912345678" />
+                        placeholder="912345678" />
                     <small class="error-text" *ngIf="isFieldInvalid('sucursal.telefono')">Teléfono inválido.</small>
                 </div>
             </div>
         </div>
 
-        <div *ngIf="!dataToEdit && currentStep() === 2" formGroupName="usuario" class="step-fade">
+        <div *ngIf="!dataToEdit && currentStep() === 2" formGroupName="user" class="step-fade">
             <h3 class="step-title">3. Credenciales del Administrador</h3>
 
             <div class="field flex-1">
                 <label class="label-noir">N° Documento (DNI)</label>
                 <div class="p-inputgroup">
-                    <input pInputText formControlName="numeroDocumento" class="noir-input" maxlength="8"
-                        placeholder="8 dígitos" (keyup.enter)="consultarDni()" />
-                    <button type="button" class="btn-search" (click)="consultarDni()" [disabled]="loading()">
-                        <i class="bi bi-search" *ngIf="!loading()"></i>
-                        <i class="bi bi-arrow-repeat spin" *ngIf="loading()"></i> </button>
+
+                    <input pInputText formControlName="numeroDocumento" maxlength="8" placeholder="8 dígitos"
+                        (keyup.enter)="consultarDni()" [class.ng-invalid]="isFieldInvalid('user.numeroDocumento')" />
+
+                    <button type="button" class="btn-search" (click)="consultarDni()" [disabled]="searchingDni()">
+                        <i class="bi bi-search" *ngIf="!searchingDni()"></i>
+                        <i class="bi bi-arrow-repeat spin" *ngIf="searchingDni()"></i>
+                    </button>
                 </div>
-                <small class="error-text" *ngIf="isFieldInvalid('numeroDocumento')">DNI debe tener 8 números.</small>
+                <small class="error-text" *ngIf="isFieldInvalid('user.numeroDocumento')">
+                    El DNI debe tener exactamente 8 números.
+                </small>
             </div>
 
             <div class="field-row">
                 <div class="field flex-1">
                     <label class="label-noir">Nombres</label>
-                    <input pInputText formControlName="nombres" class="noir-input" />
+                    <input pInputText formControlName="nombres" class="noir-input"
+                        [class.ng-invalid]="isFieldInvalid('user.nombres')" />
                 </div>
                 <div class="field flex-1">
                     <label class="label-noir">Ap. Paterno</label>
-                    <input pInputText formControlName="apellidoPaterno" class="noir-input" />
+                    <input pInputText formControlName="apellidoPaterno" class="noir-input"
+                        [class.ng-invalid]="isFieldInvalid('user.apellidoPaterno')" />
                 </div>
                 <div class="field flex-1">
                     <label class="label-noir">Ap. Materno</label>
-                    <input pInputText formControlName="apellidoMaterno" class="noir-input" />
-                </div>
-            </div>
-
-            <div class="field-row">
-                <div class="field flex-1">
-                    <label class="label-noir">Teléfono Personal</label>
-                    <input pInputText formControlName="telefono" class="noir-input" maxlength="9"
-                        placeholder="Ej: 912345678" [class.ng-invalid]="isFieldInvalid('usuario.telefono')" />
-                    <small class="error-text" *ngIf="isFieldInvalid('usuario.telefono')">Teléfono inválido.</small>
-                </div>
-                <div class="field flex-1">
-                    <label class="label-noir">Email Personal</label>
-                    <input pInputText formControlName="email" class="noir-input" placeholder="prueba@corporacion.com"
-                        [class.ng-invalid]="isFieldInvalid('usuario.email')" />
-                    <small class="error-text" *ngIf="isFieldInvalid('usuario.email')">Email inválido.</small>
+                    <input pInputText formControlName="apellidoMaterno" class="noir-input"
+                        [class.ng-invalid]="isFieldInvalid('user.apellidoMaterno')" />
                 </div>
             </div>
 
             <div class="field-row">
                 <div class="field flex-1">
                     <label class="label-noir">Usuario (Login)</label>
-                    <input pInputText formControlName="username" class="noir-input" />
-                    <small class="error-text" *ngIf="isFieldInvalid('usuario.username')">Digite un nombre de
-                        usuario.</small>
+                    <input pInputText formControlName="username" class="noir-input"
+                        [class.ng-invalid]="isFieldInvalid('user.username')" />
+                    <small class="error-text" *ngIf="isFieldInvalid('user.username')">Usuario requerido.</small>
                 </div>
                 <div class="field flex-1">
                     <label class="label-noir">Password</label>
-                    <input pInputText type="password" formControlName="password" class="noir-input" />
-                    <small class="error-text" *ngIf="isFieldInvalid('usuario.password')">Digite una contraseña.</small>
+                    <input pInputText type="password" formControlName="password" class="noir-input"
+                        [class.ng-invalid]="isFieldInvalid('user.password')" />
+                    <small class="error-text" *ngIf="isFieldInvalid('user.password')">Mínimo 6 caracteres.</small>
                 </div>
             </div>
         </div>
 
         <div class="footer-actions">
-            <button type="button" class="btn-cancel" *ngIf="dataToEdit || currentStep() === 0" (click)="close()">
-                {{ dataToEdit ? 'Cancelar' : 'Cerrar' }}
-            </button>
+            <div class="actions-left">
+                <!-- <button type="button" class="btn-base btn-cancel" (click)="close()">
+                    {{ dataToEdit ? 'Cancelar' : 'Cerrar' }}
+                </button> -->
 
-            <button type="button" class="btn-cancel" *ngIf="!dataToEdit && currentStep() > 0" (click)="prevStep()">
-                <i class="bi bi-arrow-left"></i> Atrás
-            </button>
+                <button type="button" class="btn-base btn-cancel" *ngIf="!dataToEdit && currentStep() > 0"
+                    (click)="prevStep()">
+                    <i class="bi bi-arrow-left"></i> Atrás
+                </button>
+            </div>
 
-            <div class="spacer"></div>
-
-            <button type="button" class="btn-save" *ngIf="!dataToEdit && currentStep() < 2" (click)="nextStep()">
+            <button type="button" class="btn-base btn-save" *ngIf="!dataToEdit && currentStep() < 2"
+                (click)="nextStep()">
                 Siguiente <i class="bi bi-arrow-right"></i>
             </button>
 
-            <button type="button" class="btn-save" *ngIf="dataToEdit || currentStep() === 2" (click)="saveAll()"
-                [disabled]="loading()">
-                <i class="bi bi-check-circle" *ngIf="!loading()"></i>
-                {{ loading() ? 'Procesando...' : (dataToEdit ? 'Guardar Cambios' : 'Finalizar y Crear') }}
+            <button type="button" class="btn-base btn-save" *ngIf="dataToEdit || currentStep() === 2"
+                (click)="saveAll()" [disabled]="loading">
+                <i class="bi bi-check-circle" *ngIf="!loading"></i>
+                {{ loading ? 'Procesando...' : (dataToEdit ? 'Guardar Cambios' : 'Finalizar y Crear') }}
             </button>
         </div>
     </form>

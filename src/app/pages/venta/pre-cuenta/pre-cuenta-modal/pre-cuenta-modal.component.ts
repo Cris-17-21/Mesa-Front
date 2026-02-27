@@ -137,7 +137,7 @@ export class PreCuentaModalComponent implements OnChanges {
   }
 
   seleccionarCategoria(cat: any) {
-    this.categoriaSeleccionada.set(this.categoriaSeleccionada() === cat ? null : cat);
+    this.categoriaSeleccionada.set(this.categoriaSeleccionada()?.idCategoria === cat?.idCategoria ? null : cat);
     this.aplicarFiltros();
   }
 
@@ -147,7 +147,7 @@ export class PreCuentaModalComponent implements OnChanges {
     const term = this.terminoBusqueda();
 
     if (cat) {
-      lista = lista.filter(p => p.idCategoria.toString() === cat.id.toString());
+      lista = lista.filter(p => p.idCategoria.toString() === cat.idCategoria.toString());
     }
 
     if (term) {

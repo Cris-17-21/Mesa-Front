@@ -38,10 +38,9 @@ export class CajaService {
    * Computed: Devuelve true si hay una caja cargada y su estado es 'ABIERTO'.
    * Úsalo en el Guard de rutas o para deshabilitar botones de venta.
    */
-  public readonly isCajaAbierta = computed(() => {
-    const estado = this._cajaActiva()?.estado;
-    return estado === 'ABIERTA' || estado === 'ABIERTO';
-  });
+  public readonly isCajaAbierta = computed(() =>
+    this._cajaActiva()?.estado === 'ABIERTA'
+  );
 
   /**
    * Computed: Obtiene el ID de la caja actual de forma rápida

@@ -1,8 +1,45 @@
-::ng-deep .p-dialog-header {
-    padding-bottom: 0 !important;
+/* --- OVERRIDES PRIMENG (NOIR THEME) --- */
+::ng-deep {
+    .p-dialog-header {
+        padding-bottom: 0 !important;
+    }
+
+    .p-steps .p-steps-item {
+        .p-steps-number {
+            background: #ffffff !important;
+            border: 2px solid #e4e4e7 !important;
+            color: #a1a1aa !important;
+            width: 2.5rem;
+            height: 2.5rem;
+        }
+
+        &.p-highlight .p-steps-number {
+            background: #18181b !important;
+            color: #fff !important;
+            border-color: #18181b !important;
+            font-weight: 800;
+            box-shadow: 0 0 0 4px rgba(24, 24, 27, 0.1);
+        }
+
+        &.p-highlight .p-steps-title {
+            color: #18181b !important;
+            font-weight: 700 !important;
+        }
+
+        &.p-steps-item-active {
+            &::before {
+                border-top: 2px solid #18181b !important;
+            }
+
+            .p-steps-title {
+                color: #18181b !important;
+                font-weight: 800 !important;
+            }
+        }
+    }
 }
 
-/* --- CONTENEDOR Y ESTRUCTURA --- */
+/* --- ESTRUCTURA Y LAYOUT --- */
 .form-container {
     display: flex;
     flex-direction: column;
@@ -16,15 +53,31 @@
     margin-bottom: 0.5rem;
 }
 
-.field-row {
+.field-row,
+.field-flex {
     display: flex;
     gap: 1rem;
 }
 
-.flex-1 { flex: 1; }
-.flex-2 { flex: 2; }
-.flex-3 { flex: 3; }
-.spacer { flex-grow: 1; }
+.field-flex {
+    gap: 3rem;
+}
+
+.flex-1 {
+    flex: 1;
+}
+
+.flex-2 {
+    flex: 2;
+}
+
+.flex-3 {
+    flex: 3;
+}
+
+.spacer {
+    flex-grow: 1;
+}
 
 .step-title {
     font-size: 1.1rem;
@@ -36,45 +89,12 @@
     margin-top: 0;
 }
 
-/* --- ESTILOS DE PASOS PRIMENG (NOIR) --- */
 .wizard-steps-container {
     margin-bottom: 2rem;
     padding: 0 1rem;
 }
 
-::ng-deep .p-steps .p-steps-item.p-highlight .p-steps-number {
-    background: #18181b !important;
-    color: #fff !important;
-    border-color: #18181b !important;
-    font-weight: 800;
-    box-shadow: 0 0 0 4px rgba(24, 24, 27, 0.1);
-}
-
-::ng-deep .p-steps .p-steps-item.p-highlight .p-steps-title {
-    color: #18181b !important;
-    font-weight: 700 !important;
-}
-
-::ng-deep .p-steps .p-steps-item .p-steps-number {
-    background: #ffffff !important;
-    border: 2px solid #e4e4e7 !important;
-    color: #a1a1aa !important;
-    width: 2.5rem;
-    height: 2.5rem;
-}
-
-/* FUERZA EL TEXTO EN NEGRITA */
-::ng-deep .p-steps .p-steps-item.p-steps-item-active .p-steps-title {
-    color: #18181b !important;
-    font-weight: 800 !important;
-}
-
-/* OPCIONAL: PINTAR LA LÍNEA QUE YA PASASTE */
-::ng-deep .p-steps .p-steps-item.p-steps-item-active::before {
-    border-top: 2px solid #18181b !important;
-}
-
-/* --- INPUTS Y VALIDACIONES --- */
+/* --- FORM INPUTS & LABELS --- */
 .label-noir {
     font-weight: 600;
     font-size: 0.8rem;
@@ -90,20 +110,23 @@
     padding: 10px;
     outline: none;
     transition: all 0.2s ease;
+
+    &:focus {
+        border-color: #18181b;
+        box-shadow: 0 0 0 2px rgba(24, 24, 27, 0.05);
+    }
 }
 
-.noir-input:focus {
-    border-color: #18181b;
-    box-shadow: 0 0 0 2px rgba(24, 24, 27, 0.05);
-}
-
-/* Estado Inválido */
 .noir-input.ng-invalid.ng-touched,
-.noir-input.ng-invalid.ng-dirty {
+.noir-input.ng-invalid.ng-dirty,
+.ng-invalid.ng-touched {
     border-color: #ef4444 !important;
 }
 
-/* Texto de Error */
+.ng-invalid.ng-touched {
+    animation: shake 0.2s ease-in-out 0s 2;
+}
+
 .error-text {
     color: #ef4444;
     font-size: 0.75rem;
@@ -113,80 +136,91 @@
     animation: slideDown 0.2s ease-out;
 }
 
-/* --- BOTONES --- */
+/* --- BOTONES (REDISEÑO NOIR PREMIUM) --- */
 .footer-actions {
     display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-top: 2rem;
-    padding-top: 1rem;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 2.5rem;
+    padding-top: 1.5rem;
     border-top: 1px solid #f4f4f5;
+}
+
+.actions-left {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-base {
+    padding: 10px 22px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border: 1px solid transparent;
 }
 
 .btn-save {
     background: #18181b;
-    color: white;
-    border: none;
-    padding: 10px 24px;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: 0.2s;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
+    color: #ffffff;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 
-.btn-save:hover:not(:disabled) {
-    background: #000;
-}
+    &:hover:not(:disabled) {
+        background: #000000;
+        transform: translateY(-1px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
 
-.btn-save:disabled {
-    background: #a1a1aa;
-    cursor: not-allowed;
+    &:active {
+        transform: translateY(0);
+    }
+
+    &:disabled {
+        background: #d4d4d8;
+        color: #71717a;
+        cursor: not-allowed;
+        box-shadow: none;
+    }
 }
 
 .btn-cancel {
-    background: white;
-    color: #18181b;
+    background: #ffffff;
+    color: #3f3f46;
     border: 1px solid #e4e4e7;
-    padding: 10px 24px;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: 0.2s;
+
+    &:hover {
+        background: #fafafa;
+        border-color: #d4d4d8;
+        color: #18181b;
+    }
 }
 
-.btn-cancel:hover {
-    background: #f4f4f5;
+.btn-search {
+    background: #18181b !important;
+    border: 1px solid #18181b !important;
+    color: white !important;
+    border-radius: 0 8px 8px 0 !important;
+    padding: 0 15px;
+
+    &:hover {
+        background: #000 !important;
+    }
 }
 
-/* --- ANIMACIONES --- */
-.step-fade {
-    animation: fadeIn 0.3s ease-in-out;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(5px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes slideDown {
-    from { opacity: 0; transform: translateY(-3px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-.input-icon-wrapper {
-    position: relative;
+/* --- COMPONENTES ESPECIALES --- */
+.p-inputgroup {
     display: flex;
-    align-items: center;
-}
+    width: 100%;
 
-.spin {
-    position: absolute;
-    right: 10px;
-    animation: rotate 1s linear infinite;
-    color: #18181b;
+    .noir-input {
+        border-radius: 8px 0 0 8px !important;
+    }
 }
 
 .logo-uploader {
@@ -198,68 +232,89 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    overflow: hidden;
     background: #fafafa;
 }
 
-.preview-img {
-    height: 100%;
-    width: 100%;
-    object-fit: contain;
+/* --- ANIMACIONES --- */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
-.upload-placeholder {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    font-size: 0.75rem;
-    color: #71717a;
-}
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-3px);
+    }
 
-.error-text {
-    color: #ef4444;
-    font-size: 0.7rem;
-    margin-top: 2px;
-    font-weight: 500;
-}
-
-.noir-input.ng-invalid.ng-touched {
-    border-color: #ef4444 !important;
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 @keyframes rotate {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
 }
 
-.field-flex {
-    display: flex;
-    gap: 3rem;
+.step-fade {
+    animation: fadeIn 0.3s ease-in-out;
 }
 
-.btn-search {
-    background: #18181b !important; /* Negro Noir */
-    border: 1px solid #18181b !important;
-    color: white !important;
-    border-top-right-radius: 8px !important;
-    border-bottom-right-radius: 8px !important;
-    border-top-left-radius: 0 !important;
-    border-bottom-left-radius: 0 !important;
-    padding: 0 15px;
-    cursor: pointer;
+.spin {
+    animation: rotate 1s linear infinite;
 }
 
-.btn-search:hover {
-    background: #000000 !important;
-}
+/* --- RESPONSIVE DESIGN --- */
+@media screen and (max-width: 768px) {
+    ::ng-deep .p-dialog {
+        width: 95vw !important;
+        max-height: 90vh;
+    }
 
-.p-inputgroup .noir-input {
-    border-top-right-radius: 0 !important;
-    border-bottom-right-radius: 0 !important;
-}
+    .field-row,
+    .field-flex {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
 
-.p-inputgroup {
-    display: flex;
-    align-items: stretch;
-    width: 100%;
+    .flex-1,
+    .flex-2,
+    .flex-3,
+    .actions-left,
+    .btn-save,
+    .btn-cancel {
+        width: 100%;
+    }
+
+    ::ng-deep .p-steps .p-steps-title {
+        display: none;
+    }
+
+    .footer-actions {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .btn-save {
+        order: -1;
+    }
+
+    /* Siguiente/Guardar arriba en móvil */
+    .spacer {
+        display: none;
+    }
 }

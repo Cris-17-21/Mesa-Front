@@ -33,10 +33,11 @@
                     </button>
 
                     <div class="categories-scroll-pos">
-                        @for (cat of categorias(); track cat.id) {
-                        <button class="cat-chip-pos" [class.active]="categoriaSeleccionada()?.id === cat.id"
+                        @for (cat of categorias(); track cat.idCategoria) {
+                        <button class="cat-chip-pos"
+                            [class.active]="categoriaSeleccionada()?.idCategoria === cat.idCategoria"
                             (click)="seleccionarCategoria(cat)">
-                            {{ cat.nombre }}
+                            {{ cat.nombreCategoria }}
                         </button>
                         }
                     </div>

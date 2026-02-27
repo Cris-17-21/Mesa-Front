@@ -9,11 +9,12 @@ export interface Empresa {
     telefono: string;
     email: string;
     logoUrl: string;
+    fechaAfiliacion?: string;
     sucursales?: Sucursal[]
 }
 
 // CREATE DTO
-export type CreateEmpresaDto = Omit<Empresa, 'id' | 'sucursal'>
+export type CreateEmpresaDto = Omit<Empresa, 'id' | 'sucursales'>
 
 // UPDATE DTO
 export type UpdateEmpresaDto = Partial<CreateEmpresaDto>

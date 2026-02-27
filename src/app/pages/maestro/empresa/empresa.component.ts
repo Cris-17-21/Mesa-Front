@@ -1,35 +1,48 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { finalize } from 'rxjs';
+import { HttpErrorResponse } from '@angular/common/http';
+import Swal from 'sweetalert2';
+
+// Módulos de PrimeNG
 import { TableModule } from 'primeng/table';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { SelectModule } from 'primeng/select';
-import Swal from 'sweetalert2';
-import { CommonModule } from '@angular/common';
+
+// Modelos y Servicios
 import { EmpresaService } from '../../../services/maestro/empresa.service';
 import { Empresa } from '../../../models/maestro/empresa.model';
+import { UserAcessService } from '../../../services/maestro/user-acess.service';
+import { CreateCompleteRestaurantDto } from '../../../models/maestro/userAccess.model';
+
+// Componentes
 import { ModalEmpresaComponent } from './modal-empresa/modal-empresa.component';
-import { SucursalService } from '../../../services/maestro/sucursal.service';
-import { UserService } from '../../../services/user/user.service';
-import { concatMap } from 'rxjs';
-import { CreateUserDto } from '../../../models/security/user.model';
+
+export interface EmpresaWizardData {
+  isEdit: boolean;
+  data: any;
+}
 
 @Component({
   selector: 'app-empresa',
+  standalone: true,
   imports: [CommonModule, TableModule, IconFieldModule, InputIconModule, MultiSelectModule, SelectModule, ModalEmpresaComponent],
   templateUrl: './empresa.component.html',
-  styleUrl: './empresa.component.css'
+  styleUrl: './empresa.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class EmpresaComponent implements OnInit {
 
-  private empresaService = inject(EmpresaService);
-  private sucursalService = inject(SucursalService);
-  private userService = inject(UserService);
+  // Inyección de servicios
+  private readonly empresaService = inject(EmpresaService);
+  private readonly userAccessService = inject(UserAcessService);
 
-  empresas: Empresa[] = [];
-  displayModal = signal(false);
-  selectedEmpresa = signal<Empresa | null>(null);
-  loading = signal(false);
+  readonly empresas = signal<Empresa[]>([]);
+  readonly displayModal = signal(false);
+  readonly selectedEmpresa = signal<Empresa | null>(null);
+  readonly loading = signal(false);
 
   ngOnInit(): void {
     this.loadEmpresas();
@@ -37,90 +50,63 @@ export class EmpresaComponent implements OnInit {
 
   loadEmpresas(): void {
     this.empresaService.getAllEmpresas().subscribe({
-      next: (data) => this.empresas = data,
-      error: (err) => console.error('Error', err)
+      next: (data) => this.empresas.set(data), // Actualizamos el signal
+      error: (err) => this.errorMessage('No se pudo cargar las empresas', err)
     });
   }
 
-  // MÉTODO PARA CREAR (Limpia el permiso seleccionado)
-  openCreate() {
+  openCreate(): void {
     this.selectedEmpresa.set(null);
     this.displayModal.set(true);
   }
 
-  // MÉTODO PARA EDITAR (Pasa el permiso de la fila)
-  openEdit(empresa: Empresa) {
+  openEdit(empresa: Empresa): void {
     this.selectedEmpresa.set(empresa);
     this.displayModal.set(true);
   }
 
-  handleSave(wizardData: any) {
+  handleSave(wizardData: EmpresaWizardData): void {
     const { data, isEdit } = wizardData;
+    this.loading.set(true);
 
     if (isEdit) {
-      this.empresaService.updateEmpresa(data, data.id).subscribe({
-        next: () => {
-          this.successMessage('Empresa actualizada');
-          this.loadEmpresas();
-          this.displayModal.set(false);
-        },
-        error: (err) => this.errorMessage('Error al actualizar empresa')
-      });
+      this.empresaService.updateEmpresa(data, data.id)
+        .pipe(finalize(() => this.loading.set(false)))
+        .subscribe({
+          next: () => {
+            this.successMessage('Empresa actualizada');
+            this.loadEmpresas();
+            this.displayModal.set(false);
+          },
+          error: (err) => this.errorMessage('Error al actualizar', err)
+        });
     } else {
-      this.loading.set(true);
+      const { roleId, ...userData } = data.user;
 
-      // 1. Crear Empresa
-      this.empresaService.createEmpresa(data.empresa).pipe(
-        concatMap((empresaCreada) => {
-          // IMPORTANTE: El DTO de Sucursal espera 'empresaId' como String/UUID
-          const sucursalPayload = {
-            ...data.sucursal,
-            empresaId: empresaCreada.id // Cambiado de 'empresa: empresaCreada'
-          };
+      const payload: CreateCompleteRestaurantDto = {
+        empresa: data.empresa,
+        sucursal: data.sucursal,
+        user: {
+          ...userData,
+          role: roleId,
+          direccion: userData.direccion || 'Dirección no especificada'
+        }
+      };
 
-          // 2. Crear Sucursal
-          return this.sucursalService.createSucursal(sucursalPayload).pipe(
-            concatMap((sucursalCreada) => {
-              // 3. Crear Usuario vinculado
-              const { roleId, ...userData } = data.usuario;
-
-              const usuarioPayload: CreateUserDto = {
-                username: userData.username,
-                password: userData.password,
-                nombres: userData.nombres,
-                apellidoPaterno: userData.apellidoPaterno,
-                apellidoMaterno: userData.apellidoMaterno,
-                tipoDocumento: userData.tipoDocumento,
-                numeroDocumento: userData.numeroDocumento,
-                telefono: userData.telefono,
-                direccion: userData.direccion || 'Dirección no especificada', // Evita nulos si es obligatorio
-                email: userData.email,
-                // ASIGNACIÓN EXPLÍCITA DE IDs
-                role: roleId,
-                empresaId: empresaCreada.id,
-                sucursalId: sucursalCreada.id
-              };
-              return this.userService.createUser(usuarioPayload);
-            })
-          );
-        })
-      ).subscribe({
-        next: () => {
-          this.successMessage('Restaurante y Administrador creados con éxito');
-          this.loadEmpresas();
-          this.displayModal.set(false);
-        },
-        error: (err) => {
-          console.error('Error en el flujo:', err);
-          // El error 400 "id must not be null" venía de enviar el objeto empresa en lugar del ID
-          this.errorMessage('Error en el registro: Verifique que los datos sean correctos');
-        },
-        complete: () => this.loading.set(false)
-      });
+      this.userAccessService.registerCompleteRestaurant(payload)
+        .pipe(finalize(() => this.loading.set(false)))
+        .subscribe({
+          next: () => {
+            this.successMessage('Restaurante, Sucursal y Administrador creados con éxito');
+            this.loadEmpresas();
+            this.displayModal.set(false);
+          },
+          error: (err) => this.errorMessage('Error al registrar la empresa', err)
+        });
     }
   }
 
-  deleteEmpresa(id: string) {
+  deleteEmpresa(id: string): void {
     Swal.fire({
       title: '¿Estás seguro?',
       text: "Esta acción eliminará la empresa de forma permanente.",
@@ -130,47 +116,43 @@ export class EmpresaComponent implements OnInit {
       cancelButtonColor: '#3f54cc',
       confirmButtonText: 'Sí, eliminar',
       cancelButtonText: 'Cancelar',
-      reverseButtons: true, // Pone el botón de cancelar a la izquierda
+      reverseButtons: true,
       focusCancel: true
     }).then((result) => {
       if (result.isConfirmed) {
-        // Llamada al servicio
         this.empresaService.deleteEmpresa(id).subscribe({
           next: () => {
-            // Opción A: Refrescar toda la tabla desde el servidor
             this.loadEmpresas();
-
-            // Opción B (Más rápida): Filtrar el array localmente
-            // this.permissions = this.permissions.filter(p => p.id !== id);
-
             Swal.fire({
               title: '¡Eliminado!',
-              text: 'La empresa ha sido borrado correctamente.',
+              text: 'La empresa ha sido borrada correctamente.',
               icon: 'success',
               confirmButtonColor: '#18181b',
               timer: 1500,
               showConfirmButton: false
             });
           },
-          error: (err) => {
-            console.error('Error al eliminar:', err);
-            Swal.fire({
-              title: 'Error',
-              text: 'No se pudo eliminar la empresa. Es posible que esté en uso.',
-              icon: 'error',
-              confirmButtonColor: '#18181b'
-            });
-          }
+          error: (err) => this.errorMessage('No se pudo eliminar la empresa. Es posible que esté en uso.', err)
         });
       }
     });
   }
 
-  private successMessage(msg: string) {
+  // --- MÉTODOS PRIVADOS DE UI ---
+
+  private successMessage(msg: string): void {
     Swal.fire({ title: '¡Éxito!', text: msg, icon: 'success', confirmButtonColor: '#18181b' });
   }
 
-  private errorMessage(msg: any) {
-    Swal.fire({ title: msg.error.error, text: msg.error.message, icon: 'error', confirmButtonColor: '#18181b' });
+  private errorMessage(contextMessage: string, err?: HttpErrorResponse | any): void {
+    const serverTitle = err?.error?.error || 'Error';
+    const serverMessage = err?.error?.message || contextMessage;
+
+    Swal.fire({
+      title: serverTitle,
+      text: serverMessage,
+      icon: 'error',
+      confirmButtonColor: '#18181b'
+    });
   }
 }
