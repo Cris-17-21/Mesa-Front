@@ -1,5 +1,4 @@
 <header class="main-header">
-
     <div class="header-titles">
         <h1>Gestión de Sucursales</h1>
         <p class="subtitle">Configura las sucursales del restaurante</p>
@@ -7,21 +6,23 @@
 
     <div class="header-actions">
         <button class="button-add" (click)="openCreate()">
-            <i class="bi bi-plus-circle"></i>
-            <p>Nuevo Sucursal</p>
+            <i class="bi bi-plus-lg"></i>
+            <span>Nueva Sucursal</span>
         </button>
     </div>
+</header>
 
-    <div class="table">
-        <p-table #dt2 [value]="sucursales()" dataKey="id" [rows]="10" [rowsPerPageOptions]="[10, 25, 50]"
-            [paginator]="true" [globalFilterFields]="['nombre']" [tableStyle]="{ 'min-width': '50rem' }">
-            <ng-template #caption>
+<main class="table-container shadow-noir">
+    <p-table #dt2 [value]="sucursales()" dataKey="id" [rows]="10" [paginator]="true"
+        [globalFilterFields]="['nombre', 'empresa', 'direccion']" [responsiveLayout]="'scroll'"
+        styleClass="p-datatable-sm" [loading]="loading()">
+
+        <ng-template pTemplate="caption">
+            <div class="flex justify-content-between flex-wrap gap-3 table-header-actions">
                 <div class="search-wrapper">
                     <i class="bi bi-search search-icon"></i>
-
-                    <input type="text" class="noir-input"
-                        (input)="dt2.filterGlobal($any($event.target).value, 'contains')"
-                        placeholder="Buscar sucursal..." />
+                    <input #searchInput type="text" class="noir-input"
+                        (input)="dt2.filterGlobal(searchInput.value, 'contains')" placeholder="Buscar sucursal..." />
                 </div>
 
                 <div class="filter-wrapper">
@@ -30,51 +31,48 @@
                         placeholder="Todas las Empresas" [showClear]="true" [filter]="true" class="noir-select-filter">
                     </p-select>
                 </div>
-            </ng-template>
-            <ng-template #header>
-                <tr>
-                    <th style="width:20%">Empresa</th>
-                    <th style="width:20%">Nombre</th>
-                    <th style="width:20%">Dirección</th>
-                    <th style="width:20%;">Teléfono</th>
-                    <th style="width:20%" class="text-center">Acciones</th>
-                </tr>
-            </ng-template>
-            <ng-template #body let-sucursal>
-                <tr>
-                    <td>
-                        {{ sucursal.empresa }}
-                    </td>
-                    <td>
-                        {{ sucursal.nombre }}
-                    </td>
-                    <td>
-                        {{ sucursal.direccion }}
-                    </td>
-                    <td>
-                        {{ sucursal.telefono }}
-                    </td>
-                    <td>
-                        <div class="flex justify-content-center gap-2">
-                            <button class="button-action edit" (click)="openEdit(sucursal)">
-                                <i class="bi bi-pencil-square"></i>
-                            </button>
-                            <button class="button-action delete" (click)="deleteSucursal(sucursal.id)">
-                                <i class="bi bi-trash3"></i>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-            </ng-template>
-            <ng-template #emptymessage>
-                <tr>
-                    <td colspan="4">No se encontraron sucursales.</td>
-                </tr>
-            </ng-template>
-        </p-table>
-    </div>
-</header>
+            </div>
+        </ng-template>
 
+        <ng-template pTemplate="header">
+            <tr>
+                <th style="width:20%">Empresa</th>
+                <th style="width:20%">Nombre</th>
+                <th style="width:25%">Dirección</th>
+                <th style="width:15%">Teléfono</th>
+                <th style="width:20%" class="text-center">Acciones</th>
+            </tr>
+        </ng-template>
 
-<app-modal-sucursal [(visible)]="displayModal" [dataToEdit]="selectedSucursal()" (onSaveSuccess)="refreshData()">
+        <ng-template pTemplate="body" let-sucursal>
+            <tr>
+                <td>{{ sucursal.empresa || "-" }}</td>
+                <td>{{ sucursal.nombre || "-" }}</td>
+                <td>{{ sucursal.direccion || "-" }}</td>
+                <td>{{ sucursal.telefono || "-" }}</td>
+                <td>
+                    <div class="flex justify-content-center gap-2">
+                        <button class="button-action edit" (click)="openEdit(sucursal)">
+                            <i class="bi bi-pencil-square"></i>
+                        </button>
+                        <button class="button-action delete" (click)="deleteSucursal(sucursal.id)">
+                            <i class="bi bi-trash3"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        </ng-template>
+
+        <ng-template pTemplate="emptymessage">
+            <tr>
+                <td colspan="5" class="text-center p-4">No se encontraron sucursales registradas.</td>
+            </tr>
+        </ng-template>
+    </p-table>
+</main>
+
+@defer (when displayModal()) {
+<app-modal-sucursal [(visible)]="displayModal" [dataToEdit]="selectedSucursal()" [empresasList]="empresas()"
+    [defaultEmpresaId]="selectedEmpresaId()" (onComplete)="handleGuardarSucursal($event)" [loading]="isSaving()">
 </app-modal-sucursal>
+}

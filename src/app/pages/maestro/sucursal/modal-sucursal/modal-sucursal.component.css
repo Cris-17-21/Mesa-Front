@@ -2,7 +2,7 @@
 .form-noir {
     display: flex;
     flex-direction: column;
-    gap: 1.25rem;
+    gap: 1rem;
     padding: 0.5rem 0;
 }
 
@@ -14,10 +14,11 @@
 
 /* --- Etiquetas (Labels) --- */
 .label-noir {
-    font-size: 0.85rem;
     font-weight: 600;
-    color: #18181b; /* Zinc 950 */
-    letter-spacing: -0.01em;
+    font-size: 0.8rem;
+    color: #52525b;
+    margin-bottom: 4px;
+    display: block;
 }
 
 /* --- Inputs Estilo Noir --- */
@@ -28,9 +29,17 @@
     font-size: 0.9rem;
     color: #18181b;
     background-color: #ffffff;
-    border: 1px solid #e4e4e7; /* Zinc 200 */
+    border: 1px solid #e4e4e7;
+    /* Zinc 200 */
     border-radius: 8px;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.optional {
+    font-weight: 400;
+    color: #a1a1aa;
+    font-size: 0.75rem;
+    margin-left: 0.7rem;
 }
 
 .noir-input:focus {
@@ -40,12 +49,14 @@
 }
 
 .noir-input::placeholder {
-    color: #a1a1aa; /* Zinc 400 */
+    color: #a1a1aa;
+    /* Zinc 400 */
 }
 
 /* --- Estado de Error --- */
 .noir-input.invalid {
-    border-color: #ef4444 !important; /* Red 500 */
+    border-color: #ef4444 !important;
+    /* Red 500 */
     background-color: #fef2f2;
 }
 
@@ -63,12 +74,14 @@
     align-items: center;
     gap: 0.75rem;
     padding-top: 1.5rem;
-    border-top: 1px solid #f4f4f5; /* Zinc 100 */
+    border-top: 1px solid #f4f4f5;
+    /* Zinc 100 */
 }
 
 .btn-cancel {
     background: transparent;
-    color: #71717a; /* Zinc 500 */
+    color: #71717a;
+    /* Zinc 500 */
     border: 1px solid #e4e4e7;
     padding: 0.6rem 1.2rem;
     border-radius: 8px;
@@ -84,7 +97,8 @@
 }
 
 .btn-save {
-    background: #18181b; /* Negro puro */
+    background: #18181b;
+    /* Negro puro */
     color: #ffffff;
     border: 1px solid #18181b;
     padding: 0.6rem 1.2rem;
@@ -99,7 +113,8 @@
 }
 
 .btn-save:hover {
-    background: #3f3f46; /* Zinc 700 */
+    background: #3f3f46;
+    /* Zinc 700 */
     border-color: #3f3f46;
 }
 
@@ -111,6 +126,7 @@
 
 /* --- Personalización de PrimeNG (Deep Selectors) --- */
 :host ::ng-deep {
+
     /* Selector de Empresa */
     .p-select {
         width: 100%;

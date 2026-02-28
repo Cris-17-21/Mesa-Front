@@ -1,137 +1,141 @@
-import { Component, EventEmitter, inject, Input, Output, signal, OnInit, OnChanges, SimpleChanges } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Component, effect, inject, ChangeDetectionStrategy, model, input, output, DestroyRef, signal, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+
+// PrimeNG
 import { DialogModule } from 'primeng/dialog';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
-import { SucursalService } from '../../../../services/maestro/sucursal.service';
-import { EmpresaService } from '../../../../services/maestro/empresa.service';
+
+// Modelos y Servicios
+import { CreateSucursalDto, Sucursal } from '../../../../models/maestro/sucursal.model';
 import { Empresa } from '../../../../models/maestro/empresa.model';
 import Swal from 'sweetalert2';
-import { finalize } from 'rxjs';
+
+export interface SucursalModalData {
+  isEdit: boolean;
+  data: CreateSucursalDto;
+}
+
 
 @Component({
   selector: 'app-modal-sucursal',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, DialogModule, ButtonModule, InputTextModule, SelectModule],
   templateUrl: './modal-sucursal.component.html',
-  styleUrl: './modal-sucursal.component.css'
+  styleUrl: './modal-sucursal.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ModalSucursalComponent implements OnInit, OnChanges {
-  private fb = inject(FormBuilder);
-  private sucursalService = inject(SucursalService);
-  private empresaService = inject(EmpresaService);
+export class ModalSucursalComponent {
+  private readonly fb = inject(FormBuilder);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly cdr = inject(ChangeDetectorRef);
 
-  @Input() visible = false;
-  @Input() dataToEdit: any = null;
-  @Output() visibleChange = new EventEmitter<boolean>();
-  @Output() onSaveSuccess = new EventEmitter<void>();
+  readonly visible = model(false);
+  readonly dataToEdit = input<Sucursal | null>(null);
+  readonly empresasList = input<Empresa[]>([]); // Recibidas del padre
+  readonly defaultEmpresaId = input<string | null>(null); // Filtro activo en el padre
+  readonly loading = input(false);
+  readonly onComplete = output<SucursalModalData>();
 
-  loading = signal(false);
-  empresas = signal<Empresa[]>([]);
-
-  sucursalForm: FormGroup = this.fb.group({
-    empresa: [null, Validators.required], // Guardaremos el objeto empresa completo o el ID según prefieras
+  readonly sucursalForm: FormGroup = this.fb.group({
+    empresa: [null, Validators.required],
     nombre: ['', [Validators.required, Validators.minLength(3)]],
-    direccion: ['', Validators.required],
-    telefono: ['', [Validators.required, Validators.pattern('^[0-9]*$')]],
+    direccion: [''],
+    telefono: ['', [Validators.pattern('^[0-9]*$')]],
   });
 
-  ngOnInit() {
-    this.cargarEmpresas();
-  }
+  constructor() {
+    effect(() => {
+      const isVisible = this.visible();
+      const lista = this.empresasList();
+      const data = this.dataToEdit();
+      const defaultId = this.defaultEmpresaId();
 
-  ngOnChanges(changes: SimpleChanges) {
-    if (changes['visible']?.currentValue) {
-      if (this.dataToEdit) {
-        // Mapeamos los datos existentes al formulario
-        this.sucursalForm.patchValue({
-          nombre: this.dataToEdit.nombre,
-          direccion: this.dataToEdit.direccion,
-          telefono: this.dataToEdit.telefono,
-          empresa: this.dataToEdit.empresa // Pasamos el objeto empresa completo para el p-select
-        });
-      } else {
+      if (isVisible && lista.length > 0) {
+        if (data) {
+          this.patchForm(data);
+        } else {
+          this.setupCreateMode(defaultId);
+        }
+        this.cdr.markForCheck();
+      } else if (!isVisible) {
         this.sucursalForm.reset();
       }
-    }
-  }
-
-  private cargarEmpresas() {
-    this.empresaService.getAllEmpresas().subscribe({
-      next: (data) => this.empresas.set(data),
-      error: (err) => console.error('Error en EmpresaService:', err)
     });
   }
 
-  // Helpers para validación visual
-  isInvalid(name: string) {
-    const control = this.sucursalForm.get(name);
-    return control?.invalid && (control?.dirty || control?.touched);
+
+
+  private patchForm(data: Sucursal) {
+    // El padre ya nos pasa empresa como el ID (string) al llamar openEdit()
+    const empresaId = typeof data.empresa === 'string' ? data.empresa : (data.empresa as any)?.id ?? null;
+
+    this.sucursalForm.patchValue({
+      nombre: data.nombre,
+      direccion: data.direccion,
+      telefono: data.telefono,
+      empresa: empresaId
+    }, { emitEvent: false });
+
+    this.cdr.markForCheck();
   }
 
-  getErrorMessage(name: string): string {
-    const control = this.sucursalForm.get(name);
-    if (control?.hasError('required')) return 'Este campo es obligatorio';
-    if (control?.hasError('minlength')) return 'Mínimo 3 caracteres';
-    if (control?.hasError('pattern')) return 'Número de teléfono inválido';
-    return '';
+  private setupCreateMode(defaultId: string | null) {
+    this.sucursalForm.reset({
+      empresa: defaultId, // Auto-selecciona si hay un filtro activo o llega del padre
+      nombre: '',
+      direccion: '',
+      telefono: ''
+    });
+    this.sucursalForm.markAsPristine();
+    this.sucursalForm.markAsUntouched();
+    this.cdr.markForCheck();
   }
 
   save() {
+    if (this.loading()) return;
+
     if (this.sucursalForm.invalid) {
       this.sucursalForm.markAllAsTouched();
       return;
     }
 
-    this.loading.set(true);
-    const rawValue = this.sucursalForm.value;
-
-    // AJUSTE AQUÍ: Aplanamos el objeto para que coincida con lo que el backend espera
+    const rawValue = this.sucursalForm.getRawValue();
     const payload = {
-      nombre: rawValue.nombre,
-      direccion: rawValue.direccion,
+      nombre: rawValue.nombre?.toUpperCase(),
+      direccion: rawValue.direccion?.toUpperCase(),
       telefono: rawValue.telefono,
-      // Extraemos solo el ID del objeto empresa que seleccionó el p-select
-      empresaId: rawValue.empresa?.id || rawValue.empresa
+      empresaId: rawValue.empresa // Es el ID directo gracias al optionValue="id"
     };
 
-    console.log('📤 Enviando payload corregido:', payload);
-
-    const request = this.dataToEdit
-      ? this.sucursalService.updateSucursal(payload, this.dataToEdit.id)
-      : this.sucursalService.createSucursal(payload);
-
-    request.pipe(finalize(() => this.loading.set(false)))
-      .subscribe({
-        next: () => {
-          // --- AQUÍ EL SWEET ALERT ---
-          Swal.fire({
-            title: this.dataToEdit ? '¡Actualizado!' : '¡Registrado!',
-            text: `La sucursal se ha ${this.dataToEdit ? 'actualizado' : 'creado'} correctamente.`,
-            icon: 'success',
-            confirmButtonColor: '#18181b', // Color Noir
-            timer: 2000,
-            showConfirmButton: false
-          });
-
-          this.onSaveSuccess.emit();
-          this.close();
-        },
-        error: (err) => {
-          console.error('❌ Error:', err);
-          Swal.fire({
-            title: 'Error',
-            text: 'No se pudo procesar la solicitud. Intenta de nuevo.',
-            icon: 'error',
-            confirmButtonColor: '#18181b'
-          });
-        }
-      });
+    this.onComplete.emit({
+      data: payload as CreateSucursalDto,
+      isEdit: !!this.dataToEdit()
+    });
   }
 
   close() {
-    this.visibleChange.emit(false);
+    this.visible.set(false);
+    // El reset ocurre automáticamente vía effect cuando visible cambia a false
+  }
+
+  isInvalid(name: string): boolean {
+    const control = this.sucursalForm.get(name);
+    return !!(control && control.invalid && (control.dirty || control.touched));
+  }
+
+  getErrorMessage(name: string): string {
+    const control = this.sucursalForm.get(name);
+    if (control?.hasError('required')) return 'Obligatorio';
+    if (control?.hasError('minlength')) return 'Mínimo 3 caracteres';
+    if (control?.hasError('pattern')) return 'Solo números';
+    return '';
+  }
+
+  private showError(msg: string) {
+    Swal.fire({ title: 'Error', text: msg, icon: 'error', confirmButtonColor: '#18181b' });
   }
 }

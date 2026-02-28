@@ -1,16 +1,15 @@
-import { Empresa } from "./empresa.model";
-
 // MODELO DE SUCURSAL
+// El backend devuelve 'empresa' como string (razonSocial), nunca como objeto
 export interface Sucursal {
     id: string;
     nombre: string;
     direccion: string;
     telefono: string;
-    empresa: Empresa
+    empresa: string;
 }
 
 // CREATE DTO
 export type CreateSucursalDto = Omit<Sucursal, 'id' | 'empresa'> & { empresaId: string };
 
 // UPDATE DTO
-export type UpdateSucursalDto = Partial<CreateSucursalDto>
+export type UpdateSucursalDto = Partial<CreateSucursalDto>;

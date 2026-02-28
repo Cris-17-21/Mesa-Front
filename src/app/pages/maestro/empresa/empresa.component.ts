@@ -123,7 +123,7 @@ export class EmpresaComponent implements OnInit {
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#ef4444',
-      cancelButtonColor: '#3f54cc',
+      cancelButtonColor: '#e4e4e7',
       confirmButtonText: 'Sí, eliminar',
       cancelButtonText: 'Cancelar',
       reverseButtons: true,

@@ -1,37 +1,46 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+
+// PrimeNG
 import { TableModule } from 'primeng/table';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { SelectModule } from 'primeng/select';
 import Swal from 'sweetalert2';
-import { CommonModule } from '@angular/common';
+
+// Servicios y Modelos
 import { SucursalService } from '../../../services/maestro/sucursal.service';
 import { Sucursal } from '../../../models/maestro/sucursal.model';
-import { UserService } from '../../../services/user/user.service';
-import { ModalSucursalComponent } from './modal-sucursal/modal-sucursal.component';
 import { EmpresaService } from '../../../services/maestro/empresa.service';
 import { Empresa } from '../../../models/maestro/empresa.model';
-import { FormsModule } from '@angular/forms';
+
+// Componente Modal y su Interfaz
+import { ModalSucursalComponent, SucursalModalData } from './modal-sucursal/modal-sucursal.component';
 
 @Component({
   selector: 'app-sucursal',
-  imports: [CommonModule, TableModule, IconFieldModule, InputIconModule, MultiSelectModule, SelectModule, ModalSucursalComponent, FormsModule],
+  standalone: true,
+  imports: [
+    TableModule, IconFieldModule, InputIconModule, MultiSelectModule,
+    SelectModule, ModalSucursalComponent, FormsModule
+  ],
   templateUrl: './sucursal.component.html',
   styleUrl: './sucursal.component.css'
 })
 export class SucursalComponent implements OnInit {
 
-  private sucursalService = inject(SucursalService);
-  private empresaService = inject(EmpresaService);
+  private readonly sucursalService = inject(SucursalService);
+  private readonly empresaService = inject(EmpresaService);
 
-  sucursales = signal<Sucursal[]>([]);
-  empresas = signal<Empresa[]>([]);
-  selectedSucursal = signal<Sucursal | null>(null);
-  selectedEmpresaId = signal<string | null>(null);
+  readonly sucursales = signal<Sucursal[]>([]);
+  readonly empresas = signal<Empresa[]>([]);
+  readonly selectedSucursal = signal<Sucursal | null>(null);
+  readonly selectedEmpresaId = signal<string | null>(null);
 
-  displayModal = signal(false);
-  loading = signal(false);
+  readonly displayModal = signal(false);
+  readonly loading = signal(false); // Para la tabla
+  readonly isSaving = signal(false); // Para el botón del modal
 
   ngOnInit(): void {
     this.loadInitialData();
@@ -39,14 +48,19 @@ export class SucursalComponent implements OnInit {
 
   loadInitialData(): void {
     this.loading.set(true);
-    // Cargamos empresas y sucursales en paralelo o secuencia
-    this.empresaService.getAllEmpresas().subscribe(data => this.empresas.set(data));
-    this.loadAllSucursales();
+    // Cargamos las empresas para el filtro superior
+    this.empresaService.getAllActiveEmpresas().subscribe({
+      next: (data) => {
+        this.empresas.set(data);
+        this.loadAllSucursales();
+      },
+      error: () => this.loading.set(false)
+    });
   }
-  
+
   loadAllSucursales(): void {
     this.loading.set(true);
-    this.sucursalService.getAllSucursales().subscribe({
+    this.sucursalService.getAllActiveSucursales().subscribe({
       next: (data) => {
         this.sucursales.set(data);
         this.loading.set(false);
@@ -75,44 +89,84 @@ export class SucursalComponent implements OnInit {
     this.onEmpresaChange(this.selectedEmpresaId());
   }
 
-  // MÉTODO PARA CREAR (Limpia el permiso seleccionado)
   openCreate() {
     this.selectedSucursal.set(null);
     this.displayModal.set(true);
   }
 
-  // MÉTODO PARA EDITAR (Pasa el permiso de la fila)
   openEdit(sucursal: Sucursal) {
-    this.selectedSucursal.set(sucursal);
+    // empresa llega como string (razonSocial) del backend → buscamos su ID
+    const empresaEncontrada = this.empresas().find(e => e.razonSocial === sucursal.empresa);
+
+    const dataParaModal = {
+      ...sucursal,
+      empresa: empresaEncontrada ? empresaEncontrada.id : null
+    };
+    this.selectedSucursal.set(dataParaModal as any);
     this.displayModal.set(true);
+  }
+
+  // --- 🚀 NUEVA LÓGICA DE GUARDADO CENTRALIZADA ---
+  handleGuardarSucursal(event: SucursalModalData) {
+    this.isSaving.set(true); // Bloquea el botón del modal
+
+    const request = event.isEdit && this.selectedSucursal()
+      ? this.sucursalService.updateSucursal(event.data, this.selectedSucursal()!.id)
+      : this.sucursalService.createSucursal(event.data);
+
+    request.subscribe({
+      next: () => {
+        this.isSaving.set(false);
+        this.displayModal.set(false); // Cerramos el modal
+
+        Swal.fire({
+          title: event.isEdit ? '¡Actualizado!' : '¡Registrado!',
+          text: `La sucursal se ha ${event.isEdit ? 'actualizado' : 'creado'} correctamente.`,
+          icon: 'success',
+          confirmButtonColor: '#18181b',
+          timer: 2000,
+          showConfirmButton: false
+        });
+
+        this.refreshData(); // Recargamos la tabla automáticamente
+      },
+      error: (err) => {
+        this.isSaving.set(false);
+
+        // Atrapamos la excepción del backend (ej. Nombre duplicado, RUC en uso, etc.)
+        const titleError = err.error.error || 'Error al guardar';
+        const backendMessage = err.error?.message || err.message || 'No se pudo procesar la solicitud.';
+
+        Swal.fire({
+          title: titleError,
+          text: backendMessage,
+          icon: 'warning',
+          confirmButtonColor: '#18181b'
+        });
+      }
+    });
   }
 
   deleteSucursal(id: string) {
     Swal.fire({
       title: '¿Estás seguro?',
-      text: "Esta acción eliminará la sucursal de forma permanente.",
+      text: "Esta acción eliminará la sucursal de forma permanente y sus datos relacionados",
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#ef4444',
-      cancelButtonColor: '#3f54cc',
+      cancelButtonColor: '#e4e4e7',
       confirmButtonText: 'Sí, eliminar',
-      cancelButtonText: 'Cancelar',
+      cancelButtonText: '<span style="color: #18181b">Cancelar</span>',
       reverseButtons: true, // Pone el botón de cancelar a la izquierda
       focusCancel: true
     }).then((result) => {
       if (result.isConfirmed) {
-        // Llamada al servicio
         this.sucursalService.deleteSucursal(id).subscribe({
           next: () => {
-            // Opción A: Refrescar toda la tabla desde el servidor
             this.refreshData();
-
-            // Opción B (Más rápida): Filtrar el array localmente
-            // this.permissions = this.permissions.filter(p => p.id !== id);
-
             Swal.fire({
               title: '¡Eliminado!',
-              text: 'La sucursal ha sido borrada correctamente.',
+              text: 'La sucursal ha sido borrada lógicamente.',
               icon: 'success',
               confirmButtonColor: '#18181b',
               timer: 1500,
@@ -123,7 +177,7 @@ export class SucursalComponent implements OnInit {
             console.error('Error al eliminar:', err);
             Swal.fire({
               title: 'Error',
-              text: 'No se pudo eliminar la sucursal. Es posible que esté en uso.',
+              text: 'No se pudo eliminar la sucursal.',
               icon: 'error',
               confirmButtonColor: '#18181b'
             });
