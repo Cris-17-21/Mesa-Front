@@ -15,8 +15,10 @@ export interface User {
     direccion: string;
     email: string;
     role: Role | string;
-    empresa: Empresa;
-    sucursal: Sucursal
+    empresa?: Empresa;
+    sucursal?: Sucursal;
+    empresaId?: string;
+    sucursalId?: string;
 };
 
 // CREATE DTO

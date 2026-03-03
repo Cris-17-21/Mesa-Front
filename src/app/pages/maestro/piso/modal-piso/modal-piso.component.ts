@@ -1,100 +1,78 @@
-import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, inject, Input, OnChanges, OnInit, Output, signal, SimpleChanges } from '@angular/core';
+import { Component, inject, input, model, output, effect, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import Swal from 'sweetalert2';
+
+// PrimeNG
 import { DialogModule } from 'primeng/dialog';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { TextareaModule } from 'primeng/textarea';
-import { PisoService } from '../../../../services/maestro/piso.service';
+
+// Modelos e Interfaces
 import { Piso } from '../../../../models/maestro/piso.model';
+import { PisoWizardData } from '../piso.component'; // Importamos la interfaz del padre
 
 @Component({
   selector: 'app-modal-piso',
   standalone: true,
   imports: [
-    CommonModule, 
-    ReactiveFormsModule, 
-    DialogModule, 
-    ButtonModule, 
-    InputTextModule, 
+    ReactiveFormsModule,
+    DialogModule,
+    ButtonModule,
+    InputTextModule,
     TextareaModule
   ],
   templateUrl: './modal-piso.component.html',
-  styleUrl: './modal-piso.component.css'
+  styleUrl: './modal-piso.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ModalPisoComponent implements OnChanges {
+export class ModalPisoComponent {
+  private readonly fb = inject(FormBuilder);
 
-  private fb = inject(FormBuilder);
-  private pisoService = inject(PisoService);
+  // Angular 19 Signals
+  readonly visible = model<boolean>(false);
+  readonly dataToEdit = input<Piso | null>(null);
+  readonly loading = input<boolean>(false); // Ahora viene del padre
 
-  @Input() visible = false;
-  @Input() dataToEdit: Piso | null = null;
-  @Input() sucursalId: string = '';
-  @Output() visibleChange = new EventEmitter<boolean>();
-  @Output() onSave = new EventEmitter<void>();
+  // Output unificado siguiendo tu patrón Wizard
+  readonly onSave = output<PisoWizardData>();
 
-  pisoForm: FormGroup;
-  loading = signal(false);
+  readonly pisoForm: FormGroup;
 
   constructor() {
     this.pisoForm = this.fb.group({
       nombre: ['', [Validators.required, Validators.minLength(3)]],
-      descripcion: ['', [Validators.required]]
+      descripcion: ['']
+    });
+
+    // Reactividad para llenar el formulario
+    effect(() => {
+      const p = this.dataToEdit();
+      if (p) {
+        this.pisoForm.patchValue({
+          nombre: p.nombre,
+          descripcion: p.descripcion
+        });
+      } else {
+        this.pisoForm.reset();
+      }
     });
   }
 
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes['dataToEdit']?.currentValue) {
-      const p = changes['dataToEdit'].currentValue as Piso;
-      this.pisoForm.patchValue({
-        nombre: p.nombre,
-        descripcion: p.descripcion
-      });
-    } else if (changes['visible']?.currentValue === true && !this.dataToEdit) {
-      this.pisoForm.reset();
-    }
-  }
-
-  save() {
+  save(): void {
     if (this.pisoForm.invalid) {
       this.pisoForm.markAllAsTouched();
       return;
     }
 
-    this.loading.set(true);
-    const payload = { 
-      ...this.pisoForm.value, 
-      sucursalId: this.sucursalId 
-    };
-
-    const request = this.dataToEdit
-      ? this.pisoService.updatePiso({ ...payload, id: this.dataToEdit.id })
-      : this.pisoService.createPiso(payload);
-
-    request.subscribe({
-      next: () => {
-        Swal.fire({
-          title: this.dataToEdit ? '¡Actualizado!' : '¡Creado!',
-          text: `El piso se ha ${this.dataToEdit ? 'actualizado' : 'creado'} con éxito.`,
-          icon: 'success',
-          confirmButtonColor: '#18181b',
-          timer: 2000
-        });
-        this.onSave.emit();
-        this.close();
-      },
-      error: (err) => {
-        this.loading.set(false);
-        console.error(err);
-        Swal.fire('Error', err.error?.message || 'No se pudo procesar la solicitud', 'error');
-      },
-      complete: () => this.loading.set(false)
+    // Siguiendo tu patrón: enviamos el estado de edición y los datos
+    this.onSave.emit({
+      isEdit: !!this.dataToEdit(),
+      data: this.pisoForm.value
     });
   }
 
-  close() {
-    this.visibleChange.emit(false);
+  close(): void {
+    this.visible.set(false);
     this.pisoForm.reset();
   }
 }

@@ -31,8 +31,8 @@ export class PisoService {
   }
 
   // PUT DE PISO
-  updatePiso(piso: Piso): Observable<Piso> {
-    return this.http.put<Piso>(`${this.API_URL}/${piso.id}`, piso);
+  updatePiso(id: string, piso: Partial<Piso>): Observable<Piso> {
+    return this.http.put<Piso>(`${this.API_URL}/${id}`, piso);
   }
 
   // DELETE DE PISO

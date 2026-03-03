@@ -8,7 +8,8 @@
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    color: #a1a1aa; /* Gris elegante */
+    color: #a1a1aa;
+    /* Gris elegante */
     border-bottom: 1px solid #f4f4f5;
     padding-bottom: 0.5rem;
     margin: 1.5rem 0 1rem 0;
@@ -28,7 +29,8 @@
 .field-row {
     display: flex;
     gap: 1rem;
-    flex-wrap: wrap; /* Responsive */
+    flex-wrap: wrap;
+    /* Responsive */
 }
 
 .field {
@@ -37,8 +39,15 @@
     margin-bottom: 0.75rem;
 }
 
-.flex-1 { flex: 1; min-width: 200px; }
-.flex-2 { flex: 2; min-width: 300px; }
+.flex-1 {
+    flex: 1;
+    min-width: 200px;
+}
+
+.flex-2 {
+    flex: 2;
+    min-width: 300px;
+}
 
 /* --- Inputs Estilo Noir --- */
 .label-noir {
@@ -48,6 +57,14 @@
     margin-bottom: 6px;
     display: block;
 }
+
+.optional {
+    font-weight: 400;
+    color: #a1a1aa;
+    font-size: 0.75rem;
+    margin-left: 0.7rem;
+}
+
 
 .noir-input {
     width: 100%;
@@ -139,8 +156,15 @@
 
 /* Animación */
 @keyframes slideIn {
-    from { opacity: 0; transform: translateY(-5px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* modal-users.component.css */
@@ -153,7 +177,8 @@
 }
 
 .btn-search-dni {
-    background: #18181b !important; /* Negro Noir */
+    background: #18181b !important;
+    /* Negro Noir */
     border: 1px solid #18181b !important;
     color: white !important;
     border-top-right-radius: 8px !important;

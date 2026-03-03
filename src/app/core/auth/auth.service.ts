@@ -1,14 +1,16 @@
 import { Injectable, inject, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Observable, tap } from 'rxjs';
+import { firstValueFrom, Observable, tap } from 'rxjs';
 import { environment } from '../environment/environment';
 import { AuthResponse, LoginRequest } from '../../models/security/auth.model';
+import { UserService } from '../../services/user/user.service';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private http = inject(HttpClient);
   private router = inject(Router);
+  private readonly userService = inject(UserService);
   private readonly API_URL = `${environment.apiUrl}/auth`;
 
   // --- SIGNALS DE ESTADO ---
@@ -138,5 +140,27 @@ export class AuthService {
     const payload = this.decodeToken(this.getToken() || '');
     const idToQuery = payload.empresaId || userId;
     return this.http.get<any[]>(`${this.API_URL}/user-branches/${idToQuery}`);
+  }
+
+  // Obtener Id de Sede Actual
+  public getSucursalId(): string {
+    const token = this.getToken();
+    if (!token) return '';
+    const payload = this.decodeToken(token);
+    return payload.sucursalId || '';
+  }
+
+  // Obtener Id de Usuario Actual
+  public async getUserId(): Promise<string> {
+    const userResponse = await firstValueFrom(this.userService.getUserMe())
+    return userResponse.user.id;
+  }
+
+  // Obtener Id de Empresa Actual
+  public getEmpresaId(): string {
+    const token = this.getToken();
+    if (!token) return '';
+    const payload = this.decodeToken(token);
+    return payload.empresaId || '';
   }
 }

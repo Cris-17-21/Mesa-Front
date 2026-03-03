@@ -6,14 +6,14 @@
 
     <div class="header-actions">
         <button class="button-add" (click)="openCreate()">
-            <i class="bi bi-plus-lg"></i>
+            <i class="bi bi-plus-circle"></i>
             <span>Nueva Sucursal</span>
         </button>
     </div>
 </header>
 
 <main class="table-container shadow-noir">
-    <p-table #dt2 [value]="sucursales()" dataKey="id" [rows]="10" [paginator]="true"
+    <p-table #dt2 [value]="sucursales()" dataKey="id" [rows]="10" [rowsPerPageOptions]="[10, 25, 50]" [paginator]="true"
         [globalFilterFields]="['nombre', 'empresa', 'direccion']" [responsiveLayout]="'scroll'"
         styleClass="p-datatable-sm" [loading]="loading()">
 

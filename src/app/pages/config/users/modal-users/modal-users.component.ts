@@ -1,10 +1,14 @@
-import { Component, EventEmitter, inject, Input, Output, signal, SimpleChanges } from '@angular/core';
+import { Component, inject, signal, ChangeDetectionStrategy, model, input, output, DestroyRef, computed } from '@angular/core';
+import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+
+// PrimeNG
 import { DialogModule } from 'primeng/dialog';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
-import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+
+// Modelos y Servicios
 import { Role } from '../../../../models/security/role.model';
 import { Empresa } from '../../../../models/maestro/empresa.model';
 import { Sucursal } from '../../../../models/maestro/sucursal.model';
@@ -13,180 +17,244 @@ import { ConsultaService } from '../../../../services/auxiliar/consulta.service'
 
 @Component({
   selector: 'app-modal-users',
-  imports: [CommonModule, ReactiveFormsModule, DialogModule, ButtonModule, InputTextModule, SelectModule],
+  standalone: true,
+  imports: [ReactiveFormsModule, DialogModule, ButtonModule, InputTextModule, SelectModule],
   templateUrl: './modal-users.component.html',
-  styleUrl: './modal-users.component.css'
+  styleUrl: './modal-users.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ModalUsersComponent {
+  // Inyecciones
+  private readonly fb = inject(FormBuilder);
+  private readonly sucursalService = inject(SucursalService);
+  private readonly consultaService = inject(ConsultaService);
+  private readonly destroyRef = inject(DestroyRef);
 
-  private fb = inject(FormBuilder);
-  private sucursalService = inject(SucursalService);
-  private consultaService = inject(ConsultaService);
+  // Modelos e Inputs/Outputs reactivos
+  readonly visible = model(false);
+  readonly dataToEdit = input<any>(null);
+  readonly roles = input<Role[]>([]);
+  readonly empresas = input<Empresa[]>([]);
+  readonly onSave = output<{ data: any, isEdit: boolean }>();
 
-  @Input() visible = false;
-  @Input() dataToEdit: any = null;
-  @Input() roles: Role[] = [];
-  @Input() empresas: Empresa[] = [];
+  // Signals para estado local
+  readonly loading = signal(false);
+  readonly rolesFiltrados = computed(() =>
+    this.roles().filter(r => r.name !== 'SUPERADMIN')
+  );
+  readonly sucursalesPorEmpresa = signal<Sucursal[]>([]);
 
-  @Output() visibleChange = new EventEmitter<boolean>();
-  @Output() onSave = new EventEmitter<any>();
-
-  loading = signal(false);
-  rolesFiltrados = signal<Role[]>([]);
-  sucursalesPorEmpresa = signal<Sucursal[]>([]);
-
-  userForm: FormGroup = this.fb.group({
+  readonly userForm: FormGroup = this.fb.group({
     username: ['', Validators.required],
     password: ['', [Validators.required, Validators.minLength(6)]],
     role: ['', Validators.required],
     empresaId: ['', Validators.required],
     sucursalId: [{ value: '', disabled: false }, Validators.required],
-    numeroDocumento: ['', [Validators.required, Validators.pattern('^[0-9]{8}$')]], // Solo 8 números
+    numeroDocumento: ['', [Validators.required, Validators.pattern('^[0-9]{8}$')]],
     nombres: ['', Validators.required],
     apellidoPaterno: ['', Validators.required],
     apellidoMaterno: ['', Validators.required],
-    telefono: ['', [Validators.required, Validators.pattern('^9[0-9]{8}$')]], // Inicia con 9 y tiene 9 dígitos
-    email: ['', [Validators.required, Validators.email]],
-    tipoDocumento: ['DNI'] // Por defecto
+    telefono: ['', [Validators.pattern('^9[0-9]{8}$')]],
+    email: ['', [Validators.email]],
+    tipoDocumento: ['DNI']
   });
 
-  ngOnChanges(changes: SimpleChanges) {
-    if (changes['visible']?.currentValue === true) {
-      this.prepareModal();
-    }
+  constructor() {
+    // Reaccionar a cambios en visibilidad o datos para editar usando observables
+    // para evitar bucles infinitos por tracking reactivo
+    toObservable(this.visible)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(isVisible => {
+        if (isVisible) {
+          this.prepareModal(this.dataToEdit());
+        } else {
+          this.userForm.reset({ tipoDocumento: 'DNI' });
+          this.lastPreparedId = null;
+        }
+      });
 
-    // Si cambian los roles, filtramos al SUPERADMIN
-    if (changes['roles']) {
-      this.rolesFiltrados.set(this.roles.filter(r => r.name !== 'SUPERADMIN'));
-    }
-  }
+    // También reaccionar si cambian los datos mientras el modal está abierto
+    toObservable(this.dataToEdit)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(data => {
+        if (this.visible() && data) {
+          this.prepareModal(data);
+        }
+      });
 
-  private prepareModal() {
-    if (this.dataToEdit) {
-      this.userForm.patchValue(this.dataToEdit);
-      this.userForm.get('password')?.clearValidators(); // No obligatorio al editar
-    } else {
-      this.userForm.reset({ tipoDocumento: 'DNI' });
-    }
+    // No es necesario el observable para rolesFiltrados, ahora es computed
+
     this.watchFormChanges();
   }
 
-  private watchFormChanges() {
+  private lastPreparedId: string | null = null;
 
-    // 1. ESCUCHAR CAMBIO DE EMPRESA (Llamada al Backend)
-    this.userForm.get('empresaId')?.valueChanges.subscribe(empId => {
-      const sucursalCtrl = this.userForm.get('sucursalId');
+  private prepareModal(data: any): void {
+    if (!data) {
+      this.userForm.reset({ tipoDocumento: 'DNI' });
+      return;
+    }
 
-      if (!empId) {
-        this.sucursalesPorEmpresa.set([]);
-        sucursalCtrl?.setValue(null);
-        return;
-      }
+    // Mapeamos los objetos anidados o los IDs directos (ahora devueltos por el backend)
+    let roleId = data.role?.id || data.rol?.id || data.role || data.rol;
 
-      // Llamamos a tu nuevo método del servicio
-      this.sucursalService.getSucursalByEmpresaId(empId).subscribe({
-        next: (data) => {
-          this.sucursalesPorEmpresa.set(data);
+    // Convertir nombre de rol a ID si es necesario
+    if (roleId && typeof roleId === 'string' && roleId.length < 30) {
+      const foundRole = this.roles().find(r => r.name === roleId);
+      if (foundRole) roleId = foundRole.id;
+    }
 
-          // Lógica de edición: Si estamos editando, mantenemos el valor, 
-          // si es creación o el ID actual no existe en la nueva lista, limpiamos.
-          const currentSucursalId = sucursalCtrl?.value;
-          if (!data.find(s => s.id === currentSucursalId)) {
-            sucursalCtrl?.setValue(null);
+    const mappedData = {
+      ...data,
+      role: roleId,
+      empresaId: data.empresaId || data.empresa?.id || data.empresa_id,
+      sucursalId: data.sucursalId || data.sucursal?.id || data.sucursal_id
+    };
+
+    this.userForm.patchValue(mappedData);
+    this.userForm.get('password')?.clearValidators();
+
+    // Si hay empresa, cargamos las sucursales inmediatamente para que el select de sucursal muestre el valor
+    const empId = mappedData.empresaId;
+    if (empId) {
+      this.loading.set(true);
+      this.sucursalService.getSucursalByEmpresaId(empId)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
+          next: (sucursales) => {
+            this.sucursalesPorEmpresa.set(sucursales);
+            // Forzamos el valor de sucursalId después de cargar las opciones
+            this.userForm.get('sucursalId')?.setValue(mappedData.sucursalId);
+            this.loading.set(false);
+          },
+          error: (err) => {
+            console.error('Error cargando sucursales iniciales', err);
+            this.loading.set(false);
           }
-        },
-        error: (err) => {
-          console.error('Error al cargar sucursales por empresa', err);
+        });
+    }
+
+    this.userForm.get('password')?.updateValueAndValidity();
+  }
+
+  private watchFormChanges(): void {
+    // 1. ESCUCHAR CAMBIO DE EMPRESA
+    this.userForm.get('empresaId')?.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(empId => {
+        const sucursalCtrl = this.userForm.get('sucursalId');
+
+        if (!empId) {
           this.sucursalesPorEmpresa.set([]);
+          sucursalCtrl?.setValue(null);
+          return;
         }
+
+        this.loading.set(true);
+        this.sucursalService.getSucursalByEmpresaId(empId)
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe({
+            next: (data) => {
+              this.sucursalesPorEmpresa.set(data);
+              const currentSucursalId = sucursalCtrl?.value;
+              if (!data.find(s => s.id === currentSucursalId)) {
+                sucursalCtrl?.setValue(null);
+              }
+              this.loading.set(false);
+            },
+            error: (err) => {
+              console.error('Error al cargar sucursales por empresa', err);
+              this.sucursalesPorEmpresa.set([]);
+              this.loading.set(false);
+            }
+          });
       });
-    });
 
-    // 2. ESCUCHAR CAMBIO DE ROL (Lógica de deshabilitar sucursal)
-    this.userForm.get('role')?.valueChanges.subscribe(roleValue => {
-      // Nota: Asegúrate de que roleValue sea el ID o Name según tu HTML
-      const selectedRole = this.roles.find(r => r.id === roleValue || r.name === roleValue);
-      const sucursalCtrl = this.userForm.get('sucursalId');
+    // 2. ESCUCHAR CAMBIO DE ROL
+    this.userForm.get('role')?.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(roleValue => {
+        const selectedRole = this.roles().find(r => r.id === roleValue || r.name === roleValue);
+        const sucursalCtrl = this.userForm.get('sucursalId');
 
-      if (selectedRole?.name === 'ADMIN' || selectedRole?.name === 'ADMIN_RESTAURANTE') {
-        sucursalCtrl?.disable();
-        sucursalCtrl?.clearValidators();
-        sucursalCtrl?.setValue(null);
-      } else {
-        sucursalCtrl?.enable();
-        sucursalCtrl?.setValidators(Validators.required);
-      }
-      sucursalCtrl?.updateValueAndValidity();
-    });
+        if (selectedRole?.name === 'ADMIN') {
+          sucursalCtrl?.disable();
+          sucursalCtrl?.clearValidators();
+          sucursalCtrl?.setValue(null);
+        } else {
+          sucursalCtrl?.enable();
+          sucursalCtrl?.setValidators(Validators.required);
+        }
+        sucursalCtrl?.updateValueAndValidity();
+      });
 
-    // 3. Validación dinámica de Documento (DNI: 8, RUC: 11)
-    this.userForm.get('tipoDocumento')?.valueChanges.subscribe(tipo => {
-      const docControl = this.userForm.get('numeroDocumento');
-      docControl?.setValue(''); // Limpiamos el valor para evitar confusiones
+    // 3. Validación dinámica de Documento
+    this.userForm.get('tipoDocumento')?.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(tipo => {
+        const docControl = this.userForm.get('numeroDocumento');
+        docControl?.setValue('');
 
-      if (tipo === 'DNI') {
-        docControl?.setValidators([
-          Validators.required,
-          Validators.minLength(8),
-          Validators.maxLength(8),
-          Validators.pattern('^[0-9]*$') // Solo números
-        ]);
-      } else if (tipo === 'RUC') {
-        docControl?.setValidators([
-          Validators.required,
-          Validators.minLength(11),
-          Validators.maxLength(11),
-          Validators.pattern('^[0-9]*$')
-        ]);
-      }
-      docControl?.updateValueAndValidity();
-    });
+        if (tipo === 'DNI') {
+          docControl?.setValidators([
+            Validators.required,
+            Validators.minLength(8),
+            Validators.maxLength(8),
+            Validators.pattern('^[0-9]*$')
+          ]);
+        } else if (tipo === 'RUC') {
+          docControl?.setValidators([
+            Validators.required,
+            Validators.minLength(11),
+            Validators.maxLength(11),
+            Validators.pattern('^[0-9]*$')
+          ]);
+        }
+        docControl?.updateValueAndValidity();
+      });
   }
 
-  isFieldInvalid(path: string) {
+  isFieldInvalid(path: string): boolean {
     const control = this.userForm.get(path);
-    return control?.invalid && (control.touched || control.dirty);
+    return !!(control?.invalid && (control.touched || control.dirty));
   }
 
-  save() {
+  save(): void {
     if (this.userForm.invalid) {
       this.userForm.markAllAsTouched();
       return;
     }
+
     this.onSave.emit({
       data: this.userForm.getRawValue(),
-      isEdit: !!this.dataToEdit
+      isEdit: !!this.dataToEdit()
     });
   }
 
-  close() {
-    this.visibleChange.emit(false);
+  close(): void {
+    this.visible.set(false);
   }
 
-  consultarDni() {
+  consultarDni(): void {
     const dni = this.userForm.get('numeroDocumento')?.value;
+    if (!dni || dni.length !== 8) return;
 
-    // Validamos que tenga 8 dígitos antes de llamar a la API
-    if (!dni || dni.length !== 8) {
-      // Aquí podrías disparar un mensaje de error tipo Toast si gustas
-      return;
-    }
-
-    this.consultaService.consultaDni(dni).subscribe({
-      next: (data) => {
-        console.log(data)
-        this.userForm.patchValue({
-          nombres: data.first_name,
-          apellidoPaterno: data.first_last_name,
-          apellidoMaterno: data.second_last_name
-        });
-        this.loading.set(false);
-      },
-      error: (err) => {
-        console.error("Error consultando DNI", err);
-        this.loading.set(false);
-        // Opcional: limpiar campos si no encuentra nada
-      }
-    });
+    this.loading.set(true);
+    this.consultaService.consultaDni(dni)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (data) => {
+          this.userForm.patchValue({
+            nombres: data.first_name,
+            apellidoPaterno: data.first_last_name,
+            apellidoMaterno: data.second_last_name
+          });
+          this.loading.set(false);
+        },
+        error: (err) => {
+          console.error("Error consultando DNI", err);
+          this.loading.set(false);
+        }
+      });
   }
 }

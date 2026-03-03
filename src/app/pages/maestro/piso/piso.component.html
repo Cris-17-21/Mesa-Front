@@ -11,16 +11,17 @@
         </div>
 
         <button *appHasPermission="'CREATE_PISO'" class="button-add" (click)="openCreate()">
-            <i class="bi bi-plus-lg"></i>
+            <i class="bi bi-plus-circle"></i>
             <span>Nuevo Piso</span>
         </button>
     </div>
 </header>
 
-<div class="grid p-fluid" *appHasPermission="'READ_PISO'">
-    <div class="col-12 sm:col-6 lg:col-4 xl:col-3" *ngFor="let piso of filteredPisos">
+<div class="grid p-fluid group-pisos" *appHasPermission="'READ_PISO'">
+    @for(piso of filteredPisos(); track piso.id) {
+    <div class="col-12 sm:col-6 lg:col-4 xl:col-3 mb-1">
         <div class="piso-card shadow-noir" (click)="goToMesaDesign(piso.id)">
-            
+
             <div class="card-content">
                 <div class="flex align-items-center gap-3 mb-3">
                     <div class="icon-container-noir">
@@ -34,7 +35,11 @@
                 <div class="info-section">
                     <div class="flex align-items-center gap-2 text-secondary mb-2">
                         <i class="bi bi-grid-3x3-gap"></i>
+                        @if (piso.mesas.length > 0) {
                         <span>{{ piso.mesas.length || 0 }} Mesas configuradas</span>
+                        } @else {
+                        <span>Sin mesas configuradas</span>
+                        }
                     </div>
                     <p class="description-text">
                         {{ piso.descripcion || 'Sin descripción disponible.' }}
@@ -43,10 +48,12 @@
 
                 <div class="actions-footer">
                     <div class="flex gap-2" (click)="$event.stopPropagation()">
-                        <button *appHasPermission="'UPDATE_PISO'" class="button-action edit" (click)="onEdit(piso)" title="Editar">
+                        <button *appHasPermission="'UPDATE_PISO'" class="button-action edit" (click)="openEdit(piso)"
+                            title="Editar">
                             <i class="bi bi-pencil-square"></i>
                         </button>
-                        <button *appHasPermission="'DELETE_PISO'" class="button-action delete" (click)="onDelete(piso.id)" title="Eliminar">
+                        <button *appHasPermission="'DELETE_PISO'" class="button-action delete"
+                            (click)="deletePiso(piso.id)" title="Eliminar">
                             <i class="bi bi-trash3"></i>
                         </button>
                     </div>
@@ -55,7 +62,15 @@
             </div>
         </div>
     </div>
+    }@empty {
+    <div class="col-12 text-center p-5">
+        <p class="text-secondary">No se encontraron pisos disponibles.</p>
+    </div>
+    }
 </div>
 
-<app-modal-piso [(visible)]="displayModal" [dataToEdit]="selectedPiso" [sucursalId]="sucursalId" (onSave)="loadPisos()">
+@defer (when displayModal()) {
+<app-modal-piso [(visible)]="displayModal" [dataToEdit]="selectedPiso()" [loading]="loading()"
+    (onSave)="handleSave($event)">
 </app-modal-piso>
+}

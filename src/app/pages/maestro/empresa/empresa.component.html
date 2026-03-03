@@ -6,14 +6,14 @@
 
     <div class="header-actions">
         <button class="button-add" (click)="openCreate()">
-            <i class="bi bi-plus-lg"></i>
+            <i class="bi bi-plus-circle"></i>
             <span>Nuevo Restaurante</span>
         </button>
     </div>
 </header>
 
 <main class="table-container shadow-noir">
-    <p-table #dt [value]="empresas()" dataKey="id" [rows]="10" [paginator]="true"
+    <p-table #dt [value]="empresas()" dataKey="id" [rows]="10" [rowsPerPageOptions]="[10, 25, 50]" [paginator]="true"
         [globalFilterFields]="['razonSocial', 'ruc']" [responsiveLayout]="'scroll'" styleClass="p-datatable-sm">
 
         <ng-template pTemplate="caption">

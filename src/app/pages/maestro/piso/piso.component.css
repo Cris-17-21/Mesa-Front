@@ -1,22 +1,88 @@
-/* Reutilizando la base Noir del header */
+/* =========================================
+   1. LAYOUT PRINCIPAL (DESKTOP POR DEFECTO)
+   ========================================= */
+.main-header {
+  margin-bottom: 2rem;
+}
+
 .header-titles h1 {
-  margin-bottom: 5px;
+  margin: 0 0 5px 0;
   font-weight: 700;
   font-size: 2rem;
 }
 
 .subtitle {
-  margin-top: 0px;
+  margin: 0;
   color: #71717a;
 }
 
 .header-actions {
+  margin-top: 2rem;
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  margin-bottom: 30px;
 }
 
-/* Tarjeta Estilo Noir */
+/* =========================================
+   2. COMPONENTES (INPUTS, BOTONES, CARDS)
+   ========================================= */
+.search-wrapper {
+  position: relative;
+  flex: 1;
+  min-width: 200px;
+  max-width: 350px;
+}
+
+.search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #a1a1aa;
+  font-size: 0.9rem;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.noir-input {
+  width: 100%;
+  padding: 10px 12px 10px 38px;
+  font-size: 0.875rem;
+  font-family: 'Inter', system-ui, sans-serif;
+  color: #18181b;
+  background-color: #ffffff;
+  border: 1px solid #e4e4e7;
+  border-radius: 8px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  outline: none;
+}
+
+.noir-input:focus {
+  border-color: #18181b;
+  box-shadow: 0 0 0 3px rgba(24, 24, 27, 0.05);
+}
+
+.button-add {
+  background-color: #18181b;
+  border: none;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 0.6rem 1.2rem;
+  border-radius: 10px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: 0.3s all ease;
+  white-space: nowrap;
+}
+
+.button-add:hover {
+  background-color: #3f3f46;
+}
+
+/* --- Estilo de Tarjeta --- */
 .piso-card {
   background: #ffffff;
   border-radius: 12px;
@@ -25,6 +91,7 @@
   overflow: hidden;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   height: 100%;
+  cursor: pointer;
 }
 
 .piso-card:hover {
@@ -32,11 +99,18 @@
   border-color: #18181b;
 }
 
+.piso-card:active {
+  transform: scale(0.98);
+}
+
 .shadow-noir {
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
-/* Icono y Contenido */
+.card-content {
+  padding: 1.5rem;
+}
+
 .icon-container-noir {
   background-color: #f4f4f5;
   color: #18181b;
@@ -47,19 +121,20 @@
   justify-content: center;
 }
 
-.card-content {
-  padding: 1.5rem;
-}
-
 .description-text {
   font-size: 0.875rem;
   color: #71717a;
   line-height: 1.5;
   margin: 0;
-  min-height: 3em;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-height: 2.8em;
 }
 
-/* Badges Personalizados */
+/* --- Badges y Footer --- */
 .status-badge-noir {
   position: absolute;
   top: 12px;
@@ -77,13 +152,6 @@
   border: 1px solid #bbf7d0;
 }
 
-.status-badge-noir.inactive {
-  background-color: #fef2f2;
-  color: #991b1b;
-  border: 1px solid #fecaca;
-}
-
-/* Footer y Botones de Acción */
 .actions-footer {
   display: flex;
   justify-content: space-between;
@@ -101,6 +169,8 @@
   cursor: pointer;
   transition: 0.2s all ease;
   border-radius: 6px;
+  position: relative;
+  z-index: 2;
 }
 
 .button-action:hover {
@@ -108,182 +178,60 @@
   transform: scale(1.1);
 }
 
-.edit { color: #18181b; }
-.delete { color: #ef4444; }
-.power { color: #71717a; }
-
-/* Botón Principal (Reutilizado) */
-.button-add {
-  background-color: #18181b;
-  border: none;
-  color: white;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 20px;
-  border-radius: 8px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: 0.3s all ease;
-  height: 3rem;
-}
-
-.button-add:hover {
-  background-color: #3f3f46;
-}
-
-/* Hacer que la tarjeta parezca clickeable */
-.piso-card {
-    cursor: pointer;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.piso-card:active {
-    transform: scale(0.98);
-}
-
-/* Evitar que los botones de acción se vean como parte del clic de la tarjeta */
-.actions-footer .button-action {
-    position: relative;
-    z-index: 2;
-}
-
-/* Contenedor relativo para posicionar el icono */
-.search-wrapper {
-  position: relative;
-  width: 100%;
-  max-width: 300px; /* Tamaño del buscador */
-  margin-bottom: 1.5rem;
-}
-
-/* El Icono de Bootstrap */
-.search-icon {
-  position: absolute;
-  left: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #a1a1aa; /* Gris Zinc 400 */
-  font-size: 0.9rem;
-  pointer-events: none; /* Evita que el icono bloquee el clic en el input */
-}
-
-/* El Input Estilo Noir */
-.noir-input {
-  width: 100%;
-  padding: 10px 12px 10px 38px; /* Padding extra a la izquierda para el icono */
-  font-size: 0.875rem;
-  font-family: 'Inter', system-ui, sans-serif;
+.edit {
   color: #18181b;
-  background-color: #ffffff;
-  border: 1px solid #e4e4e7; /* Borde gris suave */
-  border-radius: 8px;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  outline: none;
 }
 
-/* Estado Focus: Borde negro y sombra sutil */
-.noir-input:focus {
-  border-color: #18181b;
-  box-shadow: 0 0 0 3px rgba(24, 24, 27, 0.05);
+.delete {
+  color: #ef4444;
 }
 
-/* Estilo del Placeholder */
-.noir-input::placeholder {
-  color: #a1a1aa;
-  font-weight: 400;
+.mb-1 {
+  margin-bottom: 1rem;
 }
 
-@media (max-width: 640px) {
-    .header-container {
-        text-align: center;
-    }
+/* =========================================
+   3. RESPONSIVE (MAX-WIDTH)
+   ========================================= */
+@media (max-width: 768px) {
+  .main-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.5rem;
+  }
 
-    .actions-bar {
-        flex-direction: column; /* Apila buscador y botón en móviles */
-        align-items: stretch;
-    }
-
-    .search-wrapper {
-        width: 100%;
-        max-width: none;
-    }
-
-    .btn-new {
-        width: 100%;
-        justify-content: center;
-        order: -1; /* Opcional: pone el botón de "Nuevo" arriba del buscador en móvil */
-    }
-
-    .title {
-        font-size: 1.5rem;
-    }
-}
-
-/* Ajustes de Layout Superior */
-.main-header {
+  .header-actions {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
-    margin-bottom: 2rem;
-}
-
-@media (min-width: 768px) {
-    .main-header {
-        flex-direction: row;
-        justify-content: space-between;
-        align-items: flex-end;
-    }
-}
-
-.header-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    align-items: center;
-}
-
-/* El buscador se estira en móvil, se fija en desktop */
-.search-wrapper {
-    position: relative;
     width: 100%;
-    margin-bottom: 0 !important; /* Quitamos el margen inferior que tenías */
+    gap: 1rem;
+    align-items: stretch;
+  }
+
+  .search-wrapper {
+    width: 100%;
+    max-width: none;
+  }
+
+  .button-add {
+    width: 100%;
+    order: -1;
+    /* Opcional: el botón queda arriba del buscador */
+  }
+
+  .header-titles {
+    text-align: left;
+    width: 100%;
+  }
+
+  .header-titles h1 {
+    font-size: 1.5rem;
+  }
 }
 
-@media (min-width: 640px) {
-    .search-wrapper {
-        width: 300px;
-    }
-}
-
-.button-add {
-    width: 100%; /* Ancho completo en móvil */
-    justify-content: center;
-}
-
-@media (min-width: 640px) {
-    .button-add {
-        width: auto; /* Ancho contenido en tablet/pc */
-    }
-}
-
-/* Grid y Card Heights */
-.grid {
-    margin-top: 1rem;
-}
-
-.description-text {
-    display: -webkit-box;
-    -webkit-line-clamp: 2; /* Limita a 2 líneas */
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    min-height: 2.8em;
-}
-
-/* Efecto de pulsación táctil */
+/* Ajuste adicional para interacción táctil */
 @media (hover: none) {
-    .piso-card:active {
-        background-color: #f9fafb;
-        transform: scale(0.98);
-    }
+  .piso-card:active {
+    background-color: #f9fafb;
+  }
 }
