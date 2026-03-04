@@ -11,7 +11,7 @@
             <i class="bi bi-circle-fill"></i> Turno Cerrado
         </div>
 
-        <button class="button-noir" (click)="abrirCaja()">
+        <button class="button-noir" (click)="abrirCaja()" *appHasPermission="'ABRIR_CAJA'">
             <i class="bi bi-key"></i> Abrir Caja
         </button>
         }
@@ -25,7 +25,7 @@
             <i class="bi bi-arrow-left-right"></i> Movimiento
         </button>
 
-        <button class="button-noir delete-hover" (click)="cerrarCaja()">
+        <button class="button-noir delete-hover" (click)="cerrarCaja()" *appHasPermission="'CERRAR_CAJA'">
             <i class="bi bi-door-closed"></i> Cerrar Caja
         </button>
         }
