@@ -5,10 +5,12 @@
     </div>
 
     <div class="header-actions">
+
         @if (!cajaService.isCajaAbierta()) {
         <div class="status-indicator closed">
             <i class="bi bi-circle-fill"></i> Turno Cerrado
         </div>
+
         <button class="button-noir" (click)="abrirCaja()">
             <i class="bi bi-key"></i> Abrir Caja
         </button>
@@ -27,6 +29,7 @@
             <i class="bi bi-door-closed"></i> Cerrar Caja
         </button>
         }
+
     </div>
 </header>
 
@@ -46,15 +49,18 @@
 }
 
 @if (cajaService.isCajaAbierta()) {
+
 <div class="dashboard-grid fade-in">
 
     <div class="kpi-section">
+
         <div class="kpi-card main-kpi">
             <div class="kpi-icon"><i class="bi bi-wallet2"></i></div>
             <div class="kpi-info">
                 <span class="label">Efectivo en Caja (Teórico)</span>
-                <span class="value">{{ cajaService.resumenFinanciero()?.saldoEsperadoEnCaja | currency:'PEN':'symbol'
-                    }}</span>
+                <span class="value">
+                    {{ cajaService.resumenFinanciero()?.saldoEsperadoEnCaja | currency:'PEN':'symbol' }}
+                </span>
             </div>
         </div>
 
@@ -62,8 +68,9 @@
             <div class="kpi-icon income"><i class="bi bi-graph-up-arrow"></i></div>
             <div class="kpi-info">
                 <span class="label">Ventas Totales</span>
-                <span class="value income-text">{{ cajaService.resumenFinanciero()?.totalVentasGlobal |
-                    currency:'PEN':'symbol' }}</span>
+                <span class="value income-text">
+                    {{ cajaService.resumenFinanciero()?.totalVentasGlobal | currency:'PEN':'symbol' }}
+                </span>
             </div>
         </div>
 
@@ -71,8 +78,9 @@
             <div class="kpi-icon expense"><i class="bi bi-arrow-down-right"></i></div>
             <div class="kpi-info">
                 <span class="label">Gastos Caja Chica</span>
-                <span class="value expense-text">{{ cajaService.resumenFinanciero()?.totalEgresosCajaChica |
-                    currency:'PEN':'symbol' }}</span>
+                <span class="value expense-text">
+                    {{ cajaService.resumenFinanciero()?.totalEgresosCajaChica | currency:'PEN':'symbol' }}
+                </span>
             </div>
         </div>
 
@@ -82,6 +90,7 @@
                 <span>Ir al Punto de Venta</span>
             </div>
         </div>
+
     </div>
 
     <div class="table-container shadow-noir">
@@ -92,6 +101,7 @@
 
         <p-table [value]="movimientoService.movimientos()" [rows]="10" [paginator]="true"
             styleClass="p-datatable-sm p-datatable-gridlines noir-table">
+
             <ng-template pTemplate="header">
                 <tr>
                     <th style="width: 100px">Hora</th>
@@ -100,29 +110,37 @@
                     <th style="width: 120px" class="text-right">Monto</th>
                 </tr>
             </ng-template>
+
             <ng-template pTemplate="body" let-mov>
                 <tr>
-                    <td class="text-secondary">{{ mov.fecha | date:'HH:mm' }}</td>
-
-                    <td>
-                        <span class="font-medium">{{ mov.descripcion }}</span>
-                        <span style="display: block; font-size: 0.75rem; color: #6b7280; margin-top: 4px;"
-                            class="text-xs text-secondary block ml-1">{{ mov.usuarioNombre }}</span>
+                    <td class="text-secondary">
+                        {{ mov.fecha | date:'HH:mm' }}
                     </td>
 
                     <td>
-                        <span class="badge"
-                            [ngClass]="{'bg-income': mov.tipo === 'INGRESO', 'bg-expense': mov.tipo === 'EGRESO'}">
+                        <span class="font-medium">{{ mov.descripcion }}</span>
+                        <span style="display:block;font-size:0.75rem;color:#6b7280;margin-top:4px;"
+                            class="text-xs text-secondary block ml-1">
+                            {{ mov.usuarioNombre }}
+                        </span>
+                    </td>
+
+                    <td>
+                        <span class="badge" [class.bg-income]="mov.tipo === 'INGRESO'"
+                            [class.bg-expense]="mov.tipo === 'EGRESO'">
                             {{ mov.tipo }}
                         </span>
                     </td>
 
-                    <td class="text-right font-bold"
-                        [ngClass]="{'text-green-600': mov.tipo === 'INGRESO', 'text-red-600': mov.tipo === 'EGRESO'}">
+                    <td class="text-right font-bold" [class.text-green-600]="mov.tipo === 'INGRESO'"
+                        [class.text-red-600]="mov.tipo === 'EGRESO'">
+
                         {{ mov.monto | currency:'PEN':'symbol' }}
+
                     </td>
                 </tr>
             </ng-template>
+
             <ng-template pTemplate="emptymessage">
                 <tr>
                     <td colspan="4" class="text-center p-4 text-secondary">
@@ -130,16 +148,20 @@
                     </td>
                 </tr>
             </ng-template>
+
         </p-table>
     </div>
 </div>
 }
 
-<app-caja-control-modal [(visible)]="showControlModal" [type]="controlType" [cajaActivaId]="cajaService.cajaIdActual()"
+<!-- MODAL CONTROL -->
+<app-caja-control-modal [visible]="showControlModal()" (visibleChange)="showControlModal.set($event)"
+    [type]="controlType()" [cajaActivaId]="cajaService.cajaIdActual()"
     [saldoEsperado]="cajaService.resumenFinanciero()?.saldoEsperadoEnCaja || 0" (onSave)="onOperationSuccess()"
-    [sucursalId]="currentSucursalId" [usuarioId]="currentUsuarioId">
+    [sucursalId]="currentSucursalId()" [usuarioId]="currentUsuarioId()">
 </app-caja-control-modal>
 
-<app-caja-movimiento-modal [(visible)]="showMovementModal" [usuarioId]="currentUsuarioId"
-    (onSave)="onOperationSuccess()">
+<!-- MODAL MOVIMIENTO -->
+<app-caja-movimiento-modal [visible]="showMovementModal()" (visibleChange)="showMovementModal.set($event)"
+    [usuarioId]="currentUsuarioId()" (onSave)="onOperationSuccess()">
 </app-caja-movimiento-modal>

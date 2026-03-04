@@ -87,7 +87,7 @@ export class OrdenComponent implements OnInit {
 
       // Sincronizar estado de caja
       if (this.currentSucursalId && this.currentUsuarioId) {
-        await firstValueFrom(this.cajaService.verificarEstadoCaja(this.currentSucursalId, this.currentUsuarioId));
+        this.cajaService.verificarEstadoCaja(this.currentSucursalId, this.currentUsuarioId);
       }
 
       console.log('📦 Sesión cargada:', { empresa: this.currentEmpresaId, sucursal: this.currentSucursalId, usuario: this.currentUsuarioId, cajaAbierta: this.cajaService.isCajaAbierta() });

@@ -1,8 +1,7 @@
-import { Component, effect, inject, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, effect, inject, OnInit, signal } from '@angular/core';
 import { Router } from '@angular/router';
 
-// PrimeNG Modules
+// PrimeNG
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
@@ -10,7 +9,7 @@ import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
 import { MenuModule } from 'primeng/menu';
 
-// Directivas y Componentes Propios
+// Directivas y Componentes
 import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
 import { CajaControlModalComponent } from './caja-control-modal/caja-control-modal.component';
 import { CajaMovimientoModalComponent } from './caja-movimiento-modal/caja-movimiento-modal.component';
@@ -19,14 +18,14 @@ import { CajaMovimientoModalComponent } from './caja-movimiento-modal/caja-movim
 import { CajaService } from '../../../services/venta/caja.service';
 import { MovimientoCajaService } from '../../../services/venta/movimiento-caja.service';
 import { AuthService } from '../../../core/auth/auth.service';
-import { UserService } from '../../../services/user/user.service';
-import { firstValueFrom } from 'rxjs';
+import { CurrencyPipe, DatePipe } from '@angular/common';
 
 @Component({
   selector: 'app-caja',
   standalone: true,
   imports: [
-    CommonModule,
+    DatePipe,
+    CurrencyPipe,
     TableModule,
     ButtonModule,
     CardModule,
@@ -34,7 +33,6 @@ import { firstValueFrom } from 'rxjs';
     TooltipModule,
     MenuModule,
     HasPermissionDirective,
-    // Componentes Modales
     CajaControlModalComponent,
     CajaMovimientoModalComponent
   ],
@@ -43,134 +41,100 @@ import { firstValueFrom } from 'rxjs';
 })
 export class CajaComponent implements OnInit {
 
-  // --- Inyecciones ---
-  public cajaService = inject(CajaService); // Public para usar signals en HTML
+  // ===============================
+  // Inyección moderna
+  // ===============================
+
+  public cajaService = inject(CajaService);
   public movimientoService = inject(MovimientoCajaService);
   private authService = inject(AuthService);
   private router = inject(Router);
-  private userService = inject(UserService);
 
-  // --- Estado de Modales ---
-  showControlModal = false; // Para el modal de Abrir/Cerrar
-  showMovementModal = false; // Para el modal de Movimientos
-  controlType: 'OPEN' | 'CLOSE' = 'OPEN'; // Variable que controla si es Apertura o Cierre
-  currentSucursalId: string | null = null;
-  currentUsuarioId: string | null = null;
+  // ===============================
+  // Estado UI con Signals
+  // ===============================
 
-  // --- Helpers ---
+  showControlModal = signal(false);
+  showMovementModal = signal(false);
+  controlType = signal<'OPEN' | 'CLOSE'>('OPEN');
+
+  currentSucursalId = signal<string | null>(null);
+  currentUsuarioId = signal<string | null>(null);
+
   today = new Date();
 
+  ngOnInit() {
+    this.initCaja();
+  }
+
   constructor() {
-    // EFFECT: Reacciona automáticamente cuando cambia la caja activa (Signal)
     effect(() => {
-      const caja = this.cajaService.cajaActiva();
+      if (this.cajaService.loading()) return;
 
-      console.log('Detectando cambio en caja:', caja); // Log para depurar
-
-      // CORRECCIÓN AQUÍ:
-      // El backend manda 'ABIERTA', tu código esperaba 'ABIERTO'.
-      // Usamos .includes o validamos ambas opciones por seguridad.
-      if (caja && (caja.estado === 'ABIERTA' || caja.estado === 'ABIERTO')) {
-
-        console.log('✅ Estado válido detectado, cargando dashboard...');
-        this.loadDashboardData(caja.id);
-
-      } else {
-        // Si no hay caja o se cerró
-        this.movimientoService.limpiarEstado();
+      if (this.cajaService.isCajaAbierta()) {
+        console.log('Caja abierta:', this.cajaService.cajaActiva());
+        this.loadDashboardData(this.cajaService.cajaIdActual());
       }
     });
   }
 
-  ngOnInit(): void {
-    this.checkEstadoInicial();
-  }
+  // ===============================
+  // Inicialización reactiva
+  // ===============================
 
-  // --- Lógica de Inicialización ---
+  private async initCaja() {
+    const sucursalId = this.authService.getSucursalId();
+    const usuarioId = await this.authService.getUserId();
 
-  async checkEstadoInicial() {
-    const { sucursalId, usuarioId } = await this.getAuthData();
-    // GUARDAMOS LOS DATOS EN LAS VARIABLES PÚBLICAS
-    this.currentSucursalId = sucursalId;
-    this.currentUsuarioId = usuarioId;
+    this.currentSucursalId.set(sucursalId);
+    this.currentUsuarioId.set(usuarioId);
 
     if (sucursalId && usuarioId) {
-      // Esto actualizará el Signal 'cajaActiva' en el servicio, disparando el effect
-      this.cajaService.verificarEstadoCaja(sucursalId, usuarioId).subscribe();
+      this.cajaService.verificarEstadoCaja(sucursalId, usuarioId);
     }
   }
 
-  loadDashboardData(cajaId: string) {
-    // 1. Traemos el arqueo financiero (KPIs)
-    this.cajaService.obtenerArqueo(cajaId).subscribe();
-    // 2. Traemos la lista de movimientos para la tabla
-    this.movimientoService.listarMovimientos(cajaId).subscribe();
+  private loadDashboardData(cajaId: string) {
+    this.cajaService.obtenerArqueo(cajaId);
+    this.movimientoService.listarMovimientos(cajaId);
   }
 
-  // --- Acciones de Botones (HTML) ---
+  // ===============================
+  // Acciones UI
+  // ===============================
 
   abrirCaja() {
-    this.controlType = 'OPEN';
-    this.showControlModal = true;
+    this.controlType.set('OPEN');
+    this.showControlModal.set(true);
   }
 
   cerrarCaja() {
-    this.controlType = 'CLOSE';
-    this.showControlModal = true;
+    this.controlType.set('CLOSE');
+    this.showControlModal.set(true);
   }
 
   registrarMovimiento() {
-    this.showMovementModal = true;
+    this.showMovementModal.set(true);
   }
 
   irAlPOS() {
     this.router.navigate(['/ventas/pos']);
   }
 
-  // --- Callback de Modales ---
+  // ===============================
+  // Callback de Modales
+  // ===============================
 
-  /**
-   * Se ejecuta cuando un modal (Apertura, Cierre o Movimiento) guarda exitosamente
-   */
   onOperationSuccess() {
     const cajaActual = this.cajaService.cajaActiva();
 
     if (cajaActual) {
-      // Si la caja sigue activa (ej. registré un gasto), recargo los números
       this.loadDashboardData(cajaActual.id);
     } else {
-      // Si la caja se cerró (cajaActiva es null), limpiamos todo
       this.movimientoService.limpiarEstado();
     }
-  }
 
-  // --- Helpers Privados ---
-
-  // 1. Agrega la palabra clave 'async'
-  private async getAuthData() {
-    const token = this.authService.getToken();
-
-    // Si no hay token, retornamos nulls inmediatamente
-    if (!token) return { sucursalId: null, usuarioId: null };
-
-    try {
-      // 2. Esperamos a que el Observable getUserMe() traiga los datos
-      const userResponse = await firstValueFrom(this.userService.getUserMe());
-
-      // 3. Decodificación del token (para la sucursal)
-      const payload = JSON.parse(atob(token.split('.')[1]));
-
-      console.log('Usuario obtenido:', userResponse);
-      console.log(userResponse.user.id)
-
-      return {
-        sucursalId: payload.sucursalId, // Viene del Token
-        usuarioId: userResponse.user.id // Viene del API (getUserMe)
-      };
-
-    } catch (e) {
-      console.error('Error obteniendo datos de auth', e);
-      return { sucursalId: null, usuarioId: null };
-    }
+    this.showControlModal.set(false);
+    this.showMovementModal.set(false);
   }
 }
