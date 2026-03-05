@@ -1,0 +1,94 @@
+<p-dialog [(visible)]="visible" [modal]="true" [header]="'Detalle de Turno Histórico'" [style]="{ width: '70vw' }"
+    [draggable]="false" [resizable]="false" styleClass="noir-dialog">
+
+    @if (loading() && !resumen()) {
+    <div class="loading-overlay">
+        <i class="bi bi-arrow-clockwise spin"></i>
+        <span>Cargando detalles...</span>
+    </div>
+    } @else {
+
+    <div class="modal-content-container fade-in">
+        <!-- SECCIÓN RESUMEN (KPIs) -->
+        <div class="summary-grid">
+            <div class="summary-card">
+                <span class="label">Monto Apertura</span>
+                <span class="value">{{ resumen()?.montoInicial | currency:'PEN':'symbol' }}</span>
+            </div>
+            <div class="summary-card">
+                <span class="label">Monto Cierre</span>
+                <span class="value">{{ resumen()?.saldoRealEnCaja | currency:'PEN':'symbol' }}</span>
+            </div>
+            <div class="summary-card" [class.negative]="(resumen()?.diferencia || 0) < 0"
+                [class.positive]="(resumen()?.diferencia || 0) > 0">
+                <span class="label">Diferencia</span>
+                <span class="value">{{ resumen()?.diferencia | currency:'PEN':'symbol' }}</span>
+            </div>
+        </div>
+
+        <div class="details-section">
+            <div class="detail-row">
+                <div class="detail-item">
+                    <span class="label">Ventas Totales</span>
+                    <span class="value text-income">{{ resumen()?.totalVentasGlobal | currency:'PEN':'symbol' }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">Ingresos Externos</span>
+                    <span class="value text-income">{{ resumen()?.totalIngresosCajaChica | currency:'PEN':'symbol'
+                        }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">Egresos</span>
+                    <span class="value text-expense">{{ resumen()?.totalEgresosCajaChica | currency:'PEN':'symbol'
+                        }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- TABLA DE MOVIMIENTOS -->
+        <div class="movements-container">
+            <h3 class="section-title"><i class="bi bi-list-ul"></i> Movimientos del Turno</h3>
+            <p-table [value]="movimientos()" [rows]="5" [paginator]="true"
+                styleClass="p-datatable-sm p-datatable-gridlines noir-table">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th style="width: 100px">Hora</th>
+                        <th>Descripción</th>
+                        <th style="width: 120px">Tipo</th>
+                        <th style="width: 120px" class="text-right">Monto</th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-mov>
+                    <tr>
+                        <td class="text-secondary">{{ mov.fecha | date:'HH:mm' }}</td>
+                        <td>
+                            <span class="font-medium">{{ mov.descripcion }}</span>
+                            <small style="display:block;font-size:0.75rem;color:#6b7280;margin-top:4px;"
+                                class="text-xs text-secondary block ml-1">{{ mov.usuarioNombre }}</small>
+                        </td>
+                        <td>
+                            <span class="badge" [class.bg-income]="mov.tipo === 'INGRESO'"
+                                [class.bg-expense]="mov.tipo === 'EGRESO'">
+                                {{ mov.tipo }}
+                            </span>
+                        </td>
+                        <td class="text-right font-bold" [class.text-green-600]="mov.tipo === 'INGRESO'"
+                            [class.text-red-600]="mov.tipo === 'EGRESO'">
+                            {{ mov.monto | currency:'PEN':'symbol' }}
+                        </td>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="emptymessage">
+                    <tr>
+                        <td colspan="4" class="text-center p-4">No se encontraron movimientos.</td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </div>
+    </div>
+    }
+
+    <ng-template pTemplate="footer">
+        <button class="button-noir" (click)="close()">Cerrar</button>
+    </ng-template>
+</p-dialog>

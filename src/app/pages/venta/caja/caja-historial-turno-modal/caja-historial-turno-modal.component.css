@@ -1,0 +1,136 @@
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.summary-card {
+    background: #f4f4f5;
+    padding: 1rem;
+    border-radius: 12px;
+    border: 1px solid #e4e4e7;
+    display: flex;
+    flex-direction: column;
+}
+
+.summary-card .label {
+    font-size: 0.75rem;
+    color: #71717a;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.25rem;
+}
+
+.summary-card .value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #18181b;
+}
+
+.summary-card.negative .value {
+    color: #dc2626;
+}
+
+.summary-card.positive .value {
+    color: #059669;
+}
+
+.details-section {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    border: 1px dotted #e4e4e7;
+    margin-bottom: 2rem;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-around;
+    gap: 2rem;
+}
+
+.detail-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.detail-item .label {
+    font-size: 0.875rem;
+    color: #71717a;
+    margin-bottom: 0.5rem;
+}
+
+.detail-item .value {
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.text-income {
+    color: #059669;
+}
+
+.text-expense {
+    color: #dc2626;
+}
+
+.section-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #18181b;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.loading-overlay {
+    height: 300px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    color: #71717a;
+}
+
+.spin {
+    font-size: 2rem;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.bg-income {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.bg-expense {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.button-noir {
+    background-color: white;
+    border: 1px solid #e4e4e7;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+}

@@ -33,126 +33,176 @@
     </div>
 </header>
 
-@if (!cajaService.isCajaAbierta()) {
-<div class="empty-state-container fade-in">
-    <div class="empty-content">
-        <div class="icon-circle">
-            <i class="bi bi-shop"></i>
-        </div>
-        <h2>La caja está cerrada</h2>
-        <p>Para comenzar a vender en esta sucursal, es necesario aperturar un nuevo turno de caja.</p>
-        <button class="button-noir large" (click)="abrirCaja()">
-            Comenzar Turno
-        </button>
-    </div>
-</div>
-}
-
-@if (cajaService.isCajaAbierta()) {
-
-<div class="dashboard-grid fade-in">
-
-    <div class="kpi-section">
-
-        <div class="kpi-card main-kpi">
-            <div class="kpi-icon"><i class="bi bi-wallet2"></i></div>
-            <div class="kpi-info">
-                <span class="label">Efectivo en Caja (Teórico)</span>
-                <span class="value">
-                    {{ cajaService.resumenFinanciero()?.saldoEsperadoEnCaja | currency:'PEN':'symbol' }}
-                </span>
+<p-tabView [activeIndex]="activeTabIndex()" (onChange)="onTabChange($event)" styleClass="noir-tabview">
+    <p-tabPanel header="Caja Actual">
+        @if (!cajaService.isCajaAbierta()) {
+        <div class="empty-state-container fade-in">
+            <div class="empty-content">
+                <div class="icon-circle">
+                    <i class="bi bi-shop"></i>
+                </div>
+                <h2>La caja está cerrada</h2>
+                <p>Para comenzar a vender en esta sucursal, es necesario aperturar un nuevo turno de caja.</p>
+                <button class="button-noir large" (click)="abrirCaja()">
+                    Comenzar Turno
+                </button>
             </div>
         </div>
+        }
 
-        <div class="kpi-card">
-            <div class="kpi-icon income"><i class="bi bi-graph-up-arrow"></i></div>
-            <div class="kpi-info">
-                <span class="label">Ventas Totales</span>
-                <span class="value income-text">
-                    {{ cajaService.resumenFinanciero()?.totalVentasGlobal | currency:'PEN':'symbol' }}
-                </span>
-            </div>
-        </div>
+        @if (cajaService.isCajaAbierta()) {
 
-        <div class="kpi-card">
-            <div class="kpi-icon expense"><i class="bi bi-arrow-down-right"></i></div>
-            <div class="kpi-info">
-                <span class="label">Gastos Caja Chica</span>
-                <span class="value expense-text">
-                    {{ cajaService.resumenFinanciero()?.totalEgresosCajaChica | currency:'PEN':'symbol' }}
-                </span>
-            </div>
-        </div>
+        <div class="dashboard-grid fade-in">
 
-        <div class="kpi-card action-card" (click)="irAlPOS()">
-            <div class="action-content">
-                <i class="bi bi-shop-window"></i>
-                <span>Ir al Punto de Venta</span>
-            </div>
-        </div>
+            <div class="kpi-section">
 
-    </div>
-
-    <div class="table-container shadow-noir">
-        <div class="table-header">
-            <h3>Movimientos del Turno</h3>
-            <span class="text-sm text-secondary">{{ today | date:'fullDate' }}</span>
-        </div>
-
-        <p-table [value]="movimientoService.movimientos()" [rows]="10" [paginator]="true"
-            styleClass="p-datatable-sm p-datatable-gridlines noir-table">
-
-            <ng-template pTemplate="header">
-                <tr>
-                    <th style="width: 100px">Hora</th>
-                    <th>Concepto / Descripción</th>
-                    <th style="width: 120px">Tipo</th>
-                    <th style="width: 120px" class="text-right">Monto</th>
-                </tr>
-            </ng-template>
-
-            <ng-template pTemplate="body" let-mov>
-                <tr>
-                    <td class="text-secondary">
-                        {{ mov.fecha | date:'HH:mm':'America/Lima' }}
-                    </td>
-
-                    <td>
-                        <span class="font-medium">{{ mov.descripcion }}</span>
-                        <span style="display:block;font-size:0.75rem;color:#6b7280;margin-top:4px;"
-                            class="text-xs text-secondary block ml-1">
-                            {{ mov.usuarioNombre }}
+                <div class="kpi-card main-kpi">
+                    <div class="kpi-icon"><i class="bi bi-wallet2"></i></div>
+                    <div class="kpi-info">
+                        <span class="label">Efectivo en Caja (Teórico)</span>
+                        <span class="value">
+                            {{ cajaService.resumenFinanciero()?.saldoEsperadoEnCaja | currency:'PEN':'symbol' }}
                         </span>
-                    </td>
+                    </div>
+                </div>
 
-                    <td>
-                        <span class="badge" [class.bg-income]="mov.tipo === 'INGRESO'"
-                            [class.bg-expense]="mov.tipo === 'EGRESO'">
-                            {{ mov.tipo }}
+                <div class="kpi-card">
+                    <div class="kpi-icon income"><i class="bi bi-graph-up-arrow"></i></div>
+                    <div class="kpi-info">
+                        <span class="label">Ventas Totales</span>
+                        <span class="value income-text">
+                            {{ cajaService.resumenFinanciero()?.totalVentasGlobal | currency:'PEN':'symbol' }}
                         </span>
-                    </td>
+                    </div>
+                </div>
 
-                    <td class="text-right font-bold" [class.text-green-600]="mov.tipo === 'INGRESO'"
-                        [class.text-red-600]="mov.tipo === 'EGRESO'">
+                <div class="kpi-card">
+                    <div class="kpi-icon expense"><i class="bi bi-arrow-down-right"></i></div>
+                    <div class="kpi-info">
+                        <span class="label">Gastos Caja Chica</span>
+                        <span class="value expense-text">
+                            {{ cajaService.resumenFinanciero()?.totalEgresosCajaChica | currency:'PEN':'symbol' }}
+                        </span>
+                    </div>
+                </div>
 
-                        {{ mov.monto | currency:'PEN':'symbol' }}
+                <div class="kpi-card action-card" (click)="irAlPOS()">
+                    <div class="action-content">
+                        <i class="bi bi-shop-window"></i>
+                        <span>Ir al Punto de Venta</span>
+                    </div>
+                </div>
 
-                    </td>
-                </tr>
-            </ng-template>
+            </div>
 
-            <ng-template pTemplate="emptymessage">
-                <tr>
-                    <td colspan="4" class="text-center p-4 text-secondary">
-                        No hay movimientos registrados en este turno aún.
-                    </td>
-                </tr>
-            </ng-template>
+            <div class="table-container shadow-noir">
+                <div class="table-header">
+                    <h3>Movimientos del Turno</h3>
+                    <span class="text-sm text-secondary">{{ today | date:'fullDate' }}</span>
+                </div>
 
-        </p-table>
-    </div>
-</div>
-}
+                <p-table [value]="movimientoService.movimientos()" [rows]="10" [paginator]="true"
+                    styleClass="p-datatable-sm p-datatable-gridlines noir-table">
+
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th style="width: 100px">Hora</th>
+                            <th>Concepto / Descripción</th>
+                            <th style="width: 120px">Tipo</th>
+                            <th style="width: 120px" class="text-right">Monto</th>
+                        </tr>
+                    </ng-template>
+
+                    <ng-template pTemplate="body" let-mov>
+                        <tr>
+                            <td class="text-secondary">
+                                {{ mov.fecha | date:'HH:mm':'America/Lima' }}
+                            </td>
+
+                            <td>
+                                <span class="font-medium">{{ mov.descripcion }}</span>
+                                <span style="display:block;font-size:0.75rem;color:#6b7280;margin-top:4px;"
+                                    class="text-xs text-secondary block ml-1">
+                                    {{ mov.usuarioNombre }}
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="badge" [class.bg-income]="mov.tipo === 'INGRESO'"
+                                    [class.bg-expense]="mov.tipo === 'EGRESO'">
+                                    {{ mov.tipo }}
+                                </span>
+                            </td>
+
+                            <td class="text-right font-bold" [class.text-green-600]="mov.tipo === 'INGRESO'"
+                                [class.text-red-600]="mov.tipo === 'EGRESO'">
+
+                                {{ mov.monto | currency:'PEN':'symbol' }}
+
+                            </td>
+                        </tr>
+                    </ng-template>
+
+                    <ng-template pTemplate="emptymessage">
+                        <tr>
+                            <td colspan="4" class="text-center p-4 text-secondary">
+                                No hay movimientos registrados en este turno aún.
+                            </td>
+                        </tr>
+                    </ng-template>
+
+                </p-table>
+            </div>
+        </div>
+        }
+    </p-tabPanel>
+
+    <p-tabPanel header="Historial de Turnos">
+        <div class="table-container shadow-noir fade-in">
+            <div class="table-header">
+                <h3>Historial de Cierres</h3>
+                <p class="text-secondary text-sm">Listado de turnos finalizados recientemente</p>
+            </div>
+
+            <p-table [value]="cajaService.historialTurnos()" [rows]="10" [paginator]="true"
+                styleClass="p-datatable-sm p-datatable-gridlines noir-table">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th>Fecha Apertura</th>
+                        <th>Fecha Cierre</th>
+                        <th>Usuario</th>
+                        <th class="text-right">Monto Inicial</th>
+                        <th class="text-right">Diferencia</th>
+                        <th style="width: 80px" class="text-center">Acciones</th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-turno>
+                    <tr>
+                        <td>{{ turno.fechaApertura | date:'dd/MM/yyyy HH:mm' }}</td>
+                        <td>{{ turno.fechaCierre | date:'dd/MM/yyyy HH:mm' }}</td>
+                        <td>{{ turno.usuarioNombre }}</td>
+                        <td class="text-right">{{ turno.montoInicial | currency:'PEN':'symbol' }}</td>
+                        <td class="text-right" [class.text-red-500]="turno.diferencia < 0"
+                            [class.text-green-500]="turno.diferencia > 0">
+                            {{ turno.diferencia | currency:'PEN':'symbol' }}
+                        </td>
+                        <td class="text-center">
+                            <button class="button-icon-only" (click)="verDetalleTurno(turno)"
+                                pTooltip="Ver movimientos">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </td>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="emptymessage">
+                    <tr>
+                        <td colspan="6" class="text-center p-4">No hay turnos registrados en el historial.</td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </div>
+    </p-tabPanel>
+</p-tabView>
 
 <!-- MODAL CONTROL -->
 <app-caja-control-modal [visible]="showControlModal()" (visibleChange)="showControlModal.set($event)"
@@ -165,3 +215,7 @@
 <app-caja-movimiento-modal [visible]="showMovementModal()" (visibleChange)="showMovementModal.set($event)"
     [usuarioId]="currentUsuarioId()" (onSave)="onOperationSuccess()">
 </app-caja-movimiento-modal>
+
+<!-- MODAL HISTORIAL -->
+<app-caja-historial-turno-modal [(visible)]="showHistorialModal" [turnoId]="selectedHistorialId()">
+</app-caja-historial-turno-modal>

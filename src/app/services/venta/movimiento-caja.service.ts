@@ -39,6 +39,10 @@ export class MovimientoCajaService {
       });
   }
 
+  consultarMovimientos(cajaId: string): Observable<MovimientoCajaResponse[]> {
+    return this.http.get<MovimientoCajaResponse[]>(`${this.apiUrl}/caja/${cajaId}`);
+  }
+
   registrarMovimiento(
     payload: CreateMovimientoCajaRequest
   ): Observable<MovimientoCajaResponse> {
@@ -53,6 +57,12 @@ export class MovimientoCajaService {
           ]);
         })
       );
+  }
+
+  historialMovimiento(inicio: string, fin: string): Observable<MovimientoCajaResponse[]> {
+    return this.http.get<MovimientoCajaResponse[]>(`${this.apiUrl}/rango`, {
+      params: { inicio, fin }
+    });
   }
 
   limpiarEstado(): void {

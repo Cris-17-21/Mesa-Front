@@ -24,6 +24,7 @@ export class CajaService {
 
   private _cajaActiva = signal<CajaTurnoDto | null>(null);
   private _resumenFinanciero = signal<CajaResumenDto | null>(null);
+  private _historialTurnos = signal<CajaTurnoDto[]>([]);
   loading = signal<boolean>(false);
 
   // ================================================================
@@ -32,6 +33,7 @@ export class CajaService {
 
   public readonly cajaActiva = this._cajaActiva.asReadonly();
   public readonly resumenFinanciero = this._resumenFinanciero.asReadonly();
+  public readonly historialTurnos = this._historialTurnos.asReadonly();
 
   isCajaAbierta = computed(() => {
     const caja = this.cajaActiva();
@@ -86,6 +88,10 @@ export class CajaService {
       });
   }
 
+  obtenerResumenArqueo(cajaId: string): Observable<CajaResumenDto> {
+    return this.http.get<CajaResumenDto>(`${this.apiUrl}/arqueo/${cajaId}`);
+  }
+
   cerrarCaja(payload: CerrarCajaDto): Observable<void> {
     return this.http
       .post<void>(`${this.apiUrl}/cerrar`, payload)
@@ -95,5 +101,10 @@ export class CajaService {
           this._resumenFinanciero.set(null);
         })
       );
+  }
+
+  obtenerHistorial(sucursalId: string): void {
+    this.http.get<CajaTurnoDto[]>(`${this.apiUrl}/historial/${sucursalId}`)
+      .subscribe(historial => this._historialTurnos.set(historial));
   }
 }

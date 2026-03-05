@@ -8,11 +8,13 @@ import { CardModule } from 'primeng/card';
 import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
 import { MenuModule } from 'primeng/menu';
+import { TabViewModule } from 'primeng/tabview';
 
 // Directivas y Componentes
 import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
 import { CajaControlModalComponent } from './caja-control-modal/caja-control-modal.component';
 import { CajaMovimientoModalComponent } from './caja-movimiento-modal/caja-movimiento-modal.component';
+import { CajaHistorialTurnoModalComponent } from './caja-historial-turno-modal/caja-historial-turno-modal.component';
 
 // Servicios
 import { CajaService } from '../../../services/venta/caja.service';
@@ -32,9 +34,11 @@ import { CurrencyPipe, DatePipe } from '@angular/common';
     TagModule,
     TooltipModule,
     MenuModule,
+    TabViewModule,
     HasPermissionDirective,
     CajaControlModalComponent,
-    CajaMovimientoModalComponent
+    CajaMovimientoModalComponent,
+    CajaHistorialTurnoModalComponent
   ],
   templateUrl: './caja.component.html',
   styleUrl: './caja.component.css'
@@ -56,10 +60,13 @@ export class CajaComponent implements OnInit {
 
   showControlModal = signal(false);
   showMovementModal = signal(false);
+  showHistorialModal = signal(false);
+  selectedHistorialId = signal<string | null>(null);
   controlType = signal<'OPEN' | 'CLOSE'>('OPEN');
 
   currentSucursalId = signal<string | null>(null);
   currentUsuarioId = signal<string | null>(null);
+  activeTabIndex = signal(0);
 
   today = new Date();
 
@@ -116,6 +123,19 @@ export class CajaComponent implements OnInit {
     this.showMovementModal.set(true);
   }
 
+  cargarHistorial() {
+    if (this.currentSucursalId()) {
+      this.cajaService.obtenerHistorial(this.currentSucursalId()!);
+    }
+  }
+
+  onTabChange(event: any) {
+    this.activeTabIndex.set(event.index);
+    if (event.index === 1) {
+      this.cargarHistorial();
+    }
+  }
+
   irAlPOS() {
     this.router.navigate(['/ventas/pos']);
   }
@@ -135,5 +155,10 @@ export class CajaComponent implements OnInit {
 
     this.showControlModal.set(false);
     this.showMovementModal.set(false);
+  }
+
+  verDetalleTurno(turno: any) {
+    this.selectedHistorialId.set(turno.id);
+    this.showHistorialModal.set(true);
   }
 }
