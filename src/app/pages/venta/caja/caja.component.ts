@@ -72,7 +72,6 @@ export class CajaComponent implements OnInit {
       if (this.cajaService.loading()) return;
 
       if (this.cajaService.isCajaAbierta()) {
-        console.log('Caja abierta:', this.cajaService.cajaActiva());
         this.loadDashboardData(this.cajaService.cajaIdActual());
       }
     });

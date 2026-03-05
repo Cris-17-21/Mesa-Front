@@ -30,15 +30,13 @@ export class MovimientoCajaService {
 
   listarMovimientos(
     cajaId: string
-  ): Observable<MovimientoCajaResponse[]> {
+  ): void {
 
-    return this.http
+    this.http
       .get<MovimientoCajaResponse[]>(`${this.apiUrl}/caja/${cajaId}`)
-      .pipe(
-        tap((lista) => {
-          this._movimientos.set(lista ?? []);
-        })
-      );
+      .subscribe((lista) => {
+        this._movimientos.set(lista ?? []);
+      });
   }
 
   registrarMovimiento(

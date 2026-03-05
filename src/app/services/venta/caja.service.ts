@@ -46,6 +46,10 @@ export class CajaService {
   // 3. ACTIONS (Integración HTTP)
   // ================================================================
 
+  /**
+   * Verifica si hay una caja abierta en la sucursal.
+   * La caja es compartida por todos los usuarios de la misma sucursal.
+   */
   verificarEstadoCaja(
     sucursalId: string,
     usuarioId: string

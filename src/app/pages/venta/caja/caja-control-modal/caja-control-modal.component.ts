@@ -1,6 +1,7 @@
-import { Component, EventEmitter, inject, Input, OnChanges, OnInit, Output, signal, SimpleChanges } from '@angular/core';
+import { Component, inject, signal, input, output, model, WritableSignal, DestroyRef, effect, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ReactiveFormsModule, NonNullableFormBuilder, Validators } from '@angular/forms';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 
 // PrimeNG
 import { DialogModule } from 'primeng/dialog';
@@ -9,7 +10,7 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { InputTextModule } from 'primeng/inputtext';
 import { TextareaModule } from 'primeng/textarea';
 
-// Servicios y Modelos
+// Servicios
 import { CajaService } from '../../../../services/venta/caja.service';
 import { AbrirCajaDto, CerrarCajaDto } from '../../../../models/venta/caja.model';
 import Swal from 'sweetalert2';
@@ -29,143 +30,129 @@ import Swal from 'sweetalert2';
   templateUrl: './caja-control-modal.component.html',
   styleUrl: './caja-control-modal.component.css'
 })
-export class CajaControlModalComponent implements OnInit, OnChanges {
+export class CajaControlModalComponent {
 
-  private fb = inject(FormBuilder);
+  private fb: NonNullableFormBuilder = inject(NonNullableFormBuilder);
   private cajaService = inject(CajaService);
+  private destroyRef = inject(DestroyRef);
 
-  // --- Inputs ---
-  @Input() visible = false;
-  @Input() type: 'OPEN' | 'CLOSE' = 'OPEN';
-  @Input() cajaActivaId: string | undefined | null; // Acepta null también
-  @Input() saldoEsperado: number = 0;
-  @Input() sucursalId: string | null = null;
-  @Input() usuarioId: string | null = null;
+  // SIGNAL INPUTS (modern)
+  visible = model<boolean>(false);
+  type = input<'OPEN' | 'CLOSE'>('OPEN');
+  cajaActivaId = input<string | null>(null);
+  saldoEsperado = input<number>(0);
+  sucursalId = input<string | null>(null);
+  usuarioId = input<string | null>(null);
 
-  // --- Outputs ---
-  @Output() visibleChange = new EventEmitter<boolean>();
-  @Output() onSave = new EventEmitter<void>();
+  // OUTPUT
+  saved = output<void>();
 
-  form: FormGroup;
+  // FORM
+  form = this.fb.group({
+    monto: [0, [Validators.required, Validators.min(0)]],
+    observacion: ['']
+  });
+
+  // REACTIVE STATE (Derived from Form)
+  private montoSignal = toSignal(this.form.controls.monto.valueChanges, { initialValue: 0 });
+
+  diferencia = computed(() => {
+    if (this.type() !== 'CLOSE') return 0;
+    const monto = this.montoSignal() ?? 0;
+    return monto - this.saldoEsperado();
+  });
+
+  // STATE
   loading = signal(false);
-  diferencia = signal(0);
 
-  constructor() {
-    this.form = this.fb.group({
-      monto: [0, [Validators.required, Validators.min(0)]],
-      observacion: ['']
-    });
-  }
+  constructor() { }
 
-  ngOnInit() {
-    // Calcular diferencia en tiempo real (Solo visual para el cierre)
-    this.form.get('monto')?.valueChanges.subscribe(valorIngresado => {
-      if (this.type === 'CLOSE') {
-        const real = valorIngresado || 0;
-        this.diferencia.set(real - this.saldoEsperado);
-      }
-    });
-  }
-
-  ngOnChanges(changes: SimpleChanges) {
-    if (changes['visible']?.currentValue) {
-      this.resetForm();
-    }
-  }
-
-  resetForm() {
-    this.form.reset({ monto: 0, observacion: '' });
-    this.diferencia.set(0 - (this.type === 'CLOSE' ? this.saldoEsperado : 0));
-    this.loading.set(false);
-  }
-
-  submit() {
+  submit(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
     }
 
     this.loading.set(true);
-    const formValue = this.form.value;
+    const { monto, observacion } = this.form.getRawValue();
 
-    if (this.type === 'OPEN') {
-      this.handleApertura(formValue);
+    if (this.type() === 'OPEN') {
+      this.abrirCaja(monto);
     } else {
-      this.handleCierre(formValue);
+      this.cerrarCaja(monto, observacion);
     }
   }
 
-  // --- LÓGICA DE APERTURA ---
-  private handleApertura(data: any) {
-    if (!this.sucursalId || !this.usuarioId) {
-      this.showError('Faltan datos de sesión (Sucursal o Usuario)');
+  private abrirCaja(monto: number): void {
+    if (!this.sucursalId() || !this.usuarioId()) {
+      this.showError('Faltan datos de sesión');
       return;
     }
 
     const payload: AbrirCajaDto = {
-      sucursalId: this.sucursalId,
-      usuarioId: this.usuarioId,
-      montoApertura: data.monto
-      // Nota: Tu DTO AbrirCajaDto no tiene observación/comentario
+      sucursalId: this.sucursalId()!,
+      usuarioId: this.usuarioId()!,
+      montoApertura: monto
     };
 
-    this.cajaService.abrirCaja(payload).subscribe({
-      next: () => this.showSuccess('Turno abierto correctamente'),
-      error: (err) => this.showError(err)
-    });
+    this.cajaService.abrirCaja(payload)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => this.success('Turno abierto correctamente'),
+        error: (e) => this.showError(e)
+      });
   }
 
-  // --- LÓGICA DE CIERRE ---
-  private handleCierre(data: any) {
-    if (!this.cajaActivaId) {
-      this.showError('No hay una caja activa seleccionada para cerrar');
+  private cerrarCaja(monto: number, observacion: string): void {
+    if (!this.cajaActivaId()) {
+      this.showError('No hay caja activa');
       return;
     }
 
     const payload: CerrarCajaDto = {
-      id: this.cajaActivaId,
-      efectivoReal: data.monto,
-      tarjetaReal: 0, // Por ahora 0, luego puedes agregar un input para tarjetas si lo necesitas
-      comentario: data.observacion || ''
+      id: this.cajaActivaId()!,
+      efectivoReal: monto,
+      tarjetaReal: 0,
+      comentario: observacion ?? ''
     };
 
-    this.cajaService.cerrarCaja(payload).subscribe({
-      next: () => this.showSuccess('Turno cerrado correctamente'),
-      error: (err) => this.showError(err)
-    });
+    this.cajaService.cerrarCaja(payload)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => this.success('Turno cerrado correctamente'),
+        error: (e) => this.showError(e)
+      });
   }
 
-  // --- HELPERS VISUALES ---
-
-  private showSuccess(msg: string) {
+  private success(message: string): void {
     this.loading.set(false);
+
     Swal.fire({
       icon: 'success',
-      title: '¡Éxito!',
-      text: msg,
+      title: 'Éxito',
+      text: message,
       confirmButtonColor: '#18181b',
-      timer: 1500
+      timer: 1500,
+      showConfirmButton: false
     });
-    this.onSave.emit(); // Notificar al padre
-    this.close();
+
+    this.saved.emit();
+    this.visible.set(false);
   }
 
-  private showError(err: any) {
+  private showError(error: unknown): void {
     this.loading.set(false);
-    console.error('Error en operación de caja:', err);
 
-    // Extraer mensaje de error del backend si existe
-    const errorMsg = typeof err === 'string' ? err : (err.error?.message || 'Ocurrió un error inesperado');
+    const msg =
+      typeof error === 'string'
+        ? error
+        : (error as any)?.error?.message ?? 'Ocurrió un error inesperado';
 
     Swal.fire({
       icon: 'error',
       title: 'Error',
-      text: errorMsg,
+      text: msg,
       confirmButtonColor: '#18181b'
     });
-  }
-
-  close() {
-    this.visibleChange.emit(false);
   }
 }
