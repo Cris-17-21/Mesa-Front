@@ -9,6 +9,7 @@ import { TooltipModule } from 'primeng/tooltip';
 
 // --- Componentes ---
 import { OrdenComponent } from '../orden/orden.component';
+import { DividirCuentaModalComponent } from '../dividir-cuenta-modal/dividir-cuenta-modal.component';
 
 // --- Servicios y Modelos ---
 import { MesaService } from '../../../../services/maestro/mesa.service';
@@ -31,7 +32,8 @@ import Swal from 'sweetalert2';
     DropdownModule,
     ButtonModule,
     TooltipModule,
-    OrdenComponent
+    OrdenComponent,
+    DividirCuentaModalComponent
   ],
   templateUrl: './piso-mapa.component.html',
   styleUrl: './piso-mapa.component.css'
@@ -52,6 +54,8 @@ export class PisoMapaComponent implements OnInit {
 
   // --- Control de Modales ---
   mesaSeleccionadaParaModal = signal<any>(null); // Mesa actual para el modal de orden
+  showDividir = signal(false);
+  showOrden = signal(false);
 
   // --- Control de Unión de Mesas ---
   modoUnion = signal(false);
@@ -156,19 +160,53 @@ export class PisoMapaComponent implements OnInit {
 
   // --- Interacción con Mesas ---
   onMesaClick(mesa: any) {
-    // A: Modo Unión Activado
     if (this.modoUnion()) {
       this.toggleSeleccionUnion(mesa);
       return;
     }
 
-    // B: Modo Normal -> Abrir Modal Orden
     this.mesaSeleccionadaParaModal.set(mesa);
+
+    if (mesa.esOcupada && mesa.cantidadCuentas > 1) {
+      // Si hay varias cuentas, abrir directamente el modal de división/cuentas
+      this.showDividir.set(true);
+    } else {
+      // Si es libre o tiene una sola cuenta, abrir modal de orden
+      this.showOrden.set(true);
+    }
+  }
+
+  handleOpenCuentasDesdeOrden() {
+    this.showOrden.set(false);
+    this.showDividir.set(true);
+  }
+
+  handleRegresarACuentasDesdeOrden() {
+    this.showOrden.set(false);
+    this.showDividir.set(true);
+  }
+
+  handleCerrarCuentas() {
+    this.showDividir.set(false);
+    this.mesaSeleccionadaParaModal.set(null);
+    this.cargarDatosIniciales();
+  }
+
+  onEditarPedidoDesdeCuentas(pedidoId: string) {
+    // Cuando el usuario le da a "Editar" en el modal de cuentas
+    this.showDividir.set(false);
+    const mesa = this.mesaSeleccionadaParaModal();
+    if (mesa) {
+      // Actualizamos el pedidoId para que el modal de orden abra el correcto
+      const mesaModificada = { ...mesa, pedidoId: pedidoId, esOcupada: true };
+      this.mesaSeleccionadaParaModal.set(mesaModificada);
+      this.showOrden.set(true);
+    }
   }
 
   cerrarModalOrden() {
+    this.showOrden.set(false);
     this.mesaSeleccionadaParaModal.set(null);
-    // Recargar para ver cambios de estado (Libre -> Ocupada)
     this.cargarDatosIniciales();
   }
 

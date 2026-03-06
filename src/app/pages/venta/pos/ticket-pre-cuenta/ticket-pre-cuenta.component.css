@@ -1,0 +1,131 @@
+.ticket-container {
+    width: 80mm;
+    padding: 5mm;
+    background: white;
+    color: black;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 12px;
+    margin: 0 auto;
+    border: 1px solid #ccc;
+    /* Solo visible en pantalla */
+}
+
+.ticket-header {
+    text-align: center;
+    margin-bottom: 5px;
+}
+
+.rest-name {
+    font-size: 16px;
+    font-weight: bold;
+    margin: 0;
+}
+
+.ticket-header p {
+    margin: 2px 0;
+}
+
+.divider {
+    text-align: center;
+    margin: 5px 0;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.order-info {
+    margin: 10px 0;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 2px;
+}
+
+.items-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0;
+}
+
+.items-table th {
+    text-align: left;
+    border-bottom: 1px dashed black;
+    padding-bottom: 5px;
+}
+
+.items-table td {
+    padding: 5px 0;
+    vertical-align: top;
+}
+
+.qty {
+    width: 15%;
+    text-align: center;
+}
+
+.desc {
+    width: 60%;
+}
+
+.total {
+    width: 25%;
+    text-align: right;
+}
+
+.totals-section {
+    margin-top: 10px;
+}
+
+.total-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 3px;
+}
+
+.grand-total {
+    font-size: 14px;
+    font-weight: bold;
+    border-top: 1px solid black;
+    padding-top: 5px;
+    margin-top: 5px;
+}
+
+.footer-msg {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 10px;
+}
+
+/* MEDIA PRINT: Esta es la clave */
+@media print {
+    body * {
+        visibility: hidden;
+    }
+
+    #printable-ticket,
+    #printable-ticket * {
+        visibility: visible;
+    }
+
+    #printable-ticket {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 80mm;
+        margin: 0;
+        padding: 0;
+        border: none;
+    }
+
+    /* Ocultar encabezados/pies de página del navegador si es posible */
+    @page {
+        margin: 0;
+    }
+}
+
+/* Ocultar en pantalla por defecto si no queremos ver el preview siempre */
+/* En este caso, lo dejaré visible como un pequeño contenedor centrado para propósitos de UI */
+:host {
+    display: block;
+}

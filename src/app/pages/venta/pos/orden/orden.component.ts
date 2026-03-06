@@ -27,7 +27,7 @@ import { Categoria } from '../../../../models/inventario/categoria.model';
   imports: [
     CommonModule, FormsModule, ButtonModule, InputTextModule,
     BadgeModule, ScrollPanelModule, TooltipModule,
-    CheckoutModalComponent, DividirCuentaModalComponent
+    CheckoutModalComponent
   ],
   templateUrl: './orden.component.html',
   styleUrl: './orden.component.css'
@@ -47,6 +47,9 @@ export class OrdenComponent implements OnInit {
   @Input() codigoMesaInput: string = '';
 
   @Output() onCerrar = new EventEmitter<void>();
+  @Output() onEditarPedidoViaCuentas = new EventEmitter<string>();
+  @Output() onOpenCuentas = new EventEmitter<void>();
+  @Output() onRegresarACuentas = new EventEmitter<void>();
 
   categorias = signal<any[]>([]);
   productos = signal<Producto[]>([]);
@@ -57,7 +60,6 @@ export class OrdenComponent implements OnInit {
   carrito = signal<CartItem[]>([]);
   pedidoExistente = signal<PedidoResponseDto | null>(null);
   showCheckout = signal(false);
-  showDividir = signal(false);
 
   currentEmpresaId: string | null = null;
   currentUsuarioId: string | null = null;
@@ -279,7 +281,8 @@ export class OrdenComponent implements OnInit {
   }
 
   abrirCobrar() { if (this.pedidoIdInput) this.showCheckout.set(true); }
-  abrirDividir() { if (this.pedidoIdInput) this.showDividir.set(true); }
+  abrirDividir() { if (this.pedidoIdInput) this.onOpenCuentas.emit(); }
+
   onCobroFinalizado(e: boolean) { if (e) this.onCerrar.emit(); }
   cerrarModal() { this.onCerrar.emit(); }
 }

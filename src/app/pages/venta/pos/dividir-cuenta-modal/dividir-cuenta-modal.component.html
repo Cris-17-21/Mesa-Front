@@ -1,9 +1,6 @@
 <div class="modal-card">
     <div class="modal-header">
         <div class="header-left">
-            <button class="btn-back" (click)="onCerrar.emit()">
-                <i class="bi bi-arrow-left"></i> Regresar
-            </button>
             <div class="header-text">
                 <h2>Gestión de Cuentas</h2>
                 <small>Divide la mesa o gestiona las cuentas existentes</small>
@@ -70,7 +67,7 @@
                     </div>
                 </div>
                 } @empty {
-                <div class="empty-state">
+                <div class="empty-state-side">
                     <i class="bi bi-check-circle-fill"></i>
                     <p>No hay más items para dividir.</p>
                 </div>
@@ -109,15 +106,21 @@
                     <div class="acc-info">
                         <div class="acc-header-row">
                             <span class="acc-code">Pedido #{{ cuenta.codigoPedido }}</span>
-                            @if (cuenta.id === idCuentaActiva()) {
-                            <span class="badge-principal">Seleccionado</span>
-                            }
                         </div>
                         <span class="acc-total">S/ {{ cuenta.totalFinal | number:'1.2-2' }}</span>
                     </div>
-                    <button class="btn-acc-pay" (click)="abrirCobrar(cuenta)">
-                        <i class="bi bi-cash-stack"></i> Cobrar
-                    </button>
+                    <div class="acc-actions">
+                        <button class="btn-acc-edit" (click)="editarPedido(cuenta.id)" pTooltip="Editar Pedido">
+                            <i class="bi bi-pencil-square"></i> Editar
+                        </button>
+                        <button class="btn-acc-print" (click)="imprimirPreCuenta(cuenta)"
+                            pTooltip="Imprimir Pre-cuenta">
+                            <i class="bi bi-printer"></i>
+                        </button>
+                        <button class="btn-acc-pay" (click)="abrirCobrar(cuenta)">
+                            <i class="bi bi-cash-stack"></i> Cobrar
+                        </button>
+                    </div>
                 </div>
                 } @empty {
                 <div class="empty-state-side">
@@ -135,6 +138,11 @@
         <app-checkout-modal [pedidoId]="selectedPedidoId()!" [total]="selectedPedidoTotal()"
             (onCancelar)="showCheckout.set(false)" (onPagoExitoso)="onPagoExitoso($event)">
         </app-checkout-modal>
+    </div>
+    }
+    @if (showTicketPreview() && pedidoParaImprimir()) {
+    <div class="ticket-preview-overlay">
+        <app-ticket-pre-cuenta [pedido]="pedidoParaImprimir()!"></app-ticket-pre-cuenta>
     </div>
     }
 </div>

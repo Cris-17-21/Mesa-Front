@@ -1,9 +1,16 @@
 <div class="header-modal">
-    <div class="mesa-info">
-        <span class="modo-badge" [class.editar]="modoInput === 'EDITAR'">
-            {{ modoInput === 'NUEVO' ? 'Nueva' : 'Editando' }}
-        </span>
-        <h2>Mesa {{ codigoMesaInput || mesaIdInput }}</h2>
+    <div class="header-left-group">
+        @if (modoInput === 'EDITAR') {
+        <button class="btn-back-header" (click)="onRegresarACuentas.emit()" pTooltip="Volver a Cuentas">
+            <i class="bi bi-arrow-left"></i>
+        </button>
+        }
+        <div class="mesa-info">
+            <span class="modo-badge" [class.editar]="modoInput === 'EDITAR'">
+                {{ modoInput === 'NUEVO' ? 'Nueva' : 'Editando' }}
+            </span>
+            <h2>Mesa {{ codigoMesaInput || mesaIdInput }}</h2>
+        </div>
     </div>
 
     <button class="btn-close" (click)="cerrarModal()">
@@ -112,16 +119,13 @@
             <div class="action-buttons">
                 <button class="btn-primary-large" [disabled]="carrito().length === 0" (click)="confirmarPedido()">
                     <i class="bi bi-fire"></i>
-                    {{ modoInput === 'NUEVO' ? 'Confirmar Pedido' : 'Enviar a Cocina' }}
+                    {{ modoInput === 'NUEVO' ? 'Confirmar Pedido' : 'Confirmar' }}
                 </button>
 
                 @if (modoInput === 'EDITAR') {
                 <div class="extra-actions">
                     <button class="btn-secondary" (click)="abrirDividir()">
-                        <i class="bi bi-pie-chart"></i> Dividir
-                    </button>
-                    <button class="btn-success" (click)="abrirCobrar()">
-                        <i class="bi bi-cash-stack"></i> Cobrar
+                        <i class="bi bi-layers-half"></i> Cuentas
                     </button>
                 </div>
                 }
@@ -152,12 +156,5 @@
     <app-checkout-modal [pedidoId]="pedidoIdInput!" [total]="totalGeneral()" (onCancelar)="showCheckout.set(false)"
         (onPagoExitoso)="onCobroFinalizado($event)">
     </app-checkout-modal>
-</div>
-}
-
-@if (showDividir()) {
-<div class="overlay-nested">
-    <app-dividir-cuenta-modal [pedidoId]="pedidoIdInput!" (onCerrar)="showDividir.set(false)">
-    </app-dividir-cuenta-modal>
 </div>
 }

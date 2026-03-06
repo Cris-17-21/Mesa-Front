@@ -63,7 +63,7 @@
 .grid-container {
     display: grid;
     /* auto-fill ajusta el número de columnas según el ancho disponible */
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 1.5rem;
     margin-top: 2rem;
 }

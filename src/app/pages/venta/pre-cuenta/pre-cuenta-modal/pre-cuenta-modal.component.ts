@@ -13,6 +13,8 @@ import { AuthService } from '../../../../core/auth/auth.service';
 import { CartItem, PedidoRequestDto, PedidoDetalleRequestDto } from '../../../../models/venta/pedido.model';
 import { Producto } from '../../../../models/inventario/producto.model';
 import { CheckoutModalComponent } from '../../pos/checkout-modal/checkout-modal.component';
+import { TicketPreCuentaComponent } from '../../pos/ticket-pre-cuenta/ticket-pre-cuenta.component';
+import { PedidoResponseDto } from '../../../../models/venta/pedido.model';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -27,7 +29,8 @@ import Swal from 'sweetalert2';
     ButtonModule,
     InputNumberModule,
     AutoCompleteModule,
-    CheckoutModalComponent
+    CheckoutModalComponent,
+    TicketPreCuentaComponent
   ],
   templateUrl: './pre-cuenta-modal.component.html',
   styleUrl: './pre-cuenta-modal.component.css'
@@ -52,6 +55,8 @@ export class PreCuentaModalComponent implements OnChanges {
   cart = signal<CartItem[]>([]);
   loading = signal(false);
   showCheckout = signal(false);
+  showTicketPreview = signal(false);
+  pedidoExistente = signal<PedidoResponseDto | null>(null);
 
   // --- POS Logic ---
   categorias = signal<any[]>([]);
@@ -109,6 +114,7 @@ export class PreCuentaModalComponent implements OnChanges {
   cargarPedidoExistente() {
     if (!this.pedidoId) return;
     this.pedidoService.seleccionarPedido(this.pedidoId).subscribe(p => {
+      this.pedidoExistente.set(p);
       this.deliveryForm.patchValue({
         nombreCliente: p.nombreCliente,
         telefono: p.telefono,
@@ -244,6 +250,16 @@ export class PreCuentaModalComponent implements OnChanges {
   }
 
   abrirCobrar() { if (this.pedidoId) this.showCheckout.set(true); }
+
+  imprimirPreCuenta() {
+    if (!this.pedidoExistente()) return;
+    this.showTicketPreview.set(true);
+    setTimeout(() => {
+      window.print();
+      this.showTicketPreview.set(false);
+    }, 100);
+  }
+
   onCobroFinalizado(e: boolean) { if (e) { this.onSave.emit(); this.close(); } }
 
   close() {

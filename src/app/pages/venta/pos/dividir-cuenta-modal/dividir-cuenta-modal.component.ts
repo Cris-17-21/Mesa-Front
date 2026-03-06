@@ -4,11 +4,12 @@ import Swal from 'sweetalert2';
 import { PedidoService } from '../../../../services/venta/pedido.service';
 import { PedidoDetalleResponseDto, SepararCuentaRequestDto, PedidoResumenDto, PedidoResponseDto } from '../../../../models/venta/pedido.model';
 import { CheckoutModalComponent } from '../checkout-modal/checkout-modal.component';
+import { TicketPreCuentaComponent } from '../ticket-pre-cuenta/ticket-pre-cuenta.component';
 
 @Component({
   selector: 'app-dividir-cuenta-modal',
   standalone: true,
-  imports: [CommonModule, CheckoutModalComponent],
+  imports: [CommonModule, CheckoutModalComponent, TicketPreCuentaComponent],
   templateUrl: './dividir-cuenta-modal.component.html',
   styleUrl: './dividir-cuenta-modal.component.css'
 })
@@ -18,6 +19,7 @@ export class DividirCuentaModalComponent implements OnInit {
 
   @Input({ required: true }) pedidoId!: string;
   @Output() onCerrar = new EventEmitter<void>();
+  @Output() onEditarPedido = new EventEmitter<string>();
 
   // Items cargados del pedido original
   itemsDisponibles = signal<PedidoDetalleResponseDto[]>([]);
@@ -35,6 +37,9 @@ export class DividirCuentaModalComponent implements OnInit {
   showCheckout = signal(false);
   selectedPedidoId = signal<string | null>(null);
   selectedPedidoTotal = signal<number>(0);
+
+  showTicketPreview = signal(false);
+  pedidoParaImprimir = signal<PedidoResponseDto | null>(null);
 
   // --- COMPUTED VALUES ---
 
@@ -164,6 +169,27 @@ export class DividirCuentaModalComponent implements OnInit {
     this.selectedPedidoId.set(pedido.id);
     this.selectedPedidoTotal.set(pedido.totalFinal);
     this.showCheckout.set(true);
+  }
+
+  editarPedido(pedidoId: string) {
+    this.onEditarPedido.emit(pedidoId);
+  }
+
+  imprimirPreCuenta(cuenta: PedidoResumenDto) {
+    this.pedidoService.seleccionarPedido(cuenta.id).subscribe({
+      next: (pedido) => {
+        this.pedidoParaImprimir.set(pedido);
+        this.showTicketPreview.set(true);
+        setTimeout(() => {
+          window.print();
+          this.showTicketPreview.set(false);
+        }, 150);
+      },
+      error: (err) => {
+        console.error(err);
+        Swal.fire('Error', 'No se pudo cargar el detalle para imprimir.', 'error');
+      }
+    });
   }
 
   onPagoExitoso(exito: boolean) {

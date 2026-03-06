@@ -139,6 +139,9 @@
 
                     @if (modo === 'EDITAR' && pedidoId) {
                     <div class="extra-actions-pos">
+                        <button class="btn-secondary-pos" (click)="imprimirPreCuenta()" pTooltip="Imprimir Pre-cuenta">
+                            <i class="bi bi-printer"></i>
+                        </button>
                         <button class="btn-success-pos" (click)="abrirCobrar()">
                             <i class="bi bi-cash-stack"></i> Cobrar
                         </button>
@@ -173,6 +176,12 @@
         <app-checkout-modal [pedidoId]="pedidoId" [total]="total()" (onCancelar)="showCheckout.set(false)"
             (onPagoExitoso)="onCobroFinalizado($event)">
         </app-checkout-modal>
+    </div>
+    }
+
+    @if (showTicketPreview() && pedidoExistente()) {
+    <div class="ticket-preview-overlay">
+        <app-ticket-pre-cuenta [pedido]="pedidoExistente()!"></app-ticket-pre-cuenta>
     </div>
     }
 

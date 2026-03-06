@@ -136,16 +136,27 @@
     </div>
     }
 
-    @if (mesaSeleccionadaParaModal()) {
+    @if (showOrden() && mesaSeleccionadaParaModal()) {
     <div class="modal-overlay">
         <div class="modal-content">
             <app-orden [codigoMesaInput]="mesaSeleccionadaParaModal().codigoMesa"
                 [mesaIdInput]="mesaSeleccionadaParaModal().id" [pedidoIdInput]="mesaSeleccionadaParaModal().pedidoId"
-                [modoInput]="mesaSeleccionadaParaModal().esOcupada ? 'EDITAR' : 'NUEVO'"
-                (onCerrar)="cerrarModalOrden()">
+                [modoInput]="mesaSeleccionadaParaModal().esOcupada ? 'EDITAR' : 'NUEVO'" (onCerrar)="cerrarModalOrden()"
+                (onEditarPedidoViaCuentas)="onEditarPedidoDesdeCuentas($any($event))"
+                (onOpenCuentas)="handleOpenCuentasDesdeOrden()"
+                (onRegresarACuentas)="handleRegresarACuentasDesdeOrden()">
             </app-orden>
         </div>
     </div>
     }
 
+    @if (showDividir() && mesaSeleccionadaParaModal()) {
+    <div class="modal-overlay">
+        <div class="modal-content">
+            <app-dividir-cuenta-modal [pedidoId]="mesaSeleccionadaParaModal().pedidoId"
+                (onCerrar)="handleCerrarCuentas()" (onEditarPedido)="onEditarPedidoDesdeCuentas($any($event))">
+            </app-dividir-cuenta-modal>
+        </div>
+    </div>
+    }
 </div>
