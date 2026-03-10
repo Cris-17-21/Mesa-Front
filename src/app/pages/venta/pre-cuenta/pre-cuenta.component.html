@@ -7,7 +7,7 @@
     <div class="header-actions">
         <div class="search-wrapper">
             <i class="bi bi-search search-icon"></i>
-            <input type="text" class="noir-input" (input)="dt.filterGlobal($any($event.target).value, 'contains')"
+            <input type="text" class="noir-input" #globalSearch (input)="onSearch(globalSearch.value)"
                 placeholder="Buscar por código o cliente..." />
         </div>
 
@@ -19,17 +19,34 @@
 </div>
 
 <div class="card shadow-noir">
-    <p-table #dt [value]="pedidosActivos()" [rows]="10" [paginator]="true" responsiveLayout="stack"
-        [breakpoint]="'960px'" [globalFilterFields]="['codigoPedido', 'nombreCliente']"
-        styleClass="p-datatable-sm noir-table">
+    <p-tabView styleClass="noir-tabs">
+        <p-tabPanel header="Mesa">
+            <ng-template pTemplate="content">
+                <ng-container *ngTemplateOutlet="pedidosTable; context: { $implicit: pedidosMesa() }"></ng-container>
+            </ng-template>
+        </p-tabPanel>
+        <p-tabPanel header="Delivery">
+            <ng-template pTemplate="content">
+                <ng-container
+                    *ngTemplateOutlet="pedidosTable; context: { $implicit: pedidosDelivery() }"></ng-container>
+            </ng-template>
+        </p-tabPanel>
+    </p-tabView>
+</div>
+
+<!-- Template reutilizable para la tabla -->
+<ng-template #pedidosTable let-data>
+    <p-table #dt [value]="data" [rows]="10" [paginator]="true" responsiveLayout="stack" [breakpoint]="'960px'"
+        [globalFilterFields]="['codigoPedido', 'nombreCliente', 'codigoMesa']"
+        styleClass="p-datatable-sm p-datatable-gridlines noir-table">
 
         <ng-template pTemplate="header">
             <tr>
-                <th>CÓDIGO</th>
-                <th>CLIENTE</th>
-                <th>ESTADO</th>
-                <th class="text-right">TOTAL</th>
-                <th class="text-center">ACCIONES</th>
+                <th style="width: 140px">CÓDIGO</th>
+                <th>CLIENTE / MESA</th>
+                <th style="width: 150px">ESTADO</th>
+                <th style="width: 120px" class="text-right">TOTAL</th>
+                <th style="width: 100px" class="text-center">ACCIONES</th>
             </tr>
         </ng-template>
 
@@ -39,20 +56,39 @@
                     <span class="doc-badge">{{ pedido.codigoPedido }}</span>
                 </td>
                 <td>
-                    <span class="font-bold">{{ pedido.nombreCliente || 'CLIENTE GENERAL' }}</span>
+                    <div class="flex align-items-center gap-3">
+                        <div class="type-icon">
+                            @if (pedido.codigoMesa) {
+                            <i class="bi bi-hash-square" pTooltip="Pedido en Mesa"></i>
+                            } @else {
+                            <i class="bi bi-truck" pTooltip="Delivery / Para Llevar"></i>
+                            }
+                        </div>
+                        <div class="flex flex-column">
+                            <span class="font-bold">{{ pedido.nombreCliente || 'CLIENTE GENERAL' }}</span>
+                            @if (pedido.codigoMesa) {
+                            <small class="text-secondary">Mesa: {{ pedido.codigoMesa }}</small>
+                            } @else {
+                            <small class="text-secondary">Envío / Para Llevar</small>
+                            }
+                        </div>
+                    </div>
                 </td>
                 <td>
-                    <span class="status-badge">{{ pedido.estado }}</span>
+                    <span class="status-badge" [class]="'status-' + pedido.estado.toLowerCase()">
+                        <i class="bi bi-circle-fill"></i>
+                        {{ pedido.estado }}
+                    </span>
                 </td>
                 <td class="text-right">
-                    <span class="font-bold">S/ {{ pedido.totalFinal | number:'1.2-2' }}</span>
+                    <span class="font-bold price-text">S/ {{ pedido.totalFinal | number:'1.2-2' }}</span>
                 </td>
                 <td>
                     <div class="flex justify-content-center gap-2">
-                        <button class="button-action edit" (click)="verDetalle(pedido)" pTooltip="Ver Detalle">
+                        <button class="button-icon-only edit" (click)="verDetalle(pedido)" pTooltip="Ver Detalle">
                             <i class="bi bi-eye"></i>
                         </button>
-                        <button class="button-action delete" pTooltip="Eliminar">
+                        <button class="button-icon-only delete" pTooltip="Eliminar">
                             <i class="bi bi-trash3"></i>
                         </button>
                     </div>
@@ -63,12 +99,12 @@
         <ng-template pTemplate="emptymessage">
             <tr>
                 <td colspan="5" class="empty-state">
-                    NO SE ENCONTRARON PEDIDOS ACTIVOS
+                    NO SE ENCONTRARON PEDIDOS EN ESTA CATEGORÍA
                 </td>
             </tr>
         </ng-template>
     </p-table>
-</div>
+</ng-template>
 
 <app-pre-cuenta-modal [(visible)]="displayModal" [sucursalId]="sucursalId()!" [usuarioId]="usuarioId()!"
     [modo]="modalMode()" [pedidoId]="selectedPedidoId()" (onSave)="loadDeliveries()">

@@ -44,6 +44,12 @@
     z-index: 1;
 }
 
+.contact-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
 .noir-input {
     width: 100%;
     padding: 10px 12px 10px 38px;
@@ -64,7 +70,8 @@
     color: white;
     border: none;
     padding: 0 20px;
-    height: 42px; /* Alineado con el input */
+    height: 42px;
+    /* Alineado con el input */
     border-radius: 8px;
     font-weight: 500;
     cursor: pointer;
@@ -81,46 +88,38 @@
 }
 
 /* --- TABLA Y COMPONENTES --- */
-::ng-deep .noir-table .p-datatable-thead > tr > th {
+::ng-deep .noir-table .p-datatable-thead>tr>th {
     background: #f8f8f9;
     color: #18181b;
     border-bottom: 1px solid #e4e4e7;
     padding: 1rem;
 }
 
-.doc-badge {
-    background: #f4f4f5;
-    padding: 4px 8px;
-    border-radius: 6px;
-    font-family: 'JetBrains Mono', monospace;
-    font-weight: 600;
-    font-size: 0.85rem;
-}
-
 .button-action {
-  background-color: white;
-  border-style: none;
-  font-size: 20px;
-  transition: 0.3s all ease;
+    background-color: white;
+    border-style: none;
+    font-size: 20px;
+    transition: 0.3s all ease;
 }
 
 .edit {
-  color: #233cc9;
+    color: #233cc9;
 }
 
 .delete {
-  color: #bd2121;
+    color: #bd2121;
 }
 
 .button-action:hover {
-  cursor: pointer;
-  transform: translateY(-5%);
+    cursor: pointer;
+    transform: translateY(-5%);
 }
 
 /* --- RESPONSIVIDAD ÚNICA (640px) --- */
 @media (max-width: 640px) {
     .header-container {
-        text-align: left; /* Mantener alineación a la izquierda suele verse más pro */
+        text-align: left;
+        /* Mantener alineación a la izquierda suele verse más pro */
         gap: 1.25rem;
     }
 
@@ -131,12 +130,14 @@
 
     .search-wrapper {
         max-width: none;
-        order: 1; /* El buscador va primero */
+        order: 1;
+        /* El buscador va primero */
     }
 
     .button-add {
         width: 100%;
-        order: 2; /* El botón de "Nuevo" va al final */
+        order: 2;
+        /* El botón de "Nuevo" va al final */
         height: 45px;
     }
 }

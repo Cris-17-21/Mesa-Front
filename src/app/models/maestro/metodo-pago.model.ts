@@ -2,12 +2,11 @@ export interface MetodoPago {
     id: string,
     nombre: string,
     esEfectivo: boolean,
-    requiereReferencia: boolean,
-    codigoSunat: string,
-    isActive: boolean,
-    empresaId: string
+    empresa: string
 }
 
-export type CreateMetodoPagoDto = Omit<MetodoPago, 'id' | 'isActive'>;
+export type CreateMetodoPagoDto = Omit<MetodoPago, 'id' | 'empresaId' | 'esEfectivo'> & {
+    empresaId: string;
+};
 
 export type UpdateMetodoPagoDto = Partial<CreateMetodoPagoDto>;

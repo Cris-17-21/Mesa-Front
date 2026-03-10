@@ -1,20 +1,18 @@
 import { Component, computed, EventEmitter, inject, Input, OnChanges, Output, signal, SimpleChanges } from '@angular/core';
-import { DialogModule } from 'primeng/dialog';
-import { InputTextModule } from 'primeng/inputtext';
-import { ButtonModule } from 'primeng/button';
-import { InputNumberModule } from 'primeng/inputnumber';
-import { AutoCompleteModule, AutoCompleteSelectEvent } from 'primeng/autocomplete';
 import { CommonModule } from '@angular/common';
-import { FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { DialogModule } from 'primeng/dialog';
+import { AutoCompleteModule } from 'primeng/autocomplete';
+
 import { PedidoService } from '../../../../services/venta/pedido.service';
 import { ProductoService } from '../../../../services/inventario/producto.service';
 import { CategoriaService } from '../../../../services/inventario/categoria.service';
 import { AuthService } from '../../../../core/auth/auth.service';
-import { CartItem, PedidoRequestDto, PedidoDetalleRequestDto } from '../../../../models/venta/pedido.model';
+import { CartItem, PedidoDetalleRequestDto, PedidoResponseDto } from '../../../../models/venta/pedido.model';
 import { Producto } from '../../../../models/inventario/producto.model';
+import { Categoria } from '../../../../models/inventario/categoria.model';
 import { CheckoutModalComponent } from '../../pos/checkout-modal/checkout-modal.component';
 import { TicketPreCuentaComponent } from '../../pos/ticket-pre-cuenta/ticket-pre-cuenta.component';
-import { PedidoResponseDto } from '../../../../models/venta/pedido.model';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -25,9 +23,6 @@ import Swal from 'sweetalert2';
     ReactiveFormsModule,
     FormsModule,
     DialogModule,
-    InputTextModule,
-    ButtonModule,
-    InputNumberModule,
     AutoCompleteModule,
     CheckoutModalComponent,
     TicketPreCuentaComponent
@@ -58,15 +53,17 @@ export class PreCuentaModalComponent implements OnChanges {
   showTicketPreview = signal(false);
   pedidoExistente = signal<PedidoResponseDto | null>(null);
 
-  // --- POS Logic ---
-  categorias = signal<any[]>([]);
+  categorias = signal<Categoria[]>([]);
   allProducts = signal<Producto[]>([]);
   productosFiltrados = signal<Producto[]>([]);
-  categoriaSeleccionada = signal<any | null>(null);
+  categoriaSeleccionada = signal<Categoria | null>(null);
   terminoBusqueda = signal<string>('');
   vistaMovil = signal<'MENU' | 'CUENTA'>('MENU');
 
-  // IDs de los detalles ya existentes en el pedido (para bloquarlos)
+  total = computed(() =>
+    this.cart().reduce((acc, item) => acc + (item.precio * item.cantidad), 0)
+  );
+
   private itemsExistentesIds = new Set<string>();
 
   constructor() {
@@ -197,8 +194,6 @@ export class PreCuentaModalComponent implements OnChanges {
     if (this.esItemExistente(item.productoId)) return;
     this.cart.update(items => items.filter((_, i) => i !== index));
   }
-
-  total = () => this.cart().reduce((acc, item) => acc + (item.precio * item.cantidad), 0);
 
   save() {
     if (this.deliveryForm.invalid || this.cart().length === 0) {

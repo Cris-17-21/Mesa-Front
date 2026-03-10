@@ -63,6 +63,10 @@ export const routes: Routes = [
           {
             path: 'clientes',
             loadComponent: () => import('./pages/maestro/cliente/cliente.component').then(m => m.ClienteComponent)
+          },
+          {
+            path: 'metodos',
+            loadComponent: () => import('./pages/maestro/metodo-pago/metodo-pago.component').then(m => m.MetodoPagoComponent)
           }
         ]
       },

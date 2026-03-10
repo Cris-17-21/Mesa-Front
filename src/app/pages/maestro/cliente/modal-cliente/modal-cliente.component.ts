@@ -1,89 +1,107 @@
-import { Component, EventEmitter, inject, Input, Output, signal } from '@angular/core';
+import {
+  Component, effect, inject, signal,
+  ChangeDetectionStrategy, model, input, output, DestroyRef
+} from '@angular/core';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+
+// PrimeNG
 import { DialogModule } from 'primeng/dialog';
-import { DropdownModule } from 'primeng/dropdown';
+import { SelectModule } from 'primeng/select';
 import { InputTextModule } from 'primeng/inputtext';
 import { ButtonModule } from 'primeng/button';
-import Swal from 'sweetalert2';
-import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+
+// Modelos y Servicios
 import { Cliente, CreateClienteDto } from '../../../../models/maestro/cliente.model';
 import { ClienteService } from '../../../../services/maestro/cliente.service';
 import { ConsultaService } from '../../../../services/auxiliar/consulta.service';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-modal-cliente',
-  imports: [DialogModule, DropdownModule, InputTextModule, ButtonModule, CommonModule, ReactiveFormsModule],
+  standalone: true,
+  imports: [DialogModule, SelectModule, InputTextModule, ButtonModule, ReactiveFormsModule],
   templateUrl: './modal-cliente.component.html',
-  styleUrl: './modal-cliente.component.css'
+  styleUrl: './modal-cliente.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ModalClienteComponent {
-  @Input() visible: boolean = false;
-  @Input() dataToEdit: Cliente | null = null;
-  @Input() empresaId: string = '';
-  @Output() visibleChange = new EventEmitter<boolean>();
-  @Output() onSave = new EventEmitter<void>();
+  // Inyecciones
+  private readonly fb = inject(FormBuilder);
+  private readonly clienteService = inject(ClienteService);
+  private readonly consultaService = inject(ConsultaService);
+  private readonly destroyRef = inject(DestroyRef);
 
-  private fb = inject(FormBuilder);
-  private clienteService = inject(ClienteService);
-  private consultaService = inject(ConsultaService);
+  // Constantes
+  private readonly ID_DNI = 'DNI';
+  private readonly ID_RUC = 'RUC';
 
-  private readonly ID_DNI = '443d1c2c-f567-407e-95e1-310992f9fad1';
-  private readonly ID_RUC = 'c8ea06f4-07d1-11f1-b338-86e7600e03aa';
+  // Inputs / Outputs (API moderna Angular 19)
+  readonly visible = model(false);
+  readonly dataToEdit = input<Cliente | null>(null);
+  readonly empresaId = input<string>('');
+  readonly onSave = output<void>();
 
-  clienteForm: FormGroup;
-  loading = signal(false);
-  searching = signal(false);
+  // Estado reactivo
+  readonly loading = signal(false);
+  readonly searching = signal(false);
 
-  tiposDoc = [
-    { label: 'DNI', value: this.ID_DNI, length: 8 },
-    { label: 'RUC', value: this.ID_RUC, length: 11 }
+  readonly tiposDoc = [
+    { label: 'DNI', value: this.ID_DNI },
+    { label: 'RUC', value: this.ID_RUC }
   ];
 
+  readonly clienteForm: FormGroup = this.fb.group({
+    tipoDocumentoId: [this.ID_DNI, Validators.required],
+    numeroDocumento: ['', [Validators.required, Validators.pattern('^[0-9]*$')]],
+    nombreRazonSocial: ['', Validators.required],
+    direccion: [''],
+    correo: ['', Validators.email],
+    telefono: ['']
+  });
+
   constructor() {
-    this.clienteForm = this.fb.group({
-      tipoDocumentoId: [this.ID_DNI, Validators.required],
-      numeroDocumento: ['', [Validators.required, Validators.pattern('^[0-9]*$')]],
-      nombreRazonSocial: ['', Validators.required],
-      direccion: [''], // Opcional
-      correo: ['', Validators.email], // Opcional pero validado si se escribe
-      telefono: [''] // Opcional
-    });
+    // Validación dinámica por tipo de documento
+    this.clienteForm.get('tipoDocumentoId')?.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(tipo => {
+        const control = this.clienteForm.get('numeroDocumento');
+        if (tipo === this.ID_DNI) {
+          control?.setValidators([Validators.required, Validators.minLength(8), Validators.maxLength(8), Validators.pattern('^[0-9]*$')]);
+        } else if (tipo === this.ID_RUC) {
+          control?.setValidators([Validators.required, Validators.minLength(11), Validators.maxLength(11), Validators.pattern('^[0-9]*$')]);
+        }
+        control?.updateValueAndValidity();
+      });
 
-    // VALIDACIÓN DINÁMICA CORREGIDA
-    this.clienteForm.get('tipoDocumentoId')?.valueChanges.subscribe(tipo => {
-      const control = this.clienteForm.get('numeroDocumento');
-      if (tipo === this.ID_DNI) {
-        control?.setValidators([Validators.required, Validators.minLength(8), Validators.maxLength(8)]);
-      } else if (tipo === this.ID_RUC) {
-        control?.setValidators([Validators.required, Validators.minLength(11), Validators.maxLength(11)]);
+    // Reaccionar a la apertura/cierre del modal
+    effect(() => {
+      if (this.visible()) {
+        const data = this.dataToEdit();
+        if (data) {
+          this.clienteForm.patchValue(data);
+          this.clienteForm.get('numeroDocumento')?.disable();
+        } else {
+          this.clienteForm.reset({ tipoDocumentoId: this.ID_DNI });
+          this.clienteForm.get('numeroDocumento')?.enable();
+        }
+        this.clienteForm.markAsPristine();
+        this.clienteForm.markAsUntouched();
       }
-      control?.updateValueAndValidity();
     });
   }
 
-  ngOnChanges(): void {
-    if (this.dataToEdit) {
-      this.clienteForm.patchValue(this.dataToEdit);
-      this.clienteForm.get('numeroDocumento')?.disable();
-    } else {
-      // RESET CORREGIDO: Usamos el ID de DNI en lugar de '1'
-      this.clienteForm.reset({ tipoDocumentoId: this.ID_DNI });
-      this.clienteForm.get('numeroDocumento')?.enable();
-    }
-  }
+  // --- BÚSQUEDA AUTOMÁTICA ---
 
-  // Lógica de búsqueda automática
   buscarDocumento() {
     const doc = this.clienteForm.get('numeroDocumento')?.value;
     const tipo = this.clienteForm.get('tipoDocumentoId')?.value;
-
     if (!doc || doc.length < 8) return;
 
     this.searching.set(true);
 
     this.clienteService.getClienteByDocument(doc).subscribe({
       next: (clienteLocal: any) => {
-        // CASO A: Existe y está ACTIVO (Mostramos aviso porque ya está en la tabla)
         if (clienteLocal && clienteLocal.isActive === true) {
           Swal.fire({
             title: 'Cliente ya registrado',
@@ -93,14 +111,10 @@ export class ModalClienteComponent {
           });
           this.clienteForm.patchValue(clienteLocal);
           this.searching.set(false);
-        }
-        // CASO B: Existe pero está INACTIVO (Silencioso, solo llenamos los datos)
-        else if (clienteLocal && clienteLocal.isActive === false) {
+        } else if (clienteLocal && clienteLocal.isActive === false) {
           this.clienteForm.patchValue(clienteLocal);
           this.searching.set(false);
-          // Aquí no lanzamos Swal para que no parezca un error
-        }
-        else {
+        } else {
           this.consultarApiExterna(tipo, doc);
         }
       },
@@ -114,7 +128,6 @@ export class ModalClienteComponent {
     if (tipo === this.ID_DNI) {
       this.consultaService.consultaDni(doc).subscribe({
         next: (res: any) => {
-          // Basado en tu log: nombres + apellidos o full_name
           const nombre = res.full_name || `${res.nombres} ${res.apellidoPaterno} ${res.apellidoMaterno}`;
           this.clienteForm.patchValue({ nombreRazonSocial: nombre.trim() });
           this.searching.set(false);
@@ -135,13 +148,14 @@ export class ModalClienteComponent {
   private handleApiError() {
     this.searching.set(false);
     Swal.fire({
-      title: 'Cliente encontrado',
-      text: 'Este registro ya existe. Puedes actualizar sus datos y confirmar.',
+      title: 'Sin resultados en API',
+      text: 'No se encontró el documento en la API externa. Puedes ingresar los datos manualmente.',
       icon: 'info',
-      confirmButtonColor: '#18181b',
-      target: document.getElementById('modal-container') || 'body' // <--- Esto lo trae al frente
+      confirmButtonColor: '#18181b'
     });
   }
+
+  // --- GUARDAR ---
 
   save() {
     if (this.clienteForm.invalid) {
@@ -152,15 +166,14 @@ export class ModalClienteComponent {
     this.loading.set(true);
     const formVal = this.clienteForm.getRawValue();
 
-    if (this.dataToEdit) {
-      this.clienteService.updateCliente(formVal, this.dataToEdit.id).subscribe({
+    const data = this.dataToEdit();
+    if (data) {
+      this.clienteService.updateCliente(formVal, data.id).subscribe({
         next: () => this.handleSuccess('actualizado'),
         error: (err) => this.handleCustomError(err)
       });
     } else {
-      // Si el cliente ya existía (is_active: false), el Service de Java 
-      // lo encontrará por numeroDocumento y hará el update + active: true
-      const dto: CreateClienteDto = { ...formVal, empresaId: this.empresaId };
+      const dto: CreateClienteDto = { ...formVal, empresaId: this.empresaId() };
       this.clienteService.createCliente(dto as any).subscribe({
         next: () => this.handleSuccess('registrado'),
         error: (err) => this.handleCustomError(err)
@@ -169,6 +182,7 @@ export class ModalClienteComponent {
   }
 
   private handleSuccess(msg: string) {
+    this.loading.set(false);
     Swal.fire('¡Éxito!', `Cliente ${msg} correctamente.`, 'success');
     this.onSave.emit();
     this.close();
@@ -176,13 +190,35 @@ export class ModalClienteComponent {
 
   private handleCustomError(err: any) {
     this.loading.set(false);
-    // Mostramos el mensaje exacto del backend (ej: "Ya está registrado y activo")
     const msg = err.error?.message || 'Ocurrió un problema con el servidor.';
     Swal.fire('Atención', msg, 'error');
   }
 
   close() {
-    this.visibleChange.emit(false);
+    this.visible.set(false);
     this.loading.set(false);
+  }
+
+  // --- HELPERS DE VALIDACIÓN ---
+
+  isInvalid(name: string): boolean {
+    const control = this.clienteForm.get(name);
+    return !!(control && control.invalid && (control.dirty || control.touched));
+  }
+
+  getErrorMessage(name: string): string {
+    const control = this.clienteForm.get(name);
+    if (control?.hasError('required')) return 'Este campo es obligatorio.';
+    if (control?.hasError('minlength')) {
+      const req = control.getError('minlength').requiredLength;
+      return `Mínimo ${req} dígitos.`;
+    }
+    if (control?.hasError('maxlength')) {
+      const req = control.getError('maxlength').requiredLength;
+      return `Máximo ${req} dígitos.`;
+    }
+    if (control?.hasError('pattern')) return 'Solo se permiten números.';
+    if (control?.hasError('email')) return 'Formato de correo inválido.';
+    return '';
   }
 }

@@ -1,20 +1,30 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
-import { TableModule } from 'primeng/table';
-import { ButtonModule } from 'primeng/button';
+import { Component, inject, OnInit, signal, computed, ViewChildren, QueryList } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { PedidoResumenDto } from '../../../models/venta/pedido.model';
+import { TabViewModule } from 'primeng/tabview';
+import { Table, TableModule } from 'primeng/table';
+import { firstValueFrom } from 'rxjs';
+
 import { PedidoService } from '../../../services/venta/pedido.service';
 import { AuthService } from '../../../core/auth/auth.service';
-import { firstValueFrom } from 'rxjs';
 import { UserService } from '../../../services/user/user.service';
-import { IconFieldModule } from 'primeng/iconfield';
-import { InputIconModule } from 'primeng/inputicon';
+import { PedidoResumenDto } from '../../../models/venta/pedido.model';
 import { PreCuentaModalComponent } from './pre-cuenta-modal/pre-cuenta-modal.component';
+
+interface UserResponse {
+  user: {
+    id: string;
+  };
+}
 
 @Component({
   selector: 'app-pre-cuenta',
   standalone: true,
-  imports: [TableModule, ButtonModule, PreCuentaModalComponent, CommonModule, IconFieldModule, InputIconModule],
+  imports: [
+    TableModule,
+    PreCuentaModalComponent,
+    CommonModule,
+    TabViewModule
+  ],
   templateUrl: './pre-cuenta.component.html',
   styleUrl: './pre-cuenta.component.css'
 })
@@ -23,7 +33,6 @@ export class PreCuentaComponent implements OnInit {
   private authService = inject(AuthService);
   private userService = inject(UserService);
 
-  // Signals para estado
   displayModal = signal(false);
   sucursalId = signal<string | null>(null);
   usuarioId = signal<string | null>(null);
@@ -31,8 +40,23 @@ export class PreCuentaComponent implements OnInit {
   modalMode = signal<'NUEVO' | 'EDITAR'>('NUEVO');
   selectedPedidoId = signal<string | null>(null);
 
-  // Lista de pedidos activos (del servicio)
   pedidosActivos = this.pedidoService.pedidosActivos;
+
+  pedidosMesa = computed(() =>
+    this.pedidosActivos().filter(p => !!p.codigoMesa)
+  );
+
+  pedidosDelivery = computed(() =>
+    this.pedidosActivos().filter(p => !p.codigoMesa)
+  );
+
+  @ViewChildren('dt') tables!: QueryList<Table>;
+
+  onSearch(value: string): void {
+    this.tables?.forEach(table => {
+      table.filterGlobal(value, 'contains');
+    });
+  }
 
   async ngOnInit(): Promise<void> {
     const auth = await this.getAuthData();
@@ -51,24 +75,24 @@ export class PreCuentaComponent implements OnInit {
     }
   }
 
-  openCreate() {
+  openCreate(): void {
     this.modalMode.set('NUEVO');
     this.selectedPedidoId.set(null);
     this.displayModal.set(true);
   }
 
-  verDetalle(pedido: PedidoResumenDto) {
+  verDetalle(pedido: PedidoResumenDto): void {
     this.modalMode.set('EDITAR');
     this.selectedPedidoId.set(pedido.id);
     this.displayModal.set(true);
   }
 
-  private async getAuthData() {
+  private async getAuthData(): Promise<{ sucursalId: string | null; usuarioId: string | null }> {
     const token = this.authService.getToken();
     if (!token) return { sucursalId: null, usuarioId: null };
 
     try {
-      const userResponse = await firstValueFrom(this.userService.getUserMe());
+      const userResponse = await firstValueFrom(this.userService.getUserMe()) as UserResponse;
       const payload = JSON.parse(atob(token.split('.')[1]));
 
       return {

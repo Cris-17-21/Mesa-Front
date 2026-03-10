@@ -1,1 +1,51 @@
-<p>metodo-pago works!</p>
+<div class="header-container" *appHasPermission="'READ_METODO_PAGO'">
+    <div class="header-titles">
+        <h1>Gestión de Métodos de Pago</h1>
+        <p class="subtitle">Administra tus métodos de pago.</p>
+    </div>
+
+    <div class="header-actions">
+        <div class="search-wrapper">
+            <i class="bi bi-search search-icon"></i>
+            <input type="text" class="noir-input" (input)="onSearch($event)" placeholder="Buscar por nombre..." />
+        </div>
+
+        <button *appHasPermission="'CREATE_METODO_PAGO'" class="button-add" (click)="openCreate()">
+            <i class="bi bi-plus-circle"></i>
+            <span>Nuevo Método de Pago</span>
+        </button>
+    </div>
+</div>
+
+<div class="card shadow-noir" *appHasPermission="'READ_METODO_PAGO'">
+    <p-table [value]="filteredMetodosPago()" [loading]="loading()" [paginator]="true" [rows]="10"
+        [rowsPerPageOptions]="[10, 25, 50]" styleClass="p-datatable-sm noir-table">
+        <ng-template pTemplate="header">
+            <tr>
+                <th>Nombre</th>
+                <th class="text-center">Acciones</th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-metodo>
+            <tr>
+                <td class="font-bold">{{ metodo.nombre }}</td>
+                <td>
+                    <div class="flex justify-content-center gap-2">
+                        <button *appHasPermission="'UPDATE_METODO_PAGO'" class="button-action edit"
+                            (click)="openEdit(metodo)" pTooltip="Editar">
+                            <i class="bi bi-pencil-square"></i>
+                        </button>
+                        <button *appHasPermission="'DELETE_METODO_PAGO'" class="button-action delete"
+                            (click)="deleteMetodoPago(metodo.id)" pTooltip="Eliminar">
+                            <i class="bi bi-trash3"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        </ng-template>
+    </p-table>
+</div>
+
+<app-modal-metodo-pago [(visible)]="displayModal" [dataToEdit]="selectedMetodoPago()" [empresaId]="empresaId"
+    (onSave)="handleSave($event)">
+</app-modal-metodo-pago>

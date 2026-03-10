@@ -1,1 +1,35 @@
-<p>modal-metodo-pago works!</p>
+<p-dialog [header]="dataToEdit() ? 'Editar Método de Pago' : 'Nuevo Método de Pago'" [visible]="visible()"
+    (visibleChange)="visible.set($event)" [modal]="true" [draggable]="false"
+    [style]="{ width: '30rem', maxWidth: '90vw' }" [contentStyle]="{ 'max-height': '75vh', 'overflow-y': 'auto' }"
+    (onHide)="close()">
+
+    @if (visible()) {
+    <form [formGroup]="metodoPagoForm" (ngSubmit)="save()" class="form-noir mt-2">
+
+        <!-- Nombre del Método de Pago -->
+        <div class="field-noir">
+            <label class="label-noir">Nombre del Método de Pago*</label>
+            <input pInputText formControlName="nombre" class="noir-input"
+                placeholder="Ej: EFECTIVO, TARJETA DE CRÉDITO..." [class.invalid]="isInvalid('nombre')" />
+            @if (isInvalid('nombre')) {
+            <small class="error-text">{{ getErrorMessage('nombre') }}</small>
+            }
+        </div>
+
+        <!-- Footer -->
+        <div class="footer-actions mt-4">
+            <button type="button" class="btn-cancel" (click)="close()" [disabled]="loading()">
+                Cancelar
+            </button>
+            <button type="submit" class="btn-save" [disabled]="loading()">
+                @if (!loading()) {
+                <i class="bi bi-check2-circle"></i>
+                }
+                {{ loading() ? 'Guardando...' : (dataToEdit() ? 'Guardar' : 'Guardar') }}
+            </button>
+        </div>
+
+    </form>
+    }
+
+</p-dialog>

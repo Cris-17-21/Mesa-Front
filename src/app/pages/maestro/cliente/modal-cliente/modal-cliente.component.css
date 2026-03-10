@@ -1,96 +1,120 @@
-/* --- CONTENEDOR DEL FORMULARIO --- */
-.noir-form {
+/* --- FORMULARIO PRINCIPAL --- */
+.form-noir {
     display: flex;
     flex-direction: column;
     gap: 1.2rem;
-    padding: 1rem 0.5rem;
+    padding: 0 0.25rem;
 }
 
-/* --- GRID RESPONSIVO --- */
-.form-grid {
-    display: grid;
-    grid-template-columns: 1fr 1.5fr; /* 2 columnas en Desktop */
-    gap: 1.2rem;
+/* --- FILA DE CAMPOS (2 columnas) --- */
+.field-row {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
 }
 
-/* --- CAMPOS Y ETIQUETAS --- */
-.field {
+/* --- CAMPO INDIVIDUAL --- */
+.field-noir {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.4rem;
+    width: 100%;
 }
 
-.field label {
+/* --- ETIQUETAS --- */
+.label-noir {
     font-size: 0.85rem;
     font-weight: 600;
     color: #3f3f46;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
 }
 
 .optional {
     font-weight: 400;
     color: #a1a1aa;
     font-size: 0.75rem;
+    margin-left: 0.5rem;
 }
 
-/* --- INPUTS Y COMPONENTES --- */
-.noir-input-field {
+/* --- INPUTS --- */
+.noir-input {
     width: 100%;
     border-radius: 8px !important;
     border: 1px solid #e4e4e7 !important;
     padding: 0.6rem 0.8rem;
+    font-size: 0.875rem;
     transition: border-color 0.2s;
 }
 
-.noir-input-field:focus {
+.noir-input:focus {
     border-color: #18181b !important;
     outline: none;
 }
 
-/* --- SEARCH GROUP (DNI/RUC) --- */
-.noir-inputgroup {
+.noir-input.invalid {
+    border-color: #ef4444 !important;
+}
+
+/* --- ERROR TEXT (ROJO) --- */
+.error-text {
+    color: #ef4444;
+    font-size: 0.78rem;
+    font-weight: 500;
+    margin-top: 0.1rem;
+}
+
+/* --- BÚSQUEDA (INPUT + BOTÓN) --- */
+.p-inputgroup {
     display: flex;
     height: 42px;
 }
 
-.noir-inputgroup .noir-input-field {
+.p-inputgroup .noir-input {
     border-radius: 8px 0 0 8px !important;
     border-right: none !important;
+    flex: 1;
 }
 
-.btn-search-noir {
+.btn-search {
     background-color: #18181b;
     color: white;
     border: 1px solid #18181b;
     border-radius: 0 8px 8px 0;
-    padding: 0 15px;
+    padding: 0 14px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: background 0.2s;
+    flex-shrink: 0;
 }
 
-.btn-search-noir:hover:not(:disabled) {
+.btn-search:hover:not(:disabled) {
     background-color: #3f3f46;
 }
 
-/* --- ACCIONES DEL FOOTER --- */
+.btn-search:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* --- FOOTER --- */
 .footer-actions {
     display: flex;
     justify-content: flex-end;
     gap: 0.8rem;
-    margin-top: 2rem;
 }
 
-.btn-cancel, .btn-save {
-    padding: 0.7rem 1.5rem;
+.btn-cancel,
+.btn-save {
+    padding: 0.65rem 1.4rem;
     border-radius: 8px;
     font-weight: 500;
+    font-size: 0.9rem;
     cursor: pointer;
     transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
 }
 
 .btn-cancel {
@@ -99,7 +123,7 @@
     color: #3f3f46;
 }
 
-.btn-cancel:hover {
+.btn-cancel:hover:not(:disabled) {
     background: #f4f4f5;
 }
 
@@ -109,46 +133,58 @@
     color: white;
 }
 
+.btn-save:hover:not(:disabled) {
+    background: #3f3f46;
+}
+
 .btn-save:disabled {
     background: #a1a1aa;
     cursor: not-allowed;
 }
 
-/* --- ANIMACIONES --- */
+/* --- SPINNER --- */
 .spin {
     display: inline-block;
-    animation: rotate 1s linear infinite;
+    animation: rotate 0.8s linear infinite;
 }
 
 @keyframes rotate {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
 }
 
-/* --- MEDIA QUERIES (RESPONSIVIDAD) --- */
+/* --- UTILIDADES --- */
+.w-full {
+    width: 100%;
+}
 
-@media (max-width: 640px) {
-    .form-grid {
-        grid-template-columns: 1fr; /* Una sola columna en móvil */
-        gap: 1rem;
+.mt-2 {
+    margin-top: 0.75rem;
+}
+
+.mt-4 {
+    margin-top: 1.5rem;
+}
+
+/* --- RESPONSIVE --- */
+@media (max-width: 600px) {
+    .field-row {
+        flex-direction: column;
     }
 
     .footer-actions {
-        flex-direction: column-reverse; /* Botón confirmar arriba del cancelar en móvil */
+        flex-direction: column-reverse;
         gap: 0.5rem;
     }
 
-    .btn-cancel, .btn-save {
-        width: 100%; /* Botones de ancho completo */
-        text-align: center;
+    .btn-cancel,
+    .btn-save {
+        width: 100%;
+        justify-content: center;
     }
-    
-    .noir-form {
-        padding: 0.5rem 0;
-    }
-}
-
-/* Forzar que SweetAlert esté siempre al frente */
-.modal-container {
-    z-index: 1100 !important; /* Los modales de PrimeNG suelen rondar los 1000 */
 }

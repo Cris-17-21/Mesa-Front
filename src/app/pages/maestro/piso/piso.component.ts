@@ -124,13 +124,14 @@ export class PisoComponent implements OnInit {
   deletePiso(id: string): void {
     Swal.fire({
       title: '¿ESTÁS SEGURO?',
-      text: "Esta acción realizará un borrado lógico del piso y sus mesas asociadas.",
+      text: "Esta acción eliminará el piso y sus mesas asociadas de forma permanente",
       icon: 'warning',
+      iconColor: '#EF4444',
       showCancelButton: true,
-      confirmButtonColor: '#ef4444',
-      cancelButtonColor: '#e4e4e7',
-      confirmButtonText: 'SÍ, ELIMINAR',
-      cancelButtonText: 'CANCELAR',
+      confirmButtonColor: '#DC2626',
+      cancelButtonColor: '#27272a',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar',
       reverseButtons: true,
       focusCancel: true
     }).then((result) => {
@@ -138,7 +139,7 @@ export class PisoComponent implements OnInit {
         this.pisoService.deletePiso(id).subscribe({
           next: () => {
             this.loadPisos();
-            this.successMessage('PISO ELIMINADO CORRECTAMENTE');
+            this.successMessage('Piso eliminado correctamente.');
           },
           error: (err) => this.errorMessage('No se pudo eliminar el piso. Verifique si tiene pedidos activos.', err)
         });

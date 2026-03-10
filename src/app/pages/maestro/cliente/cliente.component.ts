@@ -28,10 +28,7 @@ export class ClienteComponent implements OnInit {
   selectedCliente: Cliente | null = null;
 
   get empresaId(): string {
-    const token = this.authService.getToken();
-    if (!token) return '';
-    const payload = JSON.parse(atob(token.split('.')[1]));
-    return payload.empresaId; // Ajustar según estructura de tu token
+    return this.authService.getEmpresaId();
   }
 
   ngOnInit(): void {
@@ -76,12 +73,13 @@ export class ClienteComponent implements OnInit {
       title: '¿Estás seguro?',
       text: "Esta acción eliminará el cliente de forma permanente.",
       icon: 'warning',
+      iconColor: '#EF4444',
       showCancelButton: true,
-      confirmButtonColor: '#ef4444', // Color negro de tu estilo Noir
-      cancelButtonColor: '#3f54cc', // Rojo suave para cancelar
+      confirmButtonColor: '#DC2626',
+      cancelButtonColor: '#27272a',
       confirmButtonText: 'Sí, eliminar',
       cancelButtonText: 'Cancelar',
-      reverseButtons: true, // Pone el botón de cancelar a la izquierda
+      reverseButtons: true,
       focusCancel: true
     }).then((result) => {
       if (result.isConfirmed) {

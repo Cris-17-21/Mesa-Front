@@ -101,7 +101,6 @@ export class ModalMesaComponent implements OnInit {
         codigoMesa: formVal.codigoMesa,
         capacidad: formVal.capacidad
       };
-      console.log("hola")
       this.mesaService.updateMesa(updateDto, this.dataToEdit.id).subscribe({
         next: () => this.handleSuccess('actualizada'),
         error: () => this.handleError()

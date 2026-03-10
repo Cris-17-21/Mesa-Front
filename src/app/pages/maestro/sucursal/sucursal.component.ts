@@ -152,11 +152,12 @@ export class SucursalComponent implements OnInit {
       title: '¿Estás seguro?',
       text: "Esta acción eliminará la sucursal de forma permanente y sus datos relacionados",
       icon: 'warning',
+      iconColor: '#EF4444',
       showCancelButton: true,
-      confirmButtonColor: '#ef4444',
-      cancelButtonColor: '#e4e4e7',
+      confirmButtonColor: '#DC2626',
+      cancelButtonColor: '#27272a',
       confirmButtonText: 'Sí, eliminar',
-      cancelButtonText: '<span style="color: #18181b">Cancelar</span>',
+      cancelButtonText: 'Cancelar',
       reverseButtons: true, // Pone el botón de cancelar a la izquierda
       focusCancel: true
     }).then((result) => {

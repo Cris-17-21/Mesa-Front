@@ -53,9 +53,10 @@ export class RolesComponent implements OnInit {
       title: '¿Estás seguro?',
       text: "Esta acción eliminará el rol de forma permanente.",
       icon: 'warning',
+      iconColor: '#EF4444',
       showCancelButton: true,
-      confirmButtonColor: '#ef4444', 
-      cancelButtonColor: '#3f54cc', 
+      confirmButtonColor: '#DC2626',
+      cancelButtonColor: '#27272a',
       confirmButtonText: 'Sí, eliminar',
       cancelButtonText: 'Cancelar',
       reverseButtons: true, // Pone el botón de cancelar a la izquierda

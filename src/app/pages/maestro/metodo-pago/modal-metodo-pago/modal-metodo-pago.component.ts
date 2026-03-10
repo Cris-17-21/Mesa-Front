@@ -1,41 +1,93 @@
-import { Component, inject, OnChanges, OnInit, signal } from '@angular/core';
-import Swal from 'sweetalert2';
+import { Component, inject, input, model, output, effect, ChangeDetectionStrategy } from '@angular/core';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+
 import { DialogModule } from 'primeng/dialog';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
-import { SelectModule } from 'primeng/select';
-import { TextareaModule } from 'primeng/textarea';
-import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MetodoPagoService } from '../../../../services/maestro/metodo-pago.service';
+import { SelectButtonModule } from 'primeng/selectbutton';
+import { InputSwitchModule } from 'primeng/inputswitch';
+
+import { CreateMetodoPagoDto, MetodoPago } from '../../../../models/maestro/metodo-pago.model';
+import { MetodoPagoWizardData } from '../metodo-pago.component';
 
 @Component({
   selector: 'app-modal-metodo-pago',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, DialogModule, ButtonModule, InputTextModule, SelectModule, TextareaModule],
+  imports: [
+    ReactiveFormsModule,
+    DialogModule,
+    ButtonModule,
+    InputTextModule,
+    SelectButtonModule,
+    InputSwitchModule
+  ],
   templateUrl: './modal-metodo-pago.component.html',
-  styleUrl: './modal-metodo-pago.component.css'
+  styleUrl: './modal-metodo-pago.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ModalMetodoPagoComponent implements OnInit, OnChanges {
+export class ModalMetodoPagoComponent {
+  private readonly fb = inject(FormBuilder);
 
-  private fb = inject(FormBuilder);
-  private metodoPagoService = inject(MetodoPagoService);
+  readonly visible = model<boolean>(false);
+  readonly dataToEdit = input<MetodoPago | null>(null);
+  readonly loading = input<boolean>(false);
+  readonly empresaId = input<string>('');
 
-  metodoPagoForm: FormGroup;
-  loading = signal(false);
+  readonly onSave = output<MetodoPagoWizardData>();
+
+  readonly metodoPagoForm: FormGroup;
 
   constructor() {
     this.metodoPagoForm = this.fb.group({
-      name: ['', [Validators.required]],
-      description: ['', [Validators.required]],
-      moduleId: [null, [Validators.required]]
+      nombre: ['', [Validators.required, Validators.minLength(2)]]
+    });
+
+    effect(() => {
+      const mp = this.dataToEdit();
+      if (mp) {
+        this.metodoPagoForm.patchValue({
+          nombre: mp.nombre,
+        });
+      } else {
+        this.metodoPagoForm.reset({
+          nombre: '',
+        });
+      }
     });
   }
 
-  ngOnInit(): void {
-    throw new Error('Method not implemented.');
+  save(): void {
+    if (this.metodoPagoForm.invalid) {
+      this.metodoPagoForm.markAllAsTouched();
+      return;
+    }
+    const formValue = this.metodoPagoForm.getRawValue();
+    const dto: CreateMetodoPagoDto = { ...formValue, empresaId: this.empresaId() };
+    this.onSave.emit({
+      isEdit: !!this.dataToEdit(),
+      data: dto
+    });
   }
-  ngOnChanges(): void {
-    throw new Error('Method not implemented.');
+
+  close(): void {
+    this.visible.set(false);
+    this.metodoPagoForm.reset();
+  }
+
+  // --- HELPERS DE VALIDACIÓN ---
+
+  isInvalid(name: string): boolean {
+    const control = this.metodoPagoForm.get(name);
+    return !!(control && control.invalid && (control.dirty || control.touched));
+  }
+
+  getErrorMessage(name: string): string {
+    const control = this.metodoPagoForm.get(name);
+    if (control?.hasError('required')) return 'Este campo es obligatorio.';
+    if (control?.hasError('minlength')) {
+      const req = control.getError('minlength').requiredLength;
+      return `Mínimo ${req} caracteres.`;
+    }
+    return '';
   }
 }
