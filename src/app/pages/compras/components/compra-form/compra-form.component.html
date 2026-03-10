@@ -8,6 +8,25 @@
 
     <form [formGroup]="form" (ngSubmit)="onSubmit()">
 
+        <!-- ===== TIPO DE COMPRA TOGGLE ===== -->
+        <div class="seccion-card">
+            <div class="seccion-titulo" style="justify-content: space-between; align-items: center;">
+                <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <span class="icono">📑</span>
+                    <h3>Tipo de Compra</h3>
+                </div>
+                <!-- Toggle Mode -->
+                <div class="switch-label" style="background:#f8f9fa; padding:0.5rem 1rem; border-radius:8px; border:1px solid #dee2e6;">
+                    <div class="toggle-track" [class.on]="esCompraSimple" (click)="toggleTipoCompra()">
+                        <div class="toggle-thumb"></div>
+                    </div>
+                    <div>
+                        <strong>{{ esCompraSimple ? 'Compra Simple (Informal)' : 'Compra Normal (Factura/Boleta)' }}</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- ===== DETALLES DE LA COMPRA ===== -->
         <div class="seccion-card">
             <div class="seccion-titulo">
@@ -17,43 +36,54 @@
             <hr class="linea-roja" />
 
             <div class="form-grid">
-                <!-- Proveedor -->
-                <div class="field col-2">
-                    <label>Proveedor</label>
-                    <div class="proveedor-wrapper">
-                        <input type="text" class="campo-input"
-                            placeholder="Escribe para buscar por razón social, nombre com..."
-                            [(ngModel)]="proveedorBusqueda" [ngModelOptions]="{standalone: true}"
-                            (input)="filtrarProveedores()" (focus)="filtrarProveedores()" autocomplete="off" />
-                        <button *ngIf="selectedProveedor" type="button" class="btn-clear"
-                            (click)="limpiarProveedor()">×</button>
+                <!-- Proveedor Normal -->
+                <ng-container *ngIf="!esCompraSimple">
+                    <div class="field col-2">
+                        <label>Proveedor</label>
+                        <div class="proveedor-wrapper">
+                            <input type="text" class="campo-input"
+                                placeholder="Escribe para buscar por razón social, nombre com..."
+                                [(ngModel)]="proveedorBusqueda" [ngModelOptions]="{standalone: true}"
+                                (input)="filtrarProveedores()" (focus)="filtrarProveedores()" autocomplete="off" />
+                            <button *ngIf="selectedProveedor" type="button" class="btn-clear"
+                                (click)="limpiarProveedor()">×</button>
 
-                        <div class="proveedor-dropdown" *ngIf="showProveedorList && proveedoresFiltrados.length > 0">
-                            <div class="prov-item" *ngFor="let p of proveedoresFiltrados"
-                                (click)="seleccionarProveedor(p)">
-                                <strong>{{ p.razonSocial }}</strong>
-                                <small>RUC {{ p.ruc }} · {{ p.telefono }}</small>
+                            <div class="proveedor-dropdown" *ngIf="showProveedorList && proveedoresFiltrados.length > 0">
+                                <div class="prov-item" *ngFor="let p of proveedoresFiltrados"
+                                    (click)="seleccionarProveedor(p)">
+                                    <strong>{{ p.razonSocial }}</strong>
+                                    <small>RUC {{ p.ruc }} · {{ p.telefono }}</small>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- RUC Proveedor -->
-                <div class="field col-2">
-                    <label>RUC del Proveedor</label>
-                    <input type="text" class="campo-input" readonly [value]="selectedProveedor?.ruc || ''"
-                        placeholder="Ej: 20123456789" />
-                </div>
+                    <!-- RUC Proveedor -->
+                    <div class="field col-2">
+                        <label>RUC del Proveedor</label>
+                        <input type="text" class="campo-input" readonly [value]="selectedProveedor?.ruc || ''"
+                            placeholder="Ej: 20123456789" />
+                    </div>
+                </ng-container>
+
+                <!-- Proveedor Informal -->
+                <ng-container *ngIf="esCompraSimple">
+                    <div class="field col-full">
+                        <label>Nombre del Proveedor (Informal) *</label>
+                        <input type="text" class="campo-input" formControlName="nombreProveedorInformal"
+                            placeholder="Ej: Juan Perez, Vendedor del Mercado..." />
+                    </div>
+                </ng-container>
 
                 <!-- Fecha Pedido -->
-                <div class="field">
+                <div class="field" *ngIf="!esCompraSimple">
                     <label>Fecha de Pedido *</label>
                     <input type="date" class="campo-input" [value]="today" readonly />
                 </div>
 
-                <!-- Fecha Entrega -->
+                <!-- Fecha Entrega / Fecha Compra -->
                 <div class="field">
-                    <label>Fecha Entrega Esperada</label>
+                    <label>{{ esCompraSimple ? 'Fecha Compra' : 'Fecha Entrega Esperada' }}</label>
                     <input type="date" class="campo-input" formControlName="fechaEntregaEsperada" />
                 </div>
 
@@ -67,7 +97,7 @@
                 </div>
 
                 <!-- Referencia -->
-                <div class="field">
+                <div class="field" *ngIf="!esCompraSimple">
                     <label>Referencia/N° Cotización</label>
                     <input type="text" class="campo-input" formControlName="referencia"
                         placeholder="Ej: COT-2025-001" />
@@ -94,15 +124,28 @@
             <div formArrayName="detalles">
                 <div class="detalle-row" *ngFor="let ctrl of detalles.controls; let i = index" [formGroupName]="i">
                     <div class="detalle-grid">
-                        <!-- Producto selector -->
-                        <div class="field detalle-producto">
+                        <!-- Producto selector (Normal) -->
+                        <div class="field detalle-producto" *ngIf="!esCompraSimple">
                             <label>Producto</label>
                             <select class="campo-input" formControlName="idProducto" (change)="onProductoChange(i)">
-                                <option [ngValue]="null">{{ selectedProveedor ? 'Seleccionar producto...' : 'Primero
-                                    seleccione un proveedor' }}</option>
-                                <option *ngFor="let p of productosFiltrados" [ngValue]="p.idProducto">{{
-                                    p.nombreProducto }}</option>
+                                <option [ngValue]="null">{{ selectedProveedor ? 'Seleccionar producto...' : 'Primero seleccione un proveedor' }}</option>
+                                <option *ngFor="let p of productosFiltrados" [ngValue]="p.idProducto">{{ p.nombreProducto }}</option>
                             </select>
+                        </div>
+
+                        <!-- Producto Libre (Informal) -->
+                        <div class="field detalle-producto" *ngIf="esCompraSimple" style="display: flex; gap: 0.5rem; width: 100%;">
+                            <div style="flex: 1;">
+                                <label>Producto a Crear</label>
+                                <input type="text" class="campo-input" formControlName="nombreProductoNuevo" placeholder="Nombre completo..." />
+                            </div>
+                            <div style="flex: 1;">
+                                <label>Categoría</label>
+                                <select class="campo-input" formControlName="idCategoriaNuevoProducto">
+                                    <option [ngValue]="null">Seleccionar...</option>
+                                    <option *ngFor="let cat of categorias" [ngValue]="cat.idCategoria">{{ cat.nombreCategoria }}</option>
+                                </select>
+                            </div>
                         </div>
 
                         <!-- Cantidad -->
@@ -142,7 +185,7 @@
             </button>
 
             <!-- IGV Toggle -->
-            <div class="igv-row">
+            <div class="igv-row" *ngIf="!esCompraSimple">
                 <label class="switch-label">
                     <div class="toggle-track" [class.on]="aplicaIgv" (click)="aplicaIgv = !aplicaIgv">
                         <div class="toggle-thumb"></div>

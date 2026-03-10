@@ -8,6 +8,7 @@ import { ProductoService } from '../../../../services/inventario/producto.servic
 import { AuthService } from '../../../../core/auth/auth.service';
 import { Proveedor } from '../../../../models/compra/proveedor.model';
 import { Producto } from '../../../../models/inventario/producto.model';
+import { CategoriaService } from '../../../../services/inventario/categoria.service';
 
 import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
@@ -93,6 +94,7 @@ export class CompraFormComponent implements OnInit {
     private authService = inject(AuthService);
     private router = inject(Router);
     private messageService = inject(MessageService);
+    private categoriaService = inject(CategoriaService);
 
     form: FormGroup;
     proveedores: Proveedor[] = [];
@@ -100,10 +102,13 @@ export class CompraFormComponent implements OnInit {
     productos: Producto[] = [];
     productosFiltrados: Producto[] = [];
     tiposPago: TiposPagoDto[] = [];
+    categorias: any[] = []; // Categoria[]
 
     proveedorBusqueda = '';
     showProveedorList = false;
     selectedProveedor: Proveedor | null = null;
+    
+    esCompraSimple = false; // Toggle state
 
     aplicaIgv = true;
     enviando = false;
@@ -111,6 +116,7 @@ export class CompraFormComponent implements OnInit {
 
     constructor() {
         this.form = this.fb.group({
+            nombreProveedorInformal: [''], // For simple purchases
             fechaEntregaEsperada: [null],
             idTipoPago: [null],
             referencia: [''],
@@ -129,10 +135,21 @@ export class CompraFormComponent implements OnInit {
             this.productoService.getProductoByEmpresaId(empresaId).subscribe(data => {
                 this.productos = data;
             });
+            this.categoriaService.getCategoriasByEmpresa(empresaId).subscribe((data: any[]) => {
+                this.categorias = data;
+            });
         }
         this.compraService.getTiposPago().subscribe(data => {
             this.tiposPago = data;
         });
+    }
+
+    toggleTipoCompra() {
+        this.esCompraSimple = !this.esCompraSimple;
+        // Reset parts when toggling
+        this.limpiarProveedor();
+        this.form.get('nombreProveedorInformal')?.setValue('');
+        this.detalles.clear();
     }
 
     // --- Proveedor Search ---
@@ -175,7 +192,9 @@ export class CompraFormComponent implements OnInit {
 
     agregarProducto() {
         const row = this.fb.group({
-            idProducto: [null, Validators.required],
+            idProducto: [null], // Not required if simple purchase, will validate at submit
+            nombreProductoNuevo: [''], 
+            idCategoriaNuevoProducto: [null],
             cantidadPedida: [1, [Validators.required, Validators.min(1)]],
             costoUnitario: [0, [Validators.required, Validators.min(0)]],
             subtotalLinea: [0]
@@ -223,8 +242,12 @@ export class CompraFormComponent implements OnInit {
 
     // --- Submit ---
     onSubmit() {
-        if (!this.selectedProveedor) {
+        if (!this.esCompraSimple && !this.selectedProveedor) {
             this.messageService.add({ severity: 'warn', summary: 'Aviso', detail: 'Selecciona un proveedor' });
+            return;
+        }
+        if (this.esCompraSimple && !this.form.get('nombreProveedorInformal')?.value) {
+            this.messageService.add({ severity: 'warn', summary: 'Aviso', detail: 'Ingresa el nombre del proveedor informal' });
             return;
         }
         if (this.detalles.length === 0) {
@@ -233,8 +256,20 @@ export class CompraFormComponent implements OnInit {
         }
 
         const v = this.form.value;
+        const mappedDetalles = v.detalles.map((d: any) => ({
+            idProducto: this.esCompraSimple ? 0 : d.idProducto, // 0 triggers new product logic ideally, or backend ignores it if esCompraSimple
+            nombreProducto: this.esCompraSimple ? d.nombreProductoNuevo : undefined, // Backend might use it directly or we pass it
+            cantidadPedida: d.cantidadPedida,
+            costoUnitario: d.costoUnitario,
+            subtotalLinea: d.subtotalLinea,
+            esProductoNuevo: this.esCompraSimple ? true : false,
+            idCategoriaNuevoProducto: this.esCompraSimple ? d.idCategoriaNuevoProducto : null
+        }));
+
         const dto: PedidoCompraDto = {
-            idProveedor: this.selectedProveedor.idProveedor,
+            idProveedor: this.esCompraSimple ? 1 : this.selectedProveedor!.idProveedor, // 1 as fallback or ignored by backend logic
+            esCompraSimple: this.esCompraSimple,
+            nombreProveedorInformal: this.esCompraSimple ? v.nombreProveedorInformal : undefined,
             fechaEntregaEsperada: v.fechaEntregaEsperada
                 ? this.formatDate(v.fechaEntregaEsperada)
                 : null,
@@ -243,7 +278,7 @@ export class CompraFormComponent implements OnInit {
             observaciones: v.observaciones,
             aplicaIgv: this.aplicaIgv,
             totalPedido: this.total,
-            detalles: v.detalles
+            detalles: mappedDetalles
         };
 
         this.enviando = true;

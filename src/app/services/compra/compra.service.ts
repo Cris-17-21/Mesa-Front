@@ -10,6 +10,8 @@ export interface DetallePedidoCompraDto {
     cantidadPedida: number;
     costoUnitario: number;
     subtotalLinea: number;
+    esProductoNuevo?: boolean;
+    idCategoriaNuevoProducto?: number;
 }
 
 export interface PedidoCompraDto {
@@ -24,6 +26,8 @@ export interface PedidoCompraDto {
     estadoPedido?: string;
     totalPedido?: number;
     aplicaIgv: boolean;
+    esCompraSimple?: boolean;
+    nombreProveedorInformal?: string;
     detalles: DetallePedidoCompraDto[];
 }
 

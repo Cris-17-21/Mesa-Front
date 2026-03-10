@@ -6,15 +6,17 @@ import { InputTextModule } from 'primeng/inputtext';
 import { RouterModule, Router } from '@angular/router';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ToastModule } from 'primeng/toast';
+import { DialogModule } from 'primeng/dialog';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ProductoService } from '../../../services/inventario/producto.service';
+import { CompraService, PedidoCompraDto } from '../../../services/compra/compra.service';
 import { Producto } from '../../../models/inventario/producto.model';
 import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
 
 @Component({
     selector: 'app-producto',
     standalone: true,
-    imports: [CommonModule, TableModule, ButtonModule, InputTextModule, RouterModule, ConfirmDialogModule, ToastModule, HasPermissionDirective],
+    imports: [CommonModule, TableModule, ButtonModule, InputTextModule, RouterModule, ConfirmDialogModule, ToastModule, DialogModule, HasPermissionDirective],
     providers: [ConfirmationService, MessageService],
     template: `
     <div class="card p-4">
@@ -23,7 +25,10 @@ import { HasPermissionDirective } from '../../../core/directives/has-permission.
         
         <div class="flex justify-content-between align-items-center mb-4">
             <h2 class="m-0">Gestión de Productos</h2>
-             <button *appHasPermission="'CREATE_PRODUCTO'" pButton label="Nuevo Producto" icon="bi bi-plus" (click)="createProducto()"></button>
+             <div class="flex gap-2">
+                 <button pButton label="Productos Simples" class="p-button-outlined p-button-info" icon="bi bi-list" (click)="abrirModalSimples()"></button>
+                 <button *appHasPermission="'CREATE_PRODUCTO'" pButton label="Nuevo Producto" icon="bi bi-plus" (click)="createProducto()"></button>
+             </div>
         </div>
 
         <p-table [value]="productos" [tableStyle]="{ 'min-width': '50rem' }" [paginator]="true" [rows]="10">
@@ -61,6 +66,40 @@ import { HasPermissionDirective } from '../../../core/directives/has-permission.
             </ng-template>
         </p-table>
     </div>
+
+    <!-- Modal para Productos Simples (Compras Informales) -->
+    <p-dialog header="Compras Simples (Informales)" [(visible)]="mostrarModalSimples" [modal]="true" [style]="{width: '70vw'}" [draggable]="false" [resizable]="false">
+        <p-table [value]="comprasSimples" [paginator]="true" [rows]="10" [tableStyle]="{ 'min-width': '50rem' }">
+            <ng-template pTemplate="header">
+                <tr>
+                    <th>Fecha</th>
+                    <th>Proveedor Informal</th>
+                    <th>Referencia</th>
+                    <th>Total</th>
+                    <th>Productos (Cant.)</th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-compra>
+                <tr>
+                    <td>{{ compra.fechaPedido | date:'dd/MM/yyyy' }}</td>
+                    <td>{{ compra.nombreProveedorInformal || 'N/A' }}</td>
+                    <td>{{ compra.referencia || '-' }}</td>
+                    <td>{{ compra.totalPedido | currency }}</td>
+                    <td>
+                        <ul style="margin: 0; padding-left: 1.2rem;">
+                            <li *ngFor="let d of compra.detalles">{{ d.nombreProducto }} (x{{ d.cantidadPedida }})</li>
+                        </ul>
+                    </td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="emptymessage">
+                <tr><td colspan="5">No hay compras simples registradas.</td></tr>
+            </ng-template>
+        </p-table>
+        <ng-template pTemplate="footer">
+            <button pButton label="Cerrar" icon="pi pi-times" class="p-button-text" (click)="mostrarModalSimples = false"></button>
+        </ng-template>
+    </p-dialog>
     `,
     styles: [`
         :host { display: block; }
@@ -84,11 +123,14 @@ import { HasPermissionDirective } from '../../../core/directives/has-permission.
 })
 export class ProductoComponent implements OnInit {
     private productoService = inject(ProductoService);
+    private compraService = inject(CompraService);
     private router = inject(Router);
     private confirmationService = inject(ConfirmationService);
     private messageService = inject(MessageService);
 
     productos: Producto[] = [];
+    comprasSimples: PedidoCompraDto[] = [];
+    mostrarModalSimples = false;
 
     ngOnInit() {
         this.loadProductos();
@@ -98,6 +140,17 @@ export class ProductoComponent implements OnInit {
         this.productoService.getAllProductos().subscribe({
             next: (data) => this.productos = data,
             error: (err) => console.error('Error loading productos', err)
+        });
+    }
+
+    abrirModalSimples() {
+        this.mostrarModalSimples = true;
+        this.compraService.getAll().subscribe({
+            next: (compras) => {
+                // Filter only simple purchases
+                this.comprasSimples = compras.filter(c => c.esCompraSimple === true);
+            },
+            error: (err) => console.error('Error loading compras', err)
         });
     }
 
