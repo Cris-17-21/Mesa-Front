@@ -3,6 +3,17 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../core/environment/environment';
 
+export interface DetalleRecepcion {
+    idDetallePedido: number;
+    cantidadRecibida: number;
+}
+
+export interface RecepcionPedidoRequest {
+    numeroGuiaRemision?: string;
+    observaciones?: string;
+    detalles: DetalleRecepcion[];
+}
+
 export interface DetallePedidoCompraDto {
     idDetallePedido?: number;
     idProducto: number;
@@ -61,6 +72,10 @@ export class CompraService {
 
     getTiposPago(): Observable<TiposPagoDto[]> {
         return this.http.get<TiposPagoDto[]>(this.TIPOS_PAGO_URL);
+    }
+
+    registrarRecepcion(id: number, request: RecepcionPedidoRequest): Observable<PedidoCompraDto> {
+        return this.http.post<PedidoCompraDto>(`${this.API_URL}/${id}/recepcion`, request);
     }
 
     // Legacy shims (keep compra-list working)

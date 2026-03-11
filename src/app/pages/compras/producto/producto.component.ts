@@ -37,6 +37,7 @@ import { HasPermissionDirective } from '../../../core/directives/has-permission.
                     <th>Nombre</th>
                     <th>Categoría</th>
                     <th>Proveedor</th>
+                    <th>Fecha</th>
                     <th>Precio Venta</th>
                     <th>Stock</th>
                     <th>Estado</th>
@@ -48,6 +49,7 @@ import { HasPermissionDirective } from '../../../core/directives/has-permission.
                     <td>{{ producto.nombreProducto }}</td>
                     <td>{{ producto.nombreCategoria || 'Sin Categoría' }}</td>
                     <td>{{ producto.razonSocialProveedor || 'Sin Proveedor' }}</td>
+                    <td>{{ producto.fechaRegistro ? (producto.fechaRegistro | date:'dd/MM/yyyy') : '-' }}</td>
                     <td>{{ producto.precioVenta | currency }}</td>
                     <td>{{ producto.stock }}</td>
                     <td>
@@ -138,7 +140,7 @@ export class ProductoComponent implements OnInit {
 
     loadProductos() {
         this.productoService.getAllProductos().subscribe({
-            next: (data) => this.productos = data,
+            next: (data) => this.productos = data.filter(p => p.tipo !== 'INFORMAL'),
             error: (err) => console.error('Error loading productos', err)
         });
     }

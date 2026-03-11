@@ -4,6 +4,7 @@ export interface Producto {
     precioVenta: number;
     costoCompra?: number;
     stock: number;
+    fechaRegistro?: string;
     idCategoria: number;
     idTipos?: number[];
     nombreCategoria?: string;
@@ -11,4 +12,5 @@ export interface Producto {
     razonSocialProveedor?: string;
     imagen?: string;
     estado: boolean;
+    tipo?: string;
 }
