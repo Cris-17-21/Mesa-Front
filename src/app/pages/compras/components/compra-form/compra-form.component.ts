@@ -132,8 +132,12 @@ export class CompraFormComponent implements OnInit {
             this.proveedoresFiltrados = data;
         });
         if (empresaId) {
-            this.productoService.getProductoByEmpresaId(empresaId).subscribe(data => {
-                this.productos = data;
+            this.productoService.getProductoByEmpresaId(empresaId).subscribe({
+                next: (data) => this.productos = data,
+                error: (err) => {
+                    console.error('Error loading products for compra form', err);
+                    alert('BACKEND CRASH LOG: ' + (err.error?.message || err.message));
+                }
             });
         }
         

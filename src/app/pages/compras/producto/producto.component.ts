@@ -141,7 +141,10 @@ export class ProductoComponent implements OnInit {
     loadProductos() {
         this.productoService.getAllProductos().subscribe({
             next: (data) => this.productos = data.filter(p => p.tipo !== 'INFORMAL'),
-            error: (err) => console.error('Error loading productos', err)
+            error: (err) => {
+                console.error('Error loading productos', err);
+                alert('BACKEND CRASH LOG: ' + (err.error?.message || err.message));
+            }
         });
     }
 
