@@ -203,7 +203,7 @@
                     <span>Subtotal:</span>
                     <span>S/ {{ subtotal | number:'1.2-2' }}</span>
                 </div>
-                <div class="total-row" *ngIf="aplicaIgv">
+                <div class="total-row" *ngIf="aplicaIgv && !esCompraSimple">
                     <span>IGV (18%):</span>
                     <span>S/ {{ igvAmount | number:'1.2-2' }}</span>
                 </div>

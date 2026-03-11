@@ -135,10 +135,11 @@ export class CompraFormComponent implements OnInit {
             this.productoService.getProductoByEmpresaId(empresaId).subscribe(data => {
                 this.productos = data;
             });
-            this.categoriaService.getCategoriasByEmpresa(empresaId).subscribe((data: any[]) => {
-                this.categorias = data;
-            });
         }
+        
+        this.categoriaService.getAll().subscribe((data: any[]) => {
+            this.categorias = data;
+        });
         this.compraService.getTiposPago().subscribe(data => {
             this.tiposPago = data;
         });
@@ -150,6 +151,7 @@ export class CompraFormComponent implements OnInit {
         this.limpiarProveedor();
         this.form.get('nombreProveedorInformal')?.setValue('');
         this.detalles.clear();
+        this.aplicaIgv = !this.esCompraSimple;
     }
 
     // --- Proveedor Search ---
@@ -241,7 +243,7 @@ export class CompraFormComponent implements OnInit {
     }
 
     // --- Submit ---
-    onSubmit() {
+    async onSubmit() {
         if (!this.esCompraSimple && !this.selectedProveedor) {
             this.messageService.add({ severity: 'warn', summary: 'Aviso', detail: 'Selecciona un proveedor' });
             return;
@@ -255,6 +257,8 @@ export class CompraFormComponent implements OnInit {
             return;
         }
 
+        const userId = await this.authService.getUserId();
+
         const v = this.form.value;
         const mappedDetalles = v.detalles.map((d: any) => ({
             idProducto: this.esCompraSimple ? 0 : d.idProducto, // 0 triggers new product logic ideally, or backend ignores it if esCompraSimple
@@ -267,6 +271,7 @@ export class CompraFormComponent implements OnInit {
         }));
 
         const dto: PedidoCompraDto = {
+            idUsuario: userId,
             idProveedor: this.esCompraSimple ? 1 : this.selectedProveedor!.idProveedor, // 1 as fallback or ignored by backend logic
             esCompraSimple: this.esCompraSimple,
             nombreProveedorInformal: this.esCompraSimple ? v.nombreProveedorInformal : undefined,

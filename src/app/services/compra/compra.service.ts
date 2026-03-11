@@ -16,6 +16,7 @@ export interface DetallePedidoCompraDto {
 
 export interface PedidoCompraDto {
     idPedidoCompra?: number;
+    idUsuario?: string;
     idProveedor: number;
     razonSocialProveedor?: string;
     fechaEntregaEsperada?: string | null;
