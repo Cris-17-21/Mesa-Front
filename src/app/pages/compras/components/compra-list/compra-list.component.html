@@ -1,4 +1,6 @@
 <div class="card">
+    <p-toast></p-toast>
+    <p-confirmDialog></p-confirmDialog>
     <div class="flex justify-content-between align-items-center mb-4">
         <h2 class="m-0 text-2xl font-bold">Gestión de Compras</h2>
         <p-button label="Nueva Compra" icon="bi bi-plus" (onClick)="createCompra()" severity="primary">
@@ -34,9 +36,9 @@
                 <td>{{ compra.totalPedido | currency:'PEN':'S/ ' }}</td>
                 <td>
                     <div class="flex gap-2">
-                        <p-button icon="bi bi-eye" [rounded]="true" severity="info" pTooltip="Ver Detalle" tooltipPosition="top"></p-button>
+                        <p-button icon="bi bi-eye" [rounded]="true" severity="info" pTooltip="Ver Detalle" tooltipPosition="top" (onClick)="verCompra(compra)"></p-button>
                         <p-button *ngIf="compra.estadoPedido !== 'Completado' && compra.estadoPedido !== 'COMPLETADO'" icon="bi bi-truck" [rounded]="true" severity="success" pTooltip="Registrar Recepción" tooltipPosition="top" (onClick)="abrirRecepcion(compra)"></p-button>
-                        <p-button icon="bi bi-trash" [rounded]="true" severity="danger" pTooltip="Eliminar" tooltipPosition="top"></p-button>
+                        <p-button icon="bi bi-trash" [rounded]="true" severity="danger" pTooltip="Eliminar" tooltipPosition="top" (onClick)="eliminarCompra(compra)"></p-button>
                     </div>
                 </td>
             </tr>
@@ -92,10 +94,9 @@
                 <td class="text-center">{{detalle.cantidadRecibida || 0}}</td>
                 <td class="text-center">{{detalle.cantidadPedida - (detalle.cantidadRecibida || 0)}}</td>
                 <td class="text-center">
-                    <span *ngIf="tipoRecepcion === 'total'">{{detalle.cantidadPedida - (detalle.cantidadRecibida || 0)}}</span>
-                    <input *ngIf="tipoRecepcion === 'parcial'" type="number" pInputText [(ngModel)]="detalle.cantidadARecibir" 
-                           [max]="detalle.cantidadPedida - (detalle.cantidadRecibida || 0)" [min]="0" class="w-full form-control"
-                           (ngModelChange)="validarCantidad(detalle)">
+                    <input type="number" pInputText [(ngModel)]="detalle.cantidadARecibir" 
+                           [max]="detalle.cantidadPedida - (detalle.cantidadRecibida || 0)" [min]="0" class="w-full form-control text-center"
+                           (ngModelChange)="validarCantidad(detalle); tipoRecepcion = 'parcial'">
                 </td>
             </tr>
         </ng-template>
@@ -113,6 +114,46 @@
 
     <ng-template pTemplate="footer">
         <p-button label="Cancelar" icon="pi pi-times" [text]="true" (onClick)="mostrarRecepcion = false"></p-button>
-        <p-button label="Registrar recepción" icon="pi pi-check" severity="danger" (onClick)="confirmarRecepcion()" [disabled]="!puedeRecibir()"></p-button>
+        <p-button label="Registrar recepción" icon="bi bi-truck" (onClick)="confirmarRecepcion()" [disabled]="!puedeRecibir()" severity="danger"></p-button>
+    </ng-template>
+</p-dialog>
+
+<!-- Ver Detalle Compra -->
+<p-dialog header="Detalles del Pedido" [(visible)]="mostrarDetalle" [modal]="true" [style]="{width: '60vw', maxWidth: '700px'}">
+    <div class="surface-ground p-3 border-round mb-4" *ngIf="compraSeleccionadaDetalle">
+        <div class="grid">
+            <div class="col-6">
+                <strong>Proveedor:</strong> {{compraSeleccionadaDetalle.razonSocialProveedor || compraSeleccionadaDetalle.nombreProveedorInformal}}<br>
+                <strong>Fecha Pedido:</strong> {{compraSeleccionadaDetalle.fechaPedido | date:'dd/MM/yyyy'}}<br>
+                <strong>Fecha Entrega Esperada:</strong> {{compraSeleccionadaDetalle.fechaEntregaEsperada ? (compraSeleccionadaDetalle.fechaEntregaEsperada | date:'dd/MM/yyyy') : '-'}}
+            </div>
+            <div class="col-6 text-right">
+                <strong>Estado:</strong> <p-tag [value]="compraSeleccionadaDetalle.estadoPedido" [severity]="getSeverity(compraSeleccionadaDetalle.estadoPedido)"></p-tag><br>
+                <strong>Total:</strong> {{compraSeleccionadaDetalle.totalPedido | currency:'PEN':'S/ '}}
+            </div>
+        </div>
+    </div>
+
+    <p-table [value]="compraSeleccionadaDetalle?.detalles || []" styleClass="p-datatable-sm" responsiveLayout="scroll">
+        <ng-template pTemplate="header">
+            <tr>
+                <th>Producto</th>
+                <th class="text-center">Cantidad Pedida</th>
+                <th class="text-right">Precio Unit.</th>
+                <th class="text-right">Subtotal</th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-detalle>
+            <tr>
+                <td>{{detalle.nombreProducto}}</td>
+                <td class="text-center">{{detalle.cantidadPedida}}</td>
+                <td class="text-right">{{detalle.costoUnitario | currency:'PEN':'S/ '}}</td>
+                <td class="text-right">{{detalle.subtotalLinea | currency:'PEN':'S/ '}}</td>
+            </tr>
+        </ng-template>
+    </p-table>
+
+    <ng-template pTemplate="footer">
+        <p-button label="Cerrar" icon="pi pi-times" [text]="true" (onClick)="mostrarDetalle = false"></p-button>
     </ng-template>
 </p-dialog>

@@ -11,10 +11,12 @@ import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
 import { CardModule } from 'primeng/card';
 import { DialogModule } from 'primeng/dialog';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { ToastModule } from 'primeng/toast';
 import { RadioButtonModule } from 'primeng/radiobutton';
 import { InputTextModule } from 'primeng/inputtext';
 import { TextareaModule } from 'primeng/textarea';
-import { MessageService } from 'primeng/api';
+import { MessageService, ConfirmationService } from 'primeng/api';
 
 @Component({
     selector: 'app-compra-list',
@@ -29,11 +31,13 @@ import { MessageService } from 'primeng/api';
         TooltipModule,
         CardModule,
         DialogModule,
+        ConfirmDialogModule,
+        ToastModule,
         RadioButtonModule,
         InputTextModule,
         TextareaModule
     ],
-    providers: [MessageService],
+    providers: [MessageService, ConfirmationService],
     templateUrl: './compra-list.component.html',
     styles: [`
     :host {
@@ -46,6 +50,7 @@ export class CompraListComponent implements OnInit {
     private compraService = inject(CompraService);
     private router = inject(Router);
     private messageService = inject(MessageService);
+    private confirmationService = inject(ConfirmationService);
 
     compras: PedidoCompraDto[] = [];
     loading: boolean = true;
@@ -56,6 +61,9 @@ export class CompraListComponent implements OnInit {
     detallesPendientes: any[] = [];
     totalPendiente: number = 0;
     observacionesRecepcion: string = '';
+
+    mostrarDetalle: boolean = false;
+    compraSeleccionadaDetalle: PedidoCompraDto | null = null;
 
     ngOnInit() {
         this.loadCompras();
@@ -79,7 +87,8 @@ export class CompraListComponent implements OnInit {
         this.router.navigate(['/compras/gestion/nuevo']);
     }
 
-    getSeverity(estado: string): "success" | "secondary" | "info" | "warning" | "danger" | "contrast" | undefined {
+    getSeverity(estado: string | undefined): "success" | "secondary" | "info" | "warning" | "danger" | "contrast" | undefined {
+        if (!estado) return 'info';
         switch (estado) {
             case 'Pagado':
             case 'PAGADO':
@@ -156,6 +165,33 @@ export class CompraListComponent implements OnInit {
             error: (err) => {
                 console.error(err);
                 this.messageService.add({severity: 'error', summary: 'Error', detail: 'No se pudo registrar la recepción'});
+            }
+        });
+    }
+
+    verCompra(compra: PedidoCompraDto) {
+        this.compraSeleccionadaDetalle = compra;
+        this.mostrarDetalle = true;
+    }
+
+    eliminarCompra(compra: PedidoCompraDto) {
+        this.confirmationService.confirm({
+            message: `¿Estás seguro de eliminar el pedido ${compra.referencia || compra.idPedidoCompra}?`,
+            header: 'Confirmar Eliminación',
+            icon: 'pi pi-exclamation-triangle',
+            accept: () => {
+                if (compra.idPedidoCompra) {
+                    this.compraService.delete(compra.idPedidoCompra).subscribe({
+                        next: () => {
+                            this.messageService.add({severity: 'success', summary: 'Éxito', detail: 'Pedido eliminado exitosamente'});
+                            this.loadCompras();
+                        },
+                        error: (err) => {
+                            console.error(err);
+                            this.messageService.add({severity: 'error', summary: 'Error', detail: 'No se pudo eliminar el pedido'});
+                        }
+                    });
+                }
             }
         });
     }

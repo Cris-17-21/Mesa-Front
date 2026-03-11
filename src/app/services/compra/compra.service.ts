@@ -30,6 +30,7 @@ export interface PedidoCompraDto {
     idUsuario?: string;
     idProveedor: number;
     razonSocialProveedor?: string;
+    fechaPedido?: string | null;
     fechaEntregaEsperada?: string | null;
     idTipoPago?: number | null;
     nombreTipoPago?: string;
@@ -75,7 +76,7 @@ export class CompraService {
     }
 
     registrarRecepcion(id: number, request: RecepcionPedidoRequest): Observable<PedidoCompraDto> {
-        return this.http.post<PedidoCompraDto>(`${this.API_URL}/${id}/recepcion`, request);
+        return this.http.post<PedidoCompraDto>(`${this.API_URL}/${id}/recepciones`, request);
     }
 
     // Legacy shims (keep compra-list working)
