@@ -1,5 +1,5 @@
 import { Router, Routes } from '@angular/router';
-import { authGuard } from './core/auth/auth.guard';
+import { authGuard, restaurantGuard } from './core/auth/auth.guard';
 import { LoginComponent } from './pages/auth/login/login.component';
 import { MainLayoutComponent } from './pages/layouts/main-layout/main-layout.component';
 
@@ -70,7 +70,7 @@ export const routes: Routes = [
           }
         ]
       },
-      // --- VENTAS (AQUÍ HICE EL CAMBIO CLAVE) ---
+      // --- VENTAS ---
       {
         path: 'ventas',
         children: [
@@ -79,11 +79,9 @@ export const routes: Routes = [
             loadComponent: () => import('./pages/venta/caja/caja.component').then(m => m.CajaComponent)
           },
           {
-            // RUTA PADRE: /ventas/pos
             path: 'pos',
             children: [
               {
-                // RUTA DEFAULT: /ventas/pos -> Muestra el MAPA
                 path: '',
                 loadComponent: () => import('./pages/venta/pos/piso-mapa/piso-mapa.component').then(m => m.PisoMapaComponent),
                 title: 'Selección de Mesa'
@@ -96,9 +94,10 @@ export const routes: Routes = [
           }
         ]
       },
-      // --- COMPRAS ---
+      // --- COMPRAS (CON RESTRICCIÓN SUPERADMIN) ---
       {
         path: 'compras',
+        canActivate: [restaurantGuard],
         children: [
           {
             path: '',
