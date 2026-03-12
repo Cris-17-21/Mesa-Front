@@ -10,6 +10,7 @@ import { TooltipModule } from 'primeng/tooltip';
 // --- Componentes ---
 import { OrdenComponent } from '../orden/orden.component';
 import { DividirCuentaModalComponent } from '../dividir-cuenta-modal/dividir-cuenta-modal.component';
+import { CheckoutModalComponent } from '../checkout-modal/checkout-modal.component';
 
 // --- Servicios y Modelos ---
 import { MesaService } from '../../../../services/maestro/mesa.service';
@@ -33,7 +34,8 @@ import Swal from 'sweetalert2';
     ButtonModule,
     TooltipModule,
     OrdenComponent,
-    DividirCuentaModalComponent
+    DividirCuentaModalComponent,
+    CheckoutModalComponent
   ],
   templateUrl: './piso-mapa.component.html',
   styleUrl: './piso-mapa.component.css'
@@ -56,6 +58,9 @@ export class PisoMapaComponent implements OnInit {
   mesaSeleccionadaParaModal = signal<any>(null); // Mesa actual para el modal de orden
   showDividir = signal(false);
   showOrden = signal(false);
+  showCheckoutGlobal = signal(false);
+  pedidoIdParaCobrar = signal<string | null>(null);
+  totalParaCobrar = signal<number>(0);
 
   // --- Control de Unión de Mesas ---
   modoUnion = signal(false);
@@ -190,6 +195,27 @@ export class PisoMapaComponent implements OnInit {
     this.showDividir.set(false);
     this.mesaSeleccionadaParaModal.set(null);
     this.cargarDatosIniciales();
+  }
+
+  handleAbrirCobro(data: { pedidoId: string, total: number }) {
+    // Cerramos cualquier modal abierto previamente
+    this.showOrden.set(false);
+    this.showDividir.set(false);
+
+    // Configuramos los datos para el cobro global
+    this.pedidoIdParaCobrar.set(data.pedidoId);
+    this.totalParaCobrar.set(data.total);
+    this.showCheckoutGlobal.set(true);
+  }
+
+  onCobroFinalizado(exito: boolean) {
+    this.showCheckoutGlobal.set(false);
+    this.pedidoIdParaCobrar.set(null);
+    this.totalParaCobrar.set(0);
+    this.mesaSeleccionadaParaModal.set(null);
+    if (exito) {
+      this.cargarDatosIniciales();
+    }
   }
 
   onEditarPedidoDesdeCuentas(pedidoId: string) {

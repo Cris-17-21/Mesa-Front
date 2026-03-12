@@ -144,7 +144,7 @@
                 [modoInput]="mesaSeleccionadaParaModal().esOcupada ? 'EDITAR' : 'NUEVO'" (onCerrar)="cerrarModalOrden()"
                 (onEditarPedidoViaCuentas)="onEditarPedidoDesdeCuentas($any($event))"
                 (onOpenCuentas)="handleOpenCuentasDesdeOrden()"
-                (onRegresarACuentas)="handleRegresarACuentasDesdeOrden()">
+                (onRegresarACuentas)="handleRegresarACuentasDesdeOrden()" (onAbrirCobro)="handleAbrirCobro($event)">
             </app-orden>
         </div>
     </div>
@@ -154,9 +154,18 @@
     <div class="modal-overlay">
         <div class="modal-content">
             <app-dividir-cuenta-modal [pedidoId]="mesaSeleccionadaParaModal().pedidoId"
-                (onCerrar)="handleCerrarCuentas()" (onEditarPedido)="onEditarPedidoDesdeCuentas($any($event))">
+                (onCerrar)="handleCerrarCuentas()" (onEditarPedido)="onEditarPedidoDesdeCuentas($any($event))"
+                (onAbrirCobro)="handleAbrirCobro($event)">
             </app-dividir-cuenta-modal>
         </div>
+    </div>
+    }
+
+    @if (showCheckoutGlobal() && pedidoIdParaCobrar()) {
+    <div class="modal-overlay">
+        <app-checkout-modal [pedidoId]="pedidoIdParaCobrar()!" [total]="totalParaCobrar()"
+            (onCancelar)="showCheckoutGlobal.set(false)" (onPagoExitoso)="onCobroFinalizado($event)">
+        </app-checkout-modal>
     </div>
     }
 </div>

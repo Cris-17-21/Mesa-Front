@@ -132,14 +132,6 @@
         </div>
     </div>
 
-    <!-- OVERLAY DE COBRO -->
-    @if (showCheckout()) {
-    <div class="overlay-nested-account">
-        <app-checkout-modal [pedidoId]="selectedPedidoId()!" [total]="selectedPedidoTotal()"
-            (onCancelar)="showCheckout.set(false)" (onPagoExitoso)="onPagoExitoso($event)">
-        </app-checkout-modal>
-    </div>
-    }
     @if (showTicketPreview() && pedidoParaImprimir()) {
     <div class="ticket-preview-overlay">
         <app-ticket-pre-cuenta [pedido]="pedidoParaImprimir()!"></app-ticket-pre-cuenta>

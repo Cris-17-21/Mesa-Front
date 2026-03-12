@@ -1,76 +1,178 @@
-<div class="modal-card">
-
-    <div class="modal-header">
-        <h2>Cobrar Orden</h2>
-        <button class="btn-close" (click)="cancelar()">
-            <i class="bi bi-x-lg"></i>
+<div class="checkout-wrapper">
+    <!-- HEADER (VERDE) -->
+    <div class="checkout-header">
+        <h2>COBRAR VENTA</h2>
+        <button class="btn-close-header" (click)="cancelar()">
+            <i class="bi bi-x-circle"></i>
         </button>
     </div>
 
-    <div class="modal-body">
-
-        <div class="total-display">
-            <span class="label">Total a Pagar</span>
-            <span class="amount">{{ total | currency:'PEN':'symbol' }}</span>
-        </div>
-
-        <div class="payment-methods">
-            <p>Seleccione Método:</p>
-            <div class="methods-grid">
-                <button class="btn-method" [class.active]="metodoSeleccionado() === 'EFECTIVO'"
-                    (click)="seleccionarMetodo('EFECTIVO')">
-                    <i class="bi bi-cash"></i> Efectivo
-                </button>
-
-                <button class="btn-method" [class.active]="metodoSeleccionado() === 'TARJETA'"
-                    (click)="seleccionarMetodo('TARJETA')">
-                    <i class="bi bi-credit-card"></i> Tarjeta
-                </button>
-
-                <button class="btn-method yape" [class.active]="metodoSeleccionado() === 'YAPE'"
-                    (click)="seleccionarMetodo('YAPE')">
-                    Yape
-                </button>
-
-                <button class="btn-method plin" [class.active]="metodoSeleccionado() === 'PLIN'"
-                    (click)="seleccionarMetodo('PLIN')">
-                    Plin
-                </button>
+    <div class="checkout-content">
+        <!-- RIEGO 1: FECHA Y TIPO DOCUMENTO -->
+        <div class="row-flex">
+            <div class="field-group flex-1">
+                <span class="field-label">Fecha</span>
+                <div class="field-container">
+                    {{ fechaVenta() }}
+                </div>
+            </div>
+            <div class="field-group flex-2">
+                <span class="field-label">Tipo Documento*</span>
+                <div class="field-container has-icons">
+                    <select [ngModel]="tipoComprobante()" (ngModelChange)="cambiarTipoComprobante($event)">
+                        <option value="BOLETA">BOLETA DE VENTA ELECTRONICA - B001</option>
+                        <option value="FACTURA">FACTURA ELECTRONICA - F001</option>
+                        <option value="NOTA_VENTA">NOTA DE VENTA - NV01</option>
+                    </select>
+                    <div class="status-icons">
+                        <i class="bi bi-check-square-fill text-pink"></i>
+                        <i class="bi bi-printer-fill text-yellow"></i>
+                    </div>
+                </div>
             </div>
         </div>
 
-        @if (metodoSeleccionado() === 'EFECTIVO') {
-        <div class="cash-control">
-            <label>Recibido:</label>
-            <div class="input-group">
-                <span class="currency-symbol">S/</span>
-                <input type="number" [ngModel]="montoRecibido()" (ngModelChange)="montoRecibido.set($event)"
-                    class="input-monto" placeholder="0.00">
-                <button class="btn-exacto" (click)="setMontoExacto()">Exacto</button>
+        <!-- RIEGO 2: CORRELATIVO Y TOGGLE -->
+        <div class="row-flex align-center">
+            <div class="correlativo-box flex-1">
+                {{ correlativo() }}
             </div>
-
-            <div class="vuelto-info" [class.negativo]="falta() > 0">
-                @if (falta() > 0) {
-                <span>Falta:</span>
-                <strong>{{ falta() | currency:'PEN' }}</strong>
-                } @else {
-                <span>Vuelto:</span>
-                <strong class="success">{{ vuelto() | currency:'PEN' }}</strong>
-                }
+            <div class="field-group flex-2 no-border-label">
+                <div class="toggle-container">
+                    <label class="switch">
+                        <input type="checkbox" [ngModel]="impresionConsumo()"
+                            (ngModelChange)="impresionConsumo.set($event)">
+                        <span class="slider round"></span>
+                    </label>
+                    <span class="toggle-text">Impresión por consumo</span>
+                </div>
+                <div class="empty-status-box"></div>
             </div>
         </div>
-        }
+
+        <!-- RIEGO 3: CLIENTE -->
+        <div class="row-flex">
+            <div class="field-group flex-1">
+                <span class="field-label">Cliente</span>
+                <div class="field-container has-btn">
+                    <input type="text"
+                        [ngModel]="clienteDoc() + ' ' + (clienteSeleccionado()?.nombreRazonSocial || 'CLIENTE NO ENCONTRADO')"
+                        (keyup.enter)="buscarCliente()" readonly>
+                    <button class="btn-add-customer">
+                        <i class="bi bi-plus-lg"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIEGO 4: PAGO Y OBSERVACION -->
+        <div class="row-flex">
+            <div class="field-group flex-1">
+                <span class="field-label">Tipo de Pago*</span>
+                <div class="field-container">
+                    <select>
+                        <option>CONTADO</option>
+                        <option>CREDITO</option>
+                    </select>
+                </div>
+            </div>
+            <div class="field-group flex-2">
+                <span class="field-label">Observación</span>
+                <div class="field-container">
+                    <input type="text" [ngModel]="observacion()" (ngModelChange)="observacion.set($event)">
+                </div>
+            </div>
+        </div>
+
+        <!-- RIEGO 5: MONTOS -->
+        <div class="row-grid-4">
+            <div class="field-group">
+                <span class="field-label">Monto Venta</span>
+                <div class="field-container bg-grey">
+                    {{ total | number:'1.2-2' }}
+                </div>
+            </div>
+            <div class="field-group">
+                <span class="field-label">Propina (0%)</span>
+                <div class="field-container">
+                    <input type="number" [ngModel]="propina()" (ngModelChange)="propina.set($event)">
+                </div>
+            </div>
+            <div class="field-group">
+                <span class="field-label">Recargo al Consumo (0%)</span>
+                <div class="field-container">
+                    <input type="number" [ngModel]="recargoConsumo()" (ngModelChange)="recargoConsumo.set($event)">
+                </div>
+            </div>
+            <div class="field-group">
+                <span class="field-label">Total a pagar</span>
+                <div class="field-container bg-grey">
+                    {{ totalAPagar() | number:'1.2-2' }}
+                </div>
+            </div>
+        </div>
+
+        <!-- RIEGO 6: EFECTIVO Y VUELTO -->
+        <div class="row-grid-2">
+            <div class="field-group">
+                <span class="field-label">Monto Efectivo*</span>
+                <div class="field-container">
+                    <input type="number" [ngModel]="totalPagado()" (ngModelChange)="actualizarEfectivoRapido($event)">
+                </div>
+            </div>
+            <div class="field-group">
+                <span class="field-label">Vuelto</span>
+                <div class="field-container bg-grey">
+                    {{ (vuelto() > 0 ? vuelto() : 0) | number:'1.2-2' }}
+                </div>
+            </div>
+        </div>
+
+        <!-- RIEGO 7: TABLA PAGOS -->
+        <div class="payments-area">
+            <table class="image-table">
+                <thead>
+                    <tr>
+                        <th class="col-metodo">Modalidad Pago <i
+                                class="bi bi-plus-square-fill cursor-pointer text-success" (click)="agregarPago()"></i>
+                        </th>
+                        <th class="col-trans">Nº transacción</th>
+                        <th class="col-monto">Monto</th>
+                        <th class="col-del"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (pago of pagos(); track $index) {
+                    <tr>
+                        <td>
+                            <select [ngModel]="pago.nombre" (ngModelChange)="pago.nombre = $event">
+                                @for (m of metodosPago(); track m.id) {
+                                <option [value]="m.nombre">{{ m.nombre }}</option>
+                                }
+                            </select>
+                        </td>
+                        <td><input type="text" [(ngModel)]="pago.referencia"></td>
+                        <td><input type="number" [ngModel]="pago.monto"
+                                (ngModelChange)="actualizarMontoPago($index, $event)" class="text-right"></td>
+                        <td class="text-center">
+                            <i class="bi bi-trash-fill text-danger cursor-pointer" (click)="eliminarPago($index)"></i>
+                        </td>
+                    </tr>
+                    }
+                </tbody>
+            </table>
+            <div class="table-total-row">
+                <span>Total:</span>
+                <strong>S/ {{ totalPagado() | number:'1.2-2' }}</strong>
+            </div>
+        </div>
     </div>
 
-    <div class="modal-footer">
-        <button class="btn-cancelar" (click)="cancelar()">Cancelar</button>
-
-        <button class="btn-pagar" [disabled]="procesando()" (click)="procesarPago()">
-            @if (procesando()) {
-            <span class="loader"></span> Procesando...
-            } @else {
-            <i class="bi bi-check-lg"></i> Finalizar Pago
-            }
+    <div class="checkout-actions">
+        <button class="btn-cancelar-clean" (click)="cancelar()">Cancelar</button>
+        <button class="btn-cobrar-main" [disabled]="procesando() || totalPagado() < totalAPagar()"
+            (click)="procesarPago()">
+            COBRAR
         </button>
     </div>
 </div>

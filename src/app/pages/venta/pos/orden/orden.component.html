@@ -150,11 +150,3 @@
         <span>Cuenta</span>
     </button>
 </div>
-
-@if (showCheckout()) {
-<div class="overlay-nested">
-    <app-checkout-modal [pedidoId]="pedidoIdInput!" [total]="totalGeneral()" (onCancelar)="showCheckout.set(false)"
-        (onPagoExitoso)="onCobroFinalizado($event)">
-    </app-checkout-modal>
-</div>
-}

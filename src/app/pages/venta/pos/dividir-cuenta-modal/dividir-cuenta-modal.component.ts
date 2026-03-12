@@ -3,13 +3,12 @@ import { Component, computed, EventEmitter, inject, Input, OnInit, Output, signa
 import Swal from 'sweetalert2';
 import { PedidoService } from '../../../../services/venta/pedido.service';
 import { PedidoDetalleResponseDto, SepararCuentaRequestDto, PedidoResumenDto, PedidoResponseDto } from '../../../../models/venta/pedido.model';
-import { CheckoutModalComponent } from '../checkout-modal/checkout-modal.component';
 import { TicketPreCuentaComponent } from '../ticket-pre-cuenta/ticket-pre-cuenta.component';
 
 @Component({
   selector: 'app-dividir-cuenta-modal',
   standalone: true,
-  imports: [CommonModule, CheckoutModalComponent, TicketPreCuentaComponent],
+  imports: [CommonModule, TicketPreCuentaComponent],
   templateUrl: './dividir-cuenta-modal.component.html',
   styleUrl: './dividir-cuenta-modal.component.css'
 })
@@ -20,6 +19,7 @@ export class DividirCuentaModalComponent implements OnInit {
   @Input({ required: true }) pedidoId!: string;
   @Output() onCerrar = new EventEmitter<void>();
   @Output() onEditarPedido = new EventEmitter<string>();
+  @Output() onAbrirCobro = new EventEmitter<{ pedidoId: string, total: number }>();
 
   // Items cargados del pedido original
   itemsDisponibles = signal<PedidoDetalleResponseDto[]>([]);
@@ -34,10 +34,6 @@ export class DividirCuentaModalComponent implements OnInit {
   idCuentaActiva = signal<string>('');
   pedidoActual = signal<PedidoResponseDto | null>(null);
   cuentasMesa = signal<PedidoResumenDto[]>([]);
-  showCheckout = signal(false);
-  selectedPedidoId = signal<string | null>(null);
-  selectedPedidoTotal = signal<number>(0);
-
   showTicketPreview = signal(false);
   pedidoParaImprimir = signal<PedidoResponseDto | null>(null);
 
@@ -165,10 +161,11 @@ export class DividirCuentaModalComponent implements OnInit {
 
   // --- ACCIONES DE COBRO ---
 
-  abrirCobrar(pedido: PedidoResumenDto) {
-    this.selectedPedidoId.set(pedido.id);
-    this.selectedPedidoTotal.set(pedido.totalFinal);
-    this.showCheckout.set(true);
+  abrirCobrar(cuenta: PedidoResumenDto) {
+    this.onAbrirCobro.emit({
+      pedidoId: cuenta.id,
+      total: cuenta.totalFinal
+    });
   }
 
   editarPedido(pedidoId: string) {
@@ -192,13 +189,6 @@ export class DividirCuentaModalComponent implements OnInit {
     });
   }
 
-  onPagoExitoso(exito: boolean) {
-    if (exito) {
-      this.showCheckout.set(false);
-      // Recargar la mesa para ver qué queda
-      this.cargarItemsYFiltros();
-    }
-  }
 
   // --- ACCIÓN FINAL (SEPARAR) ---
 

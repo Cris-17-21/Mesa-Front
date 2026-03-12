@@ -26,8 +26,7 @@ import { Categoria } from '../../../../models/inventario/categoria.model';
   standalone: true,
   imports: [
     CommonModule, FormsModule, ButtonModule, InputTextModule,
-    BadgeModule, ScrollPanelModule, TooltipModule,
-    CheckoutModalComponent
+    BadgeModule, ScrollPanelModule, TooltipModule
   ],
   templateUrl: './orden.component.html',
   styleUrl: './orden.component.css'
@@ -50,6 +49,7 @@ export class OrdenComponent implements OnInit {
   @Output() onEditarPedidoViaCuentas = new EventEmitter<string>();
   @Output() onOpenCuentas = new EventEmitter<void>();
   @Output() onRegresarACuentas = new EventEmitter<void>();
+  @Output() onAbrirCobro = new EventEmitter<{ pedidoId: string, total: number }>();
 
   categorias = signal<any[]>([]);
   productos = signal<Producto[]>([]);
@@ -59,7 +59,6 @@ export class OrdenComponent implements OnInit {
   vistaMovil = signal<'MENU' | 'CUENTA'>('MENU');
   carrito = signal<CartItem[]>([]);
   pedidoExistente = signal<PedidoResponseDto | null>(null);
-  showCheckout = signal(false);
 
   currentEmpresaId: string | null = null;
   currentUsuarioId: string | null = null;
@@ -280,9 +279,15 @@ export class OrdenComponent implements OnInit {
     });
   }
 
-  abrirCobrar() { if (this.pedidoIdInput) this.showCheckout.set(true); }
+  abrirCobrar() {
+    if (this.pedidoIdInput) {
+      this.onAbrirCobro.emit({
+        pedidoId: this.pedidoIdInput,
+        total: this.totalGeneral()
+      });
+    }
+  }
   abrirDividir() { if (this.pedidoIdInput) this.onOpenCuentas.emit(); }
 
-  onCobroFinalizado(e: boolean) { if (e) this.onCerrar.emit(); }
   cerrarModal() { this.onCerrar.emit(); }
 }
