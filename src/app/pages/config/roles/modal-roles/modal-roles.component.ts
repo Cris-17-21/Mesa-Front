@@ -69,10 +69,18 @@ export class ModalRolesComponent implements OnInit, OnChanges {
     });
   }
 
+  onMove(event: any) {
+    // Actualizamos los signals con el nuevo estado de las listas
+    this.sourcePermissions.set([...this.sourcePermissions()]);
+    this.targetPermissions.set([...this.targetPermissions()]);
+  }
+
   save() {
+    const selectedPermission = this.targetPermissions();
     //1. Validar formulario
     if (this.roleForm.invalid) {
       this.roleForm.markAllAsTouched();
+      return;
     }
 
     //2. Validar que existen permisos seleccionados
@@ -89,7 +97,7 @@ export class ModalRolesComponent implements OnInit, OnChanges {
     // Extraemos solo los IDs para cumplir con el DTO (permissionIds)
     const payload: CreateRoleDto = {
       ...this.roleForm.value,
-      permissionIds: this.targetPermissions().map(p => p.id)
+      permissionIds: selectedPermission.map(p => p.id)
     };
 
     const request = this.roleToEdit

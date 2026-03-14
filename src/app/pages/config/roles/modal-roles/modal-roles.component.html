@@ -1,13 +1,13 @@
 <p-dialog [header]="roleToEdit ? 'Editar Rol' : 'Nuevo Rol'" [(visible)]="visible" [modal]="true"
     [style]="{ width: '50rem', maxWidth: '80vw' }" [contentStyle]="{'max-height': '80vh', 'overflow-y': 'auto'}"
-    [draggable]="false" (onHide)="close()">
+    [draggable]="true" (onHide)="close()">
 
     <form [formGroup]="roleForm" (ngSubmit)="save()" class="form-container">
 
         <div class="field">
             <label class="label-noir">Nombre del Rol</label>
-            <input pInputText formControlName="name" class="noir-input uppercase-input" [class.input-error]="isFieldInvalid('name')"
-                placeholder="Ej: Administrador de Cocina" />
+            <input pInputText formControlName="name" class="noir-input uppercase-input"
+                [class.input-error]="isFieldInvalid('name')" placeholder="Ej: Administrador de Cocina" />
             <small class="error-text" *ngIf="isFieldInvalid('name')">
                 El nombre del rol es obligatorio.
             </small>
@@ -25,7 +25,9 @@
 
         <div class="field">
             <label class="label-noir mb-2">Asignación de Permisos</label>
-            <p-picklist [source]="sourcePermissions()" [target]="targetPermissions()"
+            <p-picklist [source]="sourcePermissions()" [target]="targetPermissions()" (onMoveToTarget)="onMove($event)"
+                (onMoveToSource)="onMove($event)" (onMoveAllToTarget)="onMove($event)"
+                (onMoveAllToSource)="onMove($event)"
                 [class.picklist-error]="roleForm.touched && targetPermissions().length === 0" sourceHeader="Disponibles"
                 targetHeader="Asignados" [responsive]="true" [dragdrop]="true" [showSourceControls]="false"
                 [showTargetControls]="false" sourceFilterPlaceholder="Buscar por nombre"
