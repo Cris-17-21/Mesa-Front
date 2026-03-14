@@ -1,0 +1,47 @@
+<div class="history-container">
+    <div class="history-header">
+        <h1>Historial de Comprobantes Electrónicos</h1>
+        <button class="btn-refresh" (click)="cargarHistorial()" [disabled]="cargando()">
+            <i class="bi bi-arrow-clockwise" [class.spin]="cargando()"></i> Actualizar
+        </button>
+    </div>
+
+    <div class="table-responsive">
+        <table class="history-table">
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Tipo</th>
+                    <th>Serie-Número</th>
+                    <th>RUC/Emisor</th>
+                    <th>Total</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (c of comprobantes(); track c.id) {
+                <tr>
+                    <td>{{ c.fechaEmision | date:'dd/MM/yyyy HH:mm' }}</td>
+                    <td>{{ (c.tipoComprobante === '01' || c.tipoComprobante === 'FACTURA') ? 'Factura' : 'Boleta' }}
+                    </td>
+                    <td>{{ c.serie }}-{{ c.correlativo }}</td>
+                    <td>{{ c.rucEmisor }}</td>
+                    <td>S/ {{ c.totalVenta | number:'1.2-2' }}</td>
+                    <td class="actions">
+                        <button class="btn-action pdf" (click)="verPdf(c.archivoPdf)" title="Ver PDF">
+                            <i class="bi bi-file-earmark-pdf-fill"></i>
+                        </button>
+                        <button class="btn-action xml" (click)="descargarXml(c.archivoXml)" title="Descargar XML">
+                            <i class="bi bi-file-earmark-code-fill"></i>
+                        </button>
+                    </td>
+                </tr>
+                } @empty {
+                <tr>
+                    <td colspan="6" class="empty-state">No se encontraron comprobantes.</td>
+                </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

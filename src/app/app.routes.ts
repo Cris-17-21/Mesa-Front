@@ -91,6 +91,11 @@ export const routes: Routes = [
           {
             path: 'pre-cuenta',
             loadComponent: () => import('./pages/venta/pre-cuenta/pre-cuenta.component').then(m => m.PreCuentaComponent)
+          },
+          {
+            path: 'facturacion-historial',
+            loadComponent: () => import('./pages/venta/facturacion-history/facturacion-history.component').then(m => m.FacturacionHistoryComponent),
+            title: 'Historial Facturación'
           }
         ]
       },

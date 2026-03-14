@@ -56,11 +56,16 @@
                 <span class="field-label">Cliente</span>
                 <div class="field-container has-btn">
                     <input type="text"
-                        [ngModel]="clienteDoc() + ' ' + (clienteSeleccionado()?.nombreRazonSocial || 'CLIENTE NO ENCONTRADO')"
-                        (keyup.enter)="buscarCliente()" readonly>
-                    <button class="btn-add-customer">
-                        <i class="bi bi-plus-lg"></i>
+                        [ngModel]="clienteDoc()"
+                        (ngModelChange)="clienteDoc.set($event)"
+                        (keyup.enter)="buscarCliente()"
+                        placeholder="RUC / DNI">
+                    <button class="btn-add-customer" (click)="buscarCliente()">
+                        <i class="bi bi-search"></i>
                     </button>
+                </div>
+                <div class="cliente-info" *ngIf="clienteSeleccionado()">
+                    <small>{{ clienteSeleccionado()?.nombreRazonSocial }}</small>
                 </div>
             </div>
         </div>

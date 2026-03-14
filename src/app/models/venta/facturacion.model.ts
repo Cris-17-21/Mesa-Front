@@ -2,7 +2,7 @@
  * Tipado estricto para evitar errores de "dedo" al asignar el tipo.
  * Coincide con tu Enum de Java.
  */
-export type TipoComprobante = 'BOLETA' | 'FACTURA';
+export type TipoComprobante = 'BOLETA' | 'FACTURA' | '01' | '03';
 
 /**
  * Payload para solicitar la creación de una factura/boleta.

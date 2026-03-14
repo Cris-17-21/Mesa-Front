@@ -33,15 +33,25 @@ export class FacturacionService {
    * Endpoint: POST /api/facturacion/emitir
    */
   emitirComprobante(payload: GenerarComprobanteRequest): Observable<ComprobanteResponse> {
-    return this.http.post<ComprobanteResponse>(`${this.apiUrl}/emitir`, payload).pipe(
-      tap((comprobante) => {
-        // Almacenamos el resultado.
-        this._ultimoComprobante.set(comprobante);
+    // Mapeamos el tipo de comprobante amigable a los códigos de SUNAT que espera el backend
+    const backendPayload = {
+      ...payload,
+      tipoComprobante: payload.tipoComprobante === 'FACTURA' ? '01' : '03'
+    };
 
-        // UX Automática: Podríamos disparar la impresión aquí, 
-        // pero mejor dejamos que el componente decida cuándo abrir la ventana.
+    return this.http.post<ComprobanteResponse>(`${this.apiUrl}/emitir`, backendPayload).pipe(
+      tap((comprobante) => {
+        this._ultimoComprobante.set(comprobante);
       })
     );
+  }
+
+  /**
+   * Lista los comprobantes emitidos por sucursal.
+   * Endpoint: GET /api/facturacion/sucursal/{sucursalId}
+   */
+  listarComprobantes(sucursalId: string): Observable<ComprobanteResponse[]> {
+    return this.http.get<ComprobanteResponse[]>(`${this.apiUrl}/sucursal/${sucursalId}`);
   }
 
   // =================================================================

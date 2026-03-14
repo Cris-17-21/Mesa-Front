@@ -207,13 +207,13 @@ export class CheckoutModalComponent implements OnInit {
 
       this.facturacionService.emitirComprobante(billingReq).subscribe({
         next: (res) => {
-          this.ejecutarPagoFinal(sucursalId);
-          this.facturacionService.abrirPdfEnNuevaPestana(res.archivoPdf);
+          this.ejecutarPagoFinal(sucursalId, res);
         },
         error: (err) => {
           console.error(err);
           this.procesando.set(false);
-          Swal.fire('Error Facturación', 'No se pudo emitir el comprobante electrónico.', 'error');
+          const errorMsg = err.error?.message || 'No se pudo emitir el comprobante electrónico.';
+          Swal.fire('Error Facturación', errorMsg, 'error');
         }
       });
     } else {
@@ -221,16 +221,44 @@ export class CheckoutModalComponent implements OnInit {
     }
   }
 
-  private ejecutarPagoFinal(sucursalId: string) {
-    // Si hay múltiples métodos, los unimos para el registro (según restricciones de API actual)
+  private ejecutarPagoFinal(sucursalId: string, comprobanteRes?: any) {
     const metodosUnicos = [...new Set(this.pagos().map(p => p.nombre))];
     const metodoString = metodosUnicos.join(', ');
 
     this.pedidoService.registrarPago(this.pedidoId, metodoString, sucursalId).subscribe({
       next: () => {
         this.procesando.set(false);
-        Swal.fire('¡Pago Exitoso!', 'La venta ha sido procesada correctamente.', 'success');
-        this.onPagoExitoso.emit(true);
+
+        let successHtml = 'La venta ha sido procesada correctamente.';
+        if (comprobanteRes) {
+          successHtml += `
+            <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 10px;">
+              <button id="btn-ver-pdf" class="swal2-confirm swal2-styled" style="background-color: #e74c3c;">VER PDF (IMPRIMIR)</button>
+              <button id="btn-ver-xml" class="swal2-confirm swal2-styled" style="background-color: #2ecc71;">DESCARGAR XML</button>
+            </div>
+          `;
+        }
+
+        Swal.fire({
+          title: '¡Pago Exitoso!',
+          html: successHtml,
+          icon: 'success',
+          showConfirmButton: true,
+          confirmButtonText: 'Cerrar',
+          didOpen: () => {
+            const btnPdf = document.getElementById('btn-ver-pdf');
+            const btnXml = document.getElementById('btn-ver-xml');
+
+            if (btnPdf) {
+              btnPdf.onclick = () => this.facturacionService.abrirPdfEnNuevaPestana(comprobanteRes.archivoPdf);
+            }
+            if (btnXml) {
+              btnXml.onclick = () => window.open(comprobanteRes.archivoXml, '_blank');
+            }
+          }
+        }).then(() => {
+          this.onPagoExitoso.emit(true);
+        });
       },
       error: (err) => {
         console.error(err);

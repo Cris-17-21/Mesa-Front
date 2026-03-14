@@ -20,7 +20,22 @@ export class MainLayoutComponent {
 
   ngOnInit() {
     this.userService.getUserMe().subscribe({
-      next: (profile) => this.userProfile = profile,
+      next: (profile) => {
+        this.userProfile = profile;
+        // Inyectamos manualmente el acceso al historial de facturación para pruebas
+        const ventas = this.userProfile.navigation.find(n => n.name === 'Ventas');
+        if (ventas) {
+          if (!ventas.children) ventas.children = [];
+          if (!ventas.children.some(c => c.urlPath === '/ventas/facturacion-historial')) {
+            ventas.children.push({
+              name: 'Historial Facturación',
+              urlPath: '/ventas/facturacion-historial',
+              iconName: 'bi bi-clipboard-data-fill',
+              order: 99
+            });
+          }
+        }
+      },
       error: (err) => console.error('Sesion Invalida', err)
     });
   }

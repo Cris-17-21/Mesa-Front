@@ -3,9 +3,13 @@
     border-radius: 8px;
     max-width: 950px;
     width: 98%;
-    max-height: 95vh;
-    display: flex;
-    flex-direction: column;
+    height: 92vh;
+    max-height: 92vh;
+    /* Extra strict */
+    /* Fixed height for stability */
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    /* Fixed Header, Flexible Content, Fixed Footer */
     box-shadow: 0 15px 50px rgba(0, 0, 0, 0.2);
     font-family: 'Segoe UI', Roboto, sans-serif;
     color: #333;
@@ -33,6 +37,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-shrink: 0;
 }
 
 .checkout-header h2 {
@@ -54,7 +59,6 @@
 }
 
 .checkout-content {
-    flex: 1;
     padding: 20px;
     background: #ffffff;
     overflow-y: auto;
@@ -62,20 +66,24 @@
     flex-direction: column;
     gap: 15px;
     scrollbar-width: thin;
-    scrollbar-color: #ddd #fff;
+    scrollbar-color: #10b981 #f0f0f0;
+    /* Ensure it doesn't expand the grid row */
+    height: 100%;
+    min-height: 0;
 }
 
 .checkout-content::-webkit-scrollbar {
-    width: 6px;
+    width: 8px;
 }
 
 .checkout-content::-webkit-scrollbar-track {
-    background: #fff;
+    background: #f0f0f0;
 }
 
 .checkout-content::-webkit-scrollbar-thumb {
-    background: #ddd;
+    background: #10b981;
     border-radius: 10px;
+    border: 2px solid #f0f0f0;
 }
 
 /* ROW LAYOUT */
@@ -235,6 +243,8 @@
     border: 1px solid #ddd;
     border-radius: 4px;
     overflow: hidden;
+    min-height: 200px;
+    /* Ensure space for the table */
 }
 
 .image-table {
@@ -311,6 +321,7 @@
     justify-content: center;
     gap: 15px;
     border-top: 1px solid #eee;
+    flex-shrink: 0;
 }
 
 .btn-cancelar-clean {
