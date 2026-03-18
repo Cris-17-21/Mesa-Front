@@ -16,11 +16,12 @@ import { ProductoService } from '../../../services/inventario/producto.service';
 import { CompraService, PedidoCompraDto, RecepcionPedidoRequest } from '../../../services/compra/compra.service';
 import { Producto } from '../../../models/inventario/producto.model';
 import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
+import { PlatoDashboardComponent } from './plato-dashboard/plato-dashboard.component';
 
 @Component({
     selector: 'app-producto',
     standalone: true,
-    imports: [CommonModule, FormsModule, TableModule, ButtonModule, InputTextModule, RouterModule, ConfirmDialogModule, ToastModule, DialogModule, TooltipModule, RadioButtonModule, TextareaModule, HasPermissionDirective],
+    imports: [CommonModule, FormsModule, TableModule, ButtonModule, InputTextModule, RouterModule, ConfirmDialogModule, ToastModule, DialogModule, TooltipModule, RadioButtonModule, TextareaModule, HasPermissionDirective, PlatoDashboardComponent],
     providers: [ConfirmationService, MessageService],
     template: `
     <div class="card p-4">
@@ -32,6 +33,7 @@ import { HasPermissionDirective } from '../../../core/directives/has-permission.
              <div class="flex gap-2">
                  <button pButton label="Productos Simples" class="p-button-outlined p-button-info" icon="bi bi-list" (click)="abrirModalSimples()"></button>
                  <button *appHasPermission="'CREATE_PRODUCTO'" pButton label="Nuevo Producto" icon="bi bi-plus" (click)="createProducto()"></button>
+                 <button *appHasPermission="'VIEW_PLATO_SALES'" pButton label="Platos" class="p-button-outlined p-button-warning shadow-1" style="border-radius: 8px; font-weight: bold;" icon="bi bi-cup-hot" (click)="mostrarPlatos = true"></button>
              </div>
         </div>
 
@@ -106,6 +108,11 @@ import { HasPermissionDirective } from '../../../core/directives/has-permission.
         <ng-template pTemplate="footer">
             <button pButton label="Cerrar" icon="pi pi-times" class="p-button-text" (click)="mostrarModalSimples = false"></button>
         </ng-template>
+    </p-dialog>
+
+    <!-- Modal para Platos -->
+    <p-dialog header="Gestión de Platos" [(visible)]="mostrarPlatos" [modal]="true" [style]="{width: '85vw'}" [maximizable]="true" [draggable]="false" [resizable]="false">
+        <app-plato-dashboard *ngIf="mostrarPlatos"></app-plato-dashboard>
     </p-dialog>
 
     <!-- Modal para Recepción desde Producto -->
@@ -205,6 +212,7 @@ export class ProductoComponent implements OnInit {
     productos: Producto[] = [];
     comprasSimples: PedidoCompraDto[] = [];
     mostrarModalSimples = false;
+    mostrarPlatos = false;
 
     // Recepción State
     mostrarRecepcion = false;

@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../core/environment/environment';
 import { Observable } from 'rxjs';
-import { Producto } from '../../models/inventario/producto.model';
+import { Producto, PlatoSalesHistory } from '../../models/inventario/producto.model';
 
 @Injectable({
   providedIn: 'root'
@@ -34,5 +34,13 @@ export class ProductoService {
 
   getProductoByEmpresaId(empresaId: string): Observable<Producto[]> {
     return this.http.get<Producto[]>(`${this.API_URL}/empresa/${empresaId}`);
+  }
+
+  getPlatos(empresaId: string): Observable<Producto[]> {
+    return this.http.get<Producto[]>(`${this.API_URL}/empresa/${empresaId}/platos`);
+  }
+
+  getPlatosVentas(empresaId: string): Observable<PlatoSalesHistory[]> {
+    return this.http.get<PlatoSalesHistory[]>(`${this.API_URL}/empresa/${empresaId}/platos/ventas`);
   }
 }

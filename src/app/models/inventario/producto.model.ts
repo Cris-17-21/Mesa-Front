@@ -13,4 +13,19 @@ export interface Producto {
     imagen?: string;
     estado: boolean;
     tipo?: string;
+    
+    // Platos
+    esPlato?: boolean;
+    horarioDisponible?: string;
+    fechaDisponible?: string;
+}
+
+export interface PlatoSalesHistory {
+    idProducto: number;
+    nombrePlato: string;
+    cantidadVendidaManana: number;
+    cantidadVendidaTarde: number;
+    cantidadVendidaNoche: number;
+    totalVendido: number;
+    precioVenta: number;
 }
