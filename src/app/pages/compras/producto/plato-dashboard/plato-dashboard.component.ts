@@ -16,11 +16,12 @@ import { InputSwitchModule } from 'primeng/inputswitch';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
+import { HasPermissionDirective } from '../../../../core/directives/has-permission.directive';
 
 @Component({
     selector: 'app-plato-dashboard',
     standalone: true,
-    imports: [CommonModule, FormsModule, TableModule, ButtonModule, InputTextModule, DialogModule, DropdownModule, MultiSelectModule, InputSwitchModule, InputNumberModule, ToastModule],
+    imports: [CommonModule, FormsModule, TableModule, ButtonModule, InputTextModule, DialogModule, DropdownModule, MultiSelectModule, InputSwitchModule, InputNumberModule, ToastModule, HasPermissionDirective],
     providers: [MessageService],
     template: `
         <div class="grid relative">
@@ -28,62 +29,63 @@ import { ToastModule } from 'primeng/toast';
             <!-- Left Panel: Platos Disponibles -->
             <div class="col-12 md:col-6 border-right-1 surface-border pr-5">
                 <div class="flex justify-content-between align-items-center mb-3">
-                    <h3 class="m-0 text-primary">Platos Disponibles</h3>
-                    <button pButton label="Nuevo Plato" icon="bi bi-plus-circle" class="p-button-sm p-button-success border-round-2xl" (click)="openDialog()"></button>
+                    <button *appHasPermission="'CREATE_PLATO'" pButton label="Agregar Plato" icon="bi bi-plus-circle" class="p-button-outlined text-800 border-800 p-button-sm font-bold bg-white" style="border-radius: 4px;" (click)="openDialog()"></button>
+                    <p-dropdown [options]="horariosFiltro" [(ngModel)]="filtroHorarioIzq" placeholder="Filtro" (onChange)="filterPlatos()" styleClass="w-8rem p-button-sm"></p-dropdown>
                 </div>
                 
-                <span class="p-input-icon-left w-full mb-4">
-                    <i class="bi bi-search"></i>
-                    <input type="text" pInputText placeholder="Buscar Plato" class="w-full form-control" [(ngModel)]="searchTerm" (input)="filterPlatos()" />
-                </span>
-
-                <div class="grid">
-                    <div class="col-12 md:col-6 lg:col-4" *ngFor="let plato of filteredPlatos">
-                        <div class="card p-3 shadow-2 hover:shadow-4 transition-all transition-duration-200 cursor-pointer h-full border-round-xl border-1 surface-border flex flex-column">
-                            <div class="text-xl font-bold text-gray-800 mb-2 truncate" [title]="plato.nombreProducto">{{ plato.nombreProducto }}</div>
-                            <div class="text-green-600 font-semibold text-lg border-top-1 surface-border pt-2 mt-auto">
-                                Costo {{ plato.precioVenta | currency:'/S ':'symbol' }}
-                            </div>
-                            <div class="text-sm text-500 mt-2 flex flex-wrap gap-1" *ngIf="plato.horarioDisponible">
-                                <span class="bg-gray-100 px-2 py-1 border-round-lg text-xs" *ngFor="let hor of plato.horarioDisponible.split(',')">
-                                    <i class="bi bi-clock"></i> {{ hor.trim() }}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div *ngIf="filteredPlatos.length === 0" class="text-center p-4 text-500">
-                    No hay platos registrados o que coincidan con la búsqueda.
-                </div>
+                <p-table [value]="filteredPlatos" [paginator]="true" [rows]="10" styleClass="p-datatable-sm p-datatable-gridlines mt-3 border-1 surface-border">
+                    <ng-template pTemplate="header">
+                        <tr class="surface-100 text-700">
+                            <th>Plato</th>
+                            <th>Categoría</th>
+                            <th>Costo</th>
+                            <th>Horario</th>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-plato>
+                        <tr>
+                            <td>{{plato.nombreProducto}}</td>
+                            <td>{{plato.nombreCategoria || 'Sin Categoría'}}</td>
+                            <td>{{plato.precioVenta | currency:'/S ':'symbol'}}</td>
+                            <td>{{plato.horarioDisponible}}</td>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="emptymessage">
+                        <tr><td colspan="4" class="text-center">No hay platos registrados.</td></tr>
+                    </ng-template>
+                </p-table>
             </div>
 
             <!-- Right Panel: Platos Vendidos -->
             <div class="col-12 md:col-6 pl-5">
-                <h3 class="mt-0 mb-3 text-orange-500">Platos Vendidos</h3>
+                <div class="flex justify-content-between align-items-center mb-3">
+                    <h3 class="m-0 text-gray-700 font-normal text-xl mt-1">Plato vendido</h3>
+                    <p-dropdown [options]="horariosFiltro" [(ngModel)]="filtroHorarioDer" placeholder="Filtro" (onChange)="filterSales()" styleClass="w-8rem p-button-sm"></p-dropdown>
+                </div>
                 
-                <div class="flex flex-column gap-3">
-                    <div *ngFor="let sales of platoSales" class="card p-3 shadow-1 border-round-xl surface-card flex justify-content-between align-items-center border-left-3 border-orange-500">
-                        <div>
-                            <div class="text-xl font-bold text-gray-800 mb-1 truncate" [style.maxWidth.px]="250" [title]="sales.nombrePlato">{{ sales.nombrePlato }}</div>
-                            <div class="text-sm text-600 flex gap-2">
-                                <span *ngIf="sales.cantidadVendidaManana > 0" class="bg-yellow-50 text-yellow-700 px-2 py-1 border-round-md"><i class="bi bi-brightness-alt-high"></i> Mañana: {{ sales.cantidadVendidaManana }}</span>
-                                <span *ngIf="sales.cantidadVendidaTarde > 0" class="bg-orange-50 text-orange-700 px-2 py-1 border-round-md"><i class="bi bi-cloud-sun"></i> Tarde: {{ sales.cantidadVendidaTarde }}</span>
-                                <span *ngIf="sales.cantidadVendidaNoche > 0" class="bg-indigo-50 text-indigo-700 px-2 py-1 border-round-md"><i class="bi bi-moon-stars"></i> Noche: {{ sales.cantidadVendidaNoche }}</span>
-                            </div>
-                        </div>
-                        <div class="text-center ml-3">
-                            <div class="text-sm text-500 mb-1 uppercase font-bold text-xs tracking-wider">Vendido</div>
-                            <div class="text-2xl font-black text-orange-500 bg-orange-50 px-3 py-1 border-round-lg border-1 border-orange-200">
-                                {{ sales.totalVendido }}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div *ngIf="platoSales.length === 0" class="text-center p-4 text-500">
-                    Aún no hay historial de ventas.
-                </div>
+                <p-table [value]="filteredSales" [paginator]="true" [rows]="10" styleClass="p-datatable-sm p-datatable-gridlines mt-3 border-1 surface-border">
+                    <ng-template pTemplate="header">
+                        <tr class="surface-100 text-700">
+                            <th>Plato</th>
+                            <th>Categoría</th>
+                            <th>Costo</th>
+                            <th>Horario</th>
+                            <th>Cantidad</th>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-sale>
+                        <tr>
+                            <td>{{sale.nombrePlato}}</td>
+                            <td>{{sale.nombreCategoria || 'Sin Categoría'}}</td>
+                            <td>{{sale.precioVenta | currency:'/S ':'symbol'}}</td>
+                            <td>{{sale.horario}}</td>
+                            <td><strong class="text-orange-600">{{sale.cantidadVendida}}</strong></td>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="emptymessage">
+                        <tr><td colspan="5" class="text-center">Aún no hay historial de ventas.</td></tr>
+                    </ng-template>
+                </p-table>
             </div>
         </div>
 
@@ -138,6 +140,7 @@ export class PlatoDashboardComponent implements OnInit {
     platos: Producto[] = [];
     filteredPlatos: Producto[] = [];
     platoSales: PlatoSalesHistory[] = [];
+    filteredSales: PlatoSalesHistory[] = [];
     categorias: Categoria[] = [];
     searchTerm: string = '';
 
@@ -148,6 +151,16 @@ export class PlatoDashboardComponent implements OnInit {
         { label: 'Tarde (1PM - 7PM)', value: 'Tarde' },
         { label: 'Noche (7PM - 6AM)', value: 'Noche' }
     ];
+
+    horariosFiltro = [
+        { label: 'Todos', value: null },
+        { label: 'Mañana', value: 'Mañana' },
+        { label: 'Tarde', value: 'Tarde' },
+        { label: 'Noche', value: 'Noche' }
+    ];
+
+    filtroHorarioIzq: string | null = null;
+    filtroHorarioDer: string | null = null;
 
     platoForm = {
         nombre: '',
@@ -184,18 +197,26 @@ export class PlatoDashboardComponent implements OnInit {
         this.productoService.getPlatosVentas(empresaId).subscribe({
             next: (data) => {
                 this.platoSales = data;
+                this.filteredSales = [...this.platoSales];
             },
             error: (err) => console.error('Error loading plato sales', err)
         });
     }
 
     filterPlatos() {
-        if (!this.searchTerm.trim()) {
-            this.filteredPlatos = [...this.platos];
-            return;
+        let temp = [...this.platos];
+        if (this.filtroHorarioIzq) {
+            temp = temp.filter(p => p.horarioDisponible?.includes(this.filtroHorarioIzq!));
         }
-        const term = this.searchTerm.toLowerCase();
-        this.filteredPlatos = this.platos.filter(p => p.nombreProducto.toLowerCase().includes(term));
+        this.filteredPlatos = temp;
+    }
+
+    filterSales() {
+        if (!this.filtroHorarioDer) {
+            this.filteredSales = [...this.platoSales];
+        } else {
+            this.filteredSales = this.platoSales.filter(s => s.horario === this.filtroHorarioDer);
+        }
     }
 
     openDialog() {

@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { firstValueFrom, Observable, tap, catchError } from 'rxjs';
 import { environment } from '../../core/environment/environment';
 
 export interface DetalleRecepcion {
@@ -64,7 +64,12 @@ export class CompraService {
     }
 
     create(dto: PedidoCompraDto): Observable<PedidoCompraDto> {
-        return this.http.post<PedidoCompraDto>(this.API_URL, dto);
+        return this.http.post<PedidoCompraDto>(this.API_URL, dto).pipe(
+            catchError(err => {
+                alert('Detalle de error 400 del Backend:\n' + JSON.stringify(err.error, null, 2));
+                throw err;
+            })
+        );
     }
 
     delete(id: number): Observable<void> {

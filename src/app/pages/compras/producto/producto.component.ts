@@ -30,14 +30,21 @@ import { PlatoDashboardComponent } from './plato-dashboard/plato-dashboard.compo
         
         <div class="flex justify-content-between align-items-center mb-4">
             <h2 class="m-0">Gestión de Productos</h2>
-             <div class="flex gap-2">
-                 <button pButton label="Productos Simples" class="p-button-outlined p-button-info" icon="bi bi-list" (click)="abrirModalSimples()"></button>
-                 <button *appHasPermission="'CREATE_PRODUCTO'" pButton label="Nuevo Producto" icon="bi bi-plus" (click)="createProducto()"></button>
-                 <button *appHasPermission="'VIEW_PLATO_SALES'" pButton label="Platos" class="p-button-outlined p-button-warning shadow-1" style="border-radius: 8px; font-weight: bold;" icon="bi bi-cup-hot" (click)="mostrarPlatos = true"></button>
-             </div>
+        </div>
+        
+        <!-- Tabs Superiores tipo Botón -->
+        <div class="flex gap-1 mb-4 border-bottom-1 surface-border pb-3">
+            <button *appHasPermission="'READ_PRODUCTO'" pButton class="p-button p-button-outlined" [ngClass]="{'bg-cyan-100 text-cyan-900 border-cyan-500 font-bold': activeTab === 'NUEVO', 'surface-100 text-500 border-transparent': activeTab !== 'NUEVO'}" icon="bi bi-list" label="+ Nuevo Producto" (click)="activeTab = 'NUEVO'"></button>
+            <button *appHasPermission="'READ_PRODUCTO'" pButton class="p-button p-button-outlined" [ngClass]="{'bg-yellow-100 text-yellow-900 border-yellow-500 font-bold': activeTab === 'SIMPLE', 'surface-100 text-500 border-transparent': activeTab !== 'SIMPLE'}" icon="bi bi-list-nested" label="= Producto Simple" (click)="activeTab = 'SIMPLE'"></button>
+            <button *appHasPermission="'VIEW_PLATO_SALES'" pButton class="p-button p-button-outlined" [ngClass]="{'bg-cyan-100 text-cyan-900 border-cyan-500 font-bold': activeTab === 'PLATO', 'surface-100 text-500 border-transparent': activeTab !== 'PLATO'}" icon="bi bi-cup-hot" label="+ Plato Nuevo" (click)="activeTab = 'PLATO'"></button>
         </div>
 
-        <p-table [value]="productos" [tableStyle]="{ 'min-width': '50rem' }" [paginator]="true" [rows]="10">
+        <div class="flex justify-content-end mb-3" *ngIf="activeTab === 'NUEVO'">
+            <button *appHasPermission="'CREATE_PRODUCTO'" pButton label="Crear Nuevo Producto" icon="bi bi-plus" class="p-button-sm" (click)="createProducto()"></button>
+        </div>
+
+        <!-- Pantalla 1: Nuevo Producto -->
+        <p-table *ngIf="activeTab === 'NUEVO'" [value]="productosNormales" [tableStyle]="{ 'min-width': '50rem' }" [paginator]="true" [rows]="10">
             <ng-template pTemplate="header">
                 <tr>
                     <th>Nombre</th>
@@ -56,7 +63,7 @@ import { PlatoDashboardComponent } from './plato-dashboard/plato-dashboard.compo
                     <td>{{ producto.nombreCategoria || 'Sin Categoría' }}</td>
                     <td>{{ producto.razonSocialProveedor || 'Sin Proveedor' }}</td>
                     <td>{{ producto.fechaRegistro ? (producto.fechaRegistro | date:'dd/MM/yyyy') : '-' }}</td>
-                    <td>{{ producto.precioVenta | currency }}</td>
+                    <td>S/ {{ producto.precioVenta | number:'1.2-2' }}</td>
                     <td>{{ producto.stock }}</td>
                     <td>
                         <span [class]="'product-badge status-' + (producto.stock > 0 ? 'instock' : 'outofstock')">
@@ -71,49 +78,48 @@ import { PlatoDashboardComponent } from './plato-dashboard/plato-dashboard.compo
                 </tr>
             </ng-template>
             <ng-template pTemplate="emptymessage">
-                <tr><td colspan="7">No hay productos registrados.</td></tr>
+                <tr><td colspan="8">No hay productos registrados.</td></tr>
             </ng-template>
         </p-table>
-    </div>
 
-    <!-- Modal para Productos Simples (Compras Informales) -->
-    <p-dialog header="Compras Simples (Informales)" [(visible)]="mostrarModalSimples" [modal]="true" [style]="{width: '70vw'}" [draggable]="false" [resizable]="false">
-        <p-table [value]="comprasSimples" [paginator]="true" [rows]="10" [tableStyle]="{ 'min-width': '50rem' }">
+        <!-- Pantalla 2: Producto Simple -->
+        <p-table *ngIf="activeTab === 'SIMPLE'" [value]="productosSimples" [tableStyle]="{ 'min-width': '50rem' }" [paginator]="true" [rows]="10">
             <ng-template pTemplate="header">
                 <tr>
+                    <th>Nombre</th>
+                    <th>Categoría</th>
+                    <th>Proveedor</th>
                     <th>Fecha</th>
-                    <th>Proveedor Informal</th>
-                    <th>Referencia</th>
-                    <th>Total</th>
-                    <th>Productos (Cant.)</th>
+                    <th>Precio Venta</th>
+                    <th>Stock</th>
+                    <th>Acciones</th>
                 </tr>
             </ng-template>
-            <ng-template pTemplate="body" let-compra>
+            <ng-template pTemplate="body" let-producto>
                 <tr>
-                    <td>{{ compra.fechaPedido | date:'dd/MM/yyyy' }}</td>
-                    <td>{{ compra.nombreProveedorInformal || 'N/A' }}</td>
-                    <td>{{ compra.referencia || '-' }}</td>
-                    <td>{{ compra.totalPedido | currency }}</td>
+                    <td>{{ producto.nombreProducto }}</td>
+                    <td>{{ producto.nombreCategoria || 'Sin Categoría' }}</td>
+                    <td>{{ producto.razonSocialProveedor || 'Sin Proveedor' }}</td>
+                    <td>{{ producto.fechaRegistro ? (producto.fechaRegistro | date:'dd/MM/yyyy') : '-' }}</td>
+                    <td>S/ {{ producto.precioVenta | number:'1.2-2' }}</td>
+                    <td>{{ producto.stock }}</td>
                     <td>
-                        <ul style="margin: 0; padding-left: 1.2rem;">
-                            <li *ngFor="let d of compra.detalles">{{ d.nombreProducto }} (x{{ d.cantidadPedida }})</li>
-                        </ul>
+                        <button *appHasPermission="'UPDATE_PRODUCTO'" pButton icon="bi bi-pencil" class="p-button-rounded p-button-text p-button-warning mr-2" (click)="editProducto(producto.idProducto)"></button>
+                        <button pButton icon="bi bi-truck" class="p-button-rounded p-button-text p-button-success mr-2" pTooltip="Recepcionar" tooltipPosition="top" (click)="abrirRecepcionDesdeProducto(producto)"></button>
+                        <button *appHasPermission="'DELETE_PRODUCTO'" pButton icon="bi bi-trash" class="p-button-rounded p-button-text p-button-danger" (click)="deleteProducto(producto)"></button>
                     </td>
                 </tr>
             </ng-template>
             <ng-template pTemplate="emptymessage">
-                <tr><td colspan="5">No hay compras simples registradas.</td></tr>
+                <tr><td colspan="7">No hay productos simples registrados.</td></tr>
             </ng-template>
         </p-table>
-        <ng-template pTemplate="footer">
-            <button pButton label="Cerrar" icon="pi pi-times" class="p-button-text" (click)="mostrarModalSimples = false"></button>
-        </ng-template>
-    </p-dialog>
 
-    <!-- Modal para Platos -->
-    <p-dialog header="Gestión de Platos" [(visible)]="mostrarPlatos" [modal]="true" [style]="{width: '85vw'}" [maximizable]="true" [draggable]="false" [resizable]="false">
-        <app-plato-dashboard *ngIf="mostrarPlatos"></app-plato-dashboard>
-    </p-dialog>
+        <!-- Pantalla 3: Platos -->
+        <app-plato-dashboard *ngIf="activeTab === 'PLATO'"></app-plato-dashboard>
+    </div>
+
+
 
     <!-- Modal para Recepción desde Producto -->
     <p-dialog header="Registrar recepción" [(visible)]="mostrarRecepcion" [modal]="true" [style]="{width: '75vw', maxWidth: '800px'}">
@@ -209,10 +215,11 @@ export class ProductoComponent implements OnInit {
     private confirmationService = inject(ConfirmationService);
     private messageService = inject(MessageService);
 
-    productos: Producto[] = [];
+    productosNormales: Producto[] = [];
+    productosSimples: Producto[] = [];
     comprasSimples: PedidoCompraDto[] = [];
-    mostrarModalSimples = false;
-    mostrarPlatos = false;
+    
+    activeTab: 'NUEVO' | 'SIMPLE' | 'PLATO' = 'NUEVO';
 
     // Recepción State
     mostrarRecepcion = false;
@@ -228,19 +235,11 @@ export class ProductoComponent implements OnInit {
 
     loadProductos() {
         this.productoService.getAllProductos().subscribe({
-            next: (data) => this.productos = data.filter(p => p.tipo !== 'INFORMAL'),
-            error: (err) => console.error('Error loading productos', err)
-        });
-    }
-
-    abrirModalSimples() {
-        this.mostrarModalSimples = true;
-        this.compraService.getAll().subscribe({
-            next: (compras) => {
-                // Filter only simple purchases
-                this.comprasSimples = compras.filter(c => c.esCompraSimple === true);
+            next: (data) => {
+                this.productosNormales = data.filter(p => p.tipo !== 'INFORMAL' && !p.esPlato);
+                this.productosSimples = data.filter(p => p.tipo === 'INFORMAL' && !p.esPlato);
             },
-            error: (err) => console.error('Error loading compras', err)
+            error: (err) => console.error('Error loading productos', err)
         });
     }
 

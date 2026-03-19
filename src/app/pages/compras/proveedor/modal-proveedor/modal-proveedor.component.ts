@@ -31,7 +31,7 @@ import { MessageService } from 'primeng/api';
                            placeholder="11 dígitos (RUC) o 8 dígitos (DNI)"
                            maxlength="11"/>
                     <button pButton type="button"
-                            icon="pi pi-search"
+                            icon="bi bi-search"
                             class="p-button-outlined"
                             pTooltip="Buscar en SUNAT/RENIEC"
                             [loading]="buscando"

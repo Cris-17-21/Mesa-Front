@@ -23,9 +23,8 @@ export interface Producto {
 export interface PlatoSalesHistory {
     idProducto: number;
     nombrePlato: string;
-    cantidadVendidaManana: number;
-    cantidadVendidaTarde: number;
-    cantidadVendidaNoche: number;
-    totalVendido: number;
+    nombreCategoria?: string;
+    horario: string;
+    cantidadVendida: number;
     precioVenta: number;
 }
