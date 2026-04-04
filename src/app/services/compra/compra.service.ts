@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom, Observable, tap, catchError } from 'rxjs';
 import { environment } from '../../core/environment/environment';
+import { AuthService } from '../../core/auth/auth.service';
 
 export interface DetalleRecepcion {
     idDetallePedido: number;
@@ -28,6 +29,7 @@ export interface DetallePedidoCompraDto {
 export interface PedidoCompraDto {
     idPedidoCompra?: number;
     idUsuario?: string;
+    sucursalId?: string;
     idProveedor: number;
     razonSocialProveedor?: string;
     fechaPedido?: string | null;
@@ -52,11 +54,13 @@ export interface TiposPagoDto {
 @Injectable({ providedIn: 'root' })
 export class CompraService {
     private http = inject(HttpClient);
+    private authService = inject(AuthService);
     private API_URL = `${environment.apiUrl}/compras`;
     private TIPOS_PAGO_URL = `${environment.apiUrl}/tipos-pago`;
 
     getAll(): Observable<PedidoCompraDto[]> {
-        return this.http.get<PedidoCompraDto[]>(this.API_URL);
+        const sucursalId = this.authService.getSucursalId();
+        return this.http.get<PedidoCompraDto[]>(`${this.API_URL}/sucursal/${sucursalId}`);
     }
 
     getById(id: number): Observable<PedidoCompraDto> {

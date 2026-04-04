@@ -126,7 +126,7 @@ export class CompraFormComponent implements OnInit {
     }
 
     ngOnInit() {
-        const empresaId = this.authService.getClaim('empresaId');
+        const sucursalId = this.authService.getClaim('sucursalId');
         this.proveedorService.getAllProveedores().subscribe(data => {
             this.proveedores = data;
             this.proveedoresFiltrados = data;
@@ -271,6 +271,7 @@ export class CompraFormComponent implements OnInit {
 
         const dto: PedidoCompraDto = {
             idUsuario: userId,
+            sucursalId: this.authService.getSucursalId() || undefined,
             idProveedor: this.esCompraSimple ? 1 : this.selectedProveedor!.idProveedor, // 1 as fallback or ignored by backend logic
             esCompraSimple: this.esCompraSimple,
             nombreProveedorInformal: this.esCompraSimple ? v.nombreProveedorInformal : undefined,

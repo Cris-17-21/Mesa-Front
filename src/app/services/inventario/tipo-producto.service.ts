@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from '../../core/environment/environment';
 import { Observable } from 'rxjs';
 import { TipoProducto } from '../../models/inventario/tipo-producto.model';
+import { AuthService } from '../../core/auth/auth.service';
 
 @Injectable({
     providedIn: 'root'
@@ -10,10 +11,11 @@ import { TipoProducto } from '../../models/inventario/tipo-producto.model';
 export class TipoProductoService {
     private API_URL = `${environment.apiUrl}/tipos-producto`;
 
-    constructor(private http: HttpClient) { }
+    constructor(private http: HttpClient, private authService: AuthService) { }
 
     getAll(): Observable<TipoProducto[]> {
-        return this.http.get<TipoProducto[]>(this.API_URL);
+        const sucursalId = this.authService.getSucursalId();
+        return this.http.get<TipoProducto[]>(`${this.API_URL}/sucursal/${sucursalId}`);
     }
 
     getByCategoria(categoriaId: number): Observable<TipoProducto[]> {

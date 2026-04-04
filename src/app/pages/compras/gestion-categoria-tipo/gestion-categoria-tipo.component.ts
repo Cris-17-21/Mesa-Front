@@ -1,4 +1,4 @@
-﻿import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TableModule } from 'primeng/table';
@@ -248,17 +248,17 @@ export class GestionCategoriaTipoComponent implements OnInit {
         if (this.categoriaForm.invalid) return;
         const formValue = this.categoriaForm.value;
 
-        // CRÍTICO: El backend requiere empresaId para asociar la categoría
-        const empresaId = this.authService.getClaim('empresaId');
-        if (!empresaId) {
-            this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se encontró la empresa. Por favor, cierra sesión y vuelve a entrar.' });
+        // CRÍTICO: El backend requiere sucursalId para asociar la categoría
+        const sucursalId = this.authService.getSucursalId();
+        if (!sucursalId) {
+            this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se encontró la sucursal. Por favor, cierra sesión y vuelve a entrar.' });
             return;
         }
 
-        // CORRECCIÓN: El backend DTO espera 'nombreCategoria', no 'nombre'
+        // CORRECCIÓN: El backend DTO espera 'nombreCategoria'
         const data: any = {
             nombreCategoria: formValue.nombre,
-            empresaId: empresaId
+            sucursalId: sucursalId
         };
 
         // DEBUG: verificar payload
@@ -313,7 +313,18 @@ export class GestionCategoriaTipoComponent implements OnInit {
 
     saveTipo() {
         if (this.tipoForm.invalid) return;
-        const data = this.tipoForm.value;
+        const formValue = this.tipoForm.value;
+
+        const sucursalId = this.authService.getSucursalId();
+        if (!sucursalId) {
+            this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se encontró la sucursal. Por favor, cierra sesión y vuelve a entrar.' });
+            return;
+        }
+
+        const data: any = {
+            ...formValue,
+            sucursalId: sucursalId
+        };
 
         if (this.isEditing && this.currentId) {
             this.tipoService.update(this.currentId, data).subscribe(() => {

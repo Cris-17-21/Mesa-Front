@@ -4,6 +4,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { ProveedorService } from '../../../../services/compra/proveedor.service';
 import { ConsultaService } from '../../../../services/auxiliar/consulta.service';
+import { AuthService } from '../../../../core/auth/auth.service';
 import { Proveedor } from '../../../../models/compra/proveedor.model';
 import { InputTextModule } from 'primeng/inputtext';
 import { ButtonModule } from 'primeng/button';
@@ -75,6 +76,7 @@ export class ModalProveedorComponent implements OnInit {
     private router = inject(Router);
     private route = inject(ActivatedRoute);
     private messageService = inject(MessageService);
+    private authService = inject(AuthService);
 
     form: FormGroup;
     isEditing = false;
@@ -154,6 +156,7 @@ export class ModalProveedorComponent implements OnInit {
     onSubmit() {
         if (this.form.invalid) return;
         const data = this.form.value;
+        data.empresaId = this.authService.getEmpresaId();
 
         if (this.isEditing && this.currentId) {
             this.proveedorService.updateProveedor(this.currentId, data).subscribe({

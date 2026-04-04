@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from '../../core/environment/environment';
 import { Observable } from 'rxjs';
 import { Producto, PlatoSalesHistory } from '../../models/inventario/producto.model';
+import { AuthService } from '../../core/auth/auth.service';
 
 @Injectable({
   providedIn: 'root'
@@ -10,10 +11,11 @@ import { Producto, PlatoSalesHistory } from '../../models/inventario/producto.mo
 export class ProductoService {
   private API_URL = `${environment.apiUrl}/productos`;
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient, private authService: AuthService) { }
 
   getAllProductos(): Observable<Producto[]> {
-    return this.http.get<Producto[]>(this.API_URL);
+    const sucursalId = this.authService.getSucursalId();
+    return this.http.get<Producto[]>(`${this.API_URL}/sucursal/${sucursalId}`);
   }
 
   getProductoById(id: number): Observable<Producto> {
@@ -32,15 +34,20 @@ export class ProductoService {
     return this.http.delete<void>(`${this.API_URL}/${id}`);
   }
 
+  getProductoBySucursalId(sucursalId: string): Observable<Producto[]> {
+    return this.http.get<Producto[]>(`${this.API_URL}/sucursal/${sucursalId}`);
+  }
+
+  // Legacy method for other team's modules 
   getProductoByEmpresaId(empresaId: string): Observable<Producto[]> {
     return this.http.get<Producto[]>(`${this.API_URL}/empresa/${empresaId}`);
   }
 
-  getPlatos(empresaId: string): Observable<Producto[]> {
-    return this.http.get<Producto[]>(`${this.API_URL}/empresa/${empresaId}/platos`);
+  getPlatos(sucursalId: string): Observable<Producto[]> {
+    return this.http.get<Producto[]>(`${this.API_URL}/sucursal/${sucursalId}/platos`);
   }
 
-  getPlatosVentas(empresaId: string): Observable<PlatoSalesHistory[]> {
-    return this.http.get<PlatoSalesHistory[]>(`${this.API_URL}/empresa/${empresaId}/platos/ventas`);
+  getPlatosVentas(sucursalId: string): Observable<PlatoSalesHistory[]> {
+    return this.http.get<PlatoSalesHistory[]>(`${this.API_URL}/sucursal/${sucursalId}/platos/ventas`);
   }
 }

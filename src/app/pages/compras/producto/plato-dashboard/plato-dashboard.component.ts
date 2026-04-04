@@ -176,10 +176,10 @@ export class PlatoDashboardComponent implements OnInit {
     }
 
     loadData() {
-        const empresaId = this.authService.getEmpresaId();
-        if (!empresaId) return;
+        const sucursalId = this.authService.getSucursalId();
+        if (!sucursalId) return;
 
-        this.productoService.getPlatos(empresaId).subscribe({
+        this.productoService.getPlatos(sucursalId).subscribe({
             next: (data) => {
                 this.platos = data;
                 this.filteredPlatos = [...this.platos];
@@ -187,14 +187,14 @@ export class PlatoDashboardComponent implements OnInit {
             error: (err) => console.error('Error loading platos', err)
         });
 
-        this.categoriaService.getCategoriasByEmpresa(empresaId).subscribe({
+        this.categoriaService.getCategoriasBySucursal(sucursalId).subscribe({
             next: (data) => {
                 this.categorias = data;
             },
             error: (err) => console.error('Error loading categorias', err)
         });
 
-        this.productoService.getPlatosVentas(empresaId).subscribe({
+        this.productoService.getPlatosVentas(sucursalId).subscribe({
             next: (data) => {
                 this.platoSales = data;
                 this.filteredSales = [...this.platoSales];
@@ -230,13 +230,14 @@ export class PlatoDashboardComponent implements OnInit {
             return;
         }
 
-        const empresaId = this.authService.getEmpresaId();
+        const sucursalId = this.authService.getSucursalId();
         const payload: any = {
             idProducto: null,
             nombreProducto: this.platoForm.nombre,
             precioVenta: this.platoForm.precio,
             costoCompra: 0,
             stock: 9999, // Platos do not have stock limits inherently
+            sucursalId: sucursalId,
             estado: this.platoForm.activo,
             esPlato: true,
             horarioDisponible: this.platoForm.horarios.join(', '),

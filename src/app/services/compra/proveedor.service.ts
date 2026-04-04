@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from '../../core/environment/environment';
 import { Observable } from 'rxjs';
 import { Proveedor } from '../../models/compra/proveedor.model';
+import { AuthService } from '../../core/auth/auth.service';
 
 @Injectable({
     providedIn: 'root'
@@ -10,10 +11,11 @@ import { Proveedor } from '../../models/compra/proveedor.model';
 export class ProveedorService {
     private API_URL = `${environment.apiUrl}/proveedores`;
 
-    constructor(private http: HttpClient) { }
+    constructor(private http: HttpClient, private authService: AuthService) { }
 
     getAllProveedores(): Observable<Proveedor[]> {
-        return this.http.get<Proveedor[]>(this.API_URL);
+        const empresaId = this.authService.getEmpresaId();
+        return this.http.get<Proveedor[]>(`${this.API_URL}/empresa/${empresaId}`);
     }
 
     getProveedorById(id: number): Observable<Proveedor> {
