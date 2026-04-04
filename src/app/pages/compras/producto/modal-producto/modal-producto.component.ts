@@ -11,6 +11,8 @@ import { MessageService } from 'primeng/api';
 import { Categoria } from '../../../../models/inventario/categoria.model';
 import { TipoProducto } from '../../../../models/inventario/tipo-producto.model';
 import { Proveedor } from '../../../../models/compra/proveedor.model';
+import { AuthService } from '../../../../core/auth/auth.service';
+import Swal from 'sweetalert2';
 
 @Component({
     selector: 'app-modal-producto',
@@ -103,6 +105,7 @@ export class ModalProductoComponent implements OnInit {
     private router = inject(Router);
     private route = inject(ActivatedRoute);
     private messageService = inject(MessageService);
+    private authService = inject(AuthService);
 
     form: FormGroup;
     isEditing = false;
@@ -170,17 +173,28 @@ export class ModalProductoComponent implements OnInit {
 
     onSubmit() {
         const data = this.form.value;
-        alert('Guardando: ' + JSON.stringify(data));
+        const sucursalId = this.authService.getClaim('sucursalId');
+        if (sucursalId) {
+            data.sucursalId = sucursalId;
+        }
 
         if (this.isEditing && this.currentId) {
             this.productoService.updateProducto(this.currentId, data).subscribe({
-                next: () => alert('Producto actualizado correctamente'),
-                error: (err) => alert('ERROR al actualizar: ' + JSON.stringify(err))
+                next: () => {
+                    Swal.fire('Éxito', 'Producto actualizado correctamente', 'success').then(() => {
+                        this.router.navigate(['/compras/productos']);
+                    });
+                },
+                error: (err) => Swal.fire('Error', err.error?.message || 'ERROR al actualizar', 'error')
             });
         } else {
             this.productoService.createProducto(data).subscribe({
-                next: () => alert('Producto creado correctamente'),
-                error: (err) => alert('ERROR al crear: ' + JSON.stringify(err))
+                next: () => {
+                    Swal.fire('Éxito', 'Producto creado correctamente', 'success').then(() => {
+                        this.router.navigate(['/compras/productos']);
+                    });
+                },
+                error: (err) => Swal.fire('Error', err.error?.message || 'ERROR al crear', 'error')
             });
         }
     }

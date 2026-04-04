@@ -218,7 +218,7 @@ export class ProductoComponent implements OnInit {
     productosNormales: Producto[] = [];
     productosSimples: Producto[] = [];
     comprasSimples: PedidoCompraDto[] = [];
-    
+
     activeTab: 'NUEVO' | 'SIMPLE' | 'PLATO' = 'NUEVO';
 
     // Recepción State
@@ -274,17 +274,17 @@ export class ProductoComponent implements OnInit {
     abrirRecepcionDesdeProducto(producto: Producto) {
         this.compraService.getAll().subscribe({
             next: (compras) => {
-                const comprasPendientes = compras.filter(c => 
+                const comprasPendientes = compras.filter(c =>
                     (c.estadoPedido === 'Pendiente' || c.estadoPedido === 'PENDIENTE') &&
                     c.detalles?.some(d => d.idProducto === producto.idProducto && (d.cantidadPedida - ((d as any).cantidadRecibida || 0)) > 0)
                 );
-                
+
                 if (comprasPendientes.length > 0) {
                     // Seleccionar la primera compra pendiente encontrada para este producto
                     this.compraSeleccionada = comprasPendientes[0];
                     this.tipoRecepcion = 'total';
                     this.observacionesRecepcion = '';
-                    
+
                     this.detallesPendientes = (this.compraSeleccionada.detalles || [])
                         .map(d => ({
                             idDetallePedido: d.idDetallePedido,
@@ -299,7 +299,7 @@ export class ProductoComponent implements OnInit {
                     this.onTipoRecepcionChange();
                     this.mostrarRecepcion = true;
                 } else {
-                    this.messageService.add({severity: 'info', summary: 'Aviso', detail: 'No hay pedidos de compra pendientes por recibir para este producto.'});
+                    this.messageService.add({ severity: 'info', summary: 'Aviso', detail: 'No hay pedidos de compra pendientes por recibir para este producto.' });
                 }
             },
             error: (err) => console.error(err)
