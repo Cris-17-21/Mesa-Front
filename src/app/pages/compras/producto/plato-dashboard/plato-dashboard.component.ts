@@ -256,7 +256,8 @@ export class PlatoDashboardComponent implements OnInit {
             },
             error: (err) => {
                 console.error(err);
-                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo registrar el plato. Revise que exista la categoría 1.' });
+                const errorMsg = err.error?.message || 'No se pudo registrar el plato. Verifique la conexión o los datos.';
+                this.messageService.add({ severity: 'error', summary: 'Error al Registrar', detail: errorMsg });
             },
             complete: () => this.saving = false
         });
