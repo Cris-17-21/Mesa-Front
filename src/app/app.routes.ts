@@ -151,6 +151,21 @@ export const routes: Routes = [
             loadComponent: () => import('./pages/compras/gestion-categoria-tipo/gestion-categoria-tipo.component').then(m => m.GestionCategoriaTipoComponent)
           }
         ]
+      },
+      // --- ALMACÉN ---
+      {
+        path: 'almacen',
+        canActivate: [restaurantGuard], // asumiendo permisos
+        children: [
+          {
+            path: 'stock',
+            loadComponent: () => import('./pages/almacen/stock/stock.component').then(m => m.StockComponent)
+          },
+          {
+            path: 'movimientos',
+            loadComponent: () => import('./pages/almacen/movimientos/movimientos.component').then(m => m.MovimientosComponent)
+          }
+        ]
       }
     ]
   },
