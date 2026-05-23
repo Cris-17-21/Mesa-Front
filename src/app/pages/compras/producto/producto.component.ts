@@ -33,10 +33,10 @@ import { PlatoDashboardComponent } from './plato-dashboard/plato-dashboard.compo
         </div>
         
         <!-- Tabs Superiores tipo Botón -->
-        <div class="flex gap-1 mb-4 border-bottom-1 surface-border pb-3">
-            <button *appHasPermission="'READ_PRODUCTO'" pButton class="p-button p-button-outlined" [ngClass]="{'bg-cyan-100 text-cyan-900 border-cyan-500 font-bold': activeTab === 'NUEVO', 'surface-100 text-500 border-transparent': activeTab !== 'NUEVO'}" icon="bi bi-list" label="+ Nuevo Producto" (click)="activeTab = 'NUEVO'"></button>
-            <button *appHasPermission="'READ_PRODUCTO'" pButton class="p-button p-button-outlined" [ngClass]="{'bg-yellow-100 text-yellow-900 border-yellow-500 font-bold': activeTab === 'SIMPLE', 'surface-100 text-500 border-transparent': activeTab !== 'SIMPLE'}" icon="bi bi-list-nested" label="= Producto Simple" (click)="activeTab = 'SIMPLE'"></button>
-            <button *appHasPermission="'VIEW_PLATO_SALES'" pButton class="p-button p-button-outlined" [ngClass]="{'bg-cyan-100 text-cyan-900 border-cyan-500 font-bold': activeTab === 'PLATO', 'surface-100 text-500 border-transparent': activeTab !== 'PLATO'}" icon="bi bi-cup-hot" label="+ Plato Nuevo" (click)="activeTab = 'PLATO'"></button>
+        <div class="flex mb-4 border-bottom-1 surface-border pb-3">
+            <button *appHasPermission="'READ_PRODUCTO'" pButton class="p-button p-button-outlined mr-4" [ngClass]="{'bg-cyan-100 text-cyan-900 border-cyan-500 font-bold': activeTab === 'NUEVO', 'surface-100 text-500 border-transparent': activeTab !== 'NUEVO'}" icon="bi bi-list" label="Nuevo Producto" (click)="activeTab = 'NUEVO'"></button>
+            <button *appHasPermission="'READ_PRODUCTO'" pButton class="p-button p-button-outlined mr-4" [ngClass]="{'bg-yellow-100 text-yellow-900 border-yellow-500 font-bold': activeTab === 'SIMPLE', 'surface-100 text-500 border-transparent': activeTab !== 'SIMPLE'}" icon="bi bi-list-nested" label="Producto Simple" (click)="activeTab = 'SIMPLE'"></button>
+            <button *appHasPermission="'VIEW_PLATO_SALES'" pButton class="p-button p-button-outlined" [ngClass]="{'bg-cyan-100 text-cyan-900 border-cyan-500 font-bold': activeTab === 'PLATO', 'surface-100 text-500 border-transparent': activeTab !== 'PLATO'}" icon="bi bi-cup-hot" label="Plato Nuevo" (click)="activeTab = 'PLATO'"></button>
         </div>
 
         <div class="flex justify-content-end mb-3" *ngIf="activeTab === 'NUEVO'">

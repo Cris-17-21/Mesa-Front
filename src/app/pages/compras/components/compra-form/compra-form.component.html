@@ -12,16 +12,18 @@
         <div class="seccion-card">
             <div class="seccion-titulo" style="justify-content: space-between; align-items: center;">
                 <div style="display:flex; align-items:center; gap:0.6rem;">
-                    <span class="icono">📑</span>
+                    <!--<span class="icono"></span>-->
                     <h3>Tipo de Compra</h3>
                 </div>
                 <!-- Toggle Mode -->
-                <div class="switch-label" style="background:#f8f9fa; padding:0.5rem 1rem; border-radius:8px; border:1px solid #dee2e6;">
+                <div class="switch-label"
+                    style="background:#f8f9fa; padding:0.5rem 1rem; border-radius:8px; border:1px solid #dee2e6;">
                     <div class="toggle-track" [class.on]="esCompraSimple" (click)="toggleTipoCompra()">
                         <div class="toggle-thumb"></div>
                     </div>
                     <div>
-                        <strong>{{ esCompraSimple ? 'Compra Simple (Informal)' : 'Compra Normal (Factura/Boleta)' }}</strong>
+                        <strong>{{ esCompraSimple ? 'Compra Simple (Informal)' : 'Compra Normal (Factura/Boleta)'
+                            }}</strong>
                     </div>
                 </div>
             </div>
@@ -30,7 +32,7 @@
         <!-- ===== DETALLES DE LA COMPRA ===== -->
         <div class="seccion-card">
             <div class="seccion-titulo">
-                <span class="icono">🪪</span>
+                <!-- <span class="icono">🪪</span>-->
                 <h3>Detalles de la Compra</h3>
             </div>
             <hr class="linea-roja" />
@@ -48,7 +50,8 @@
                             <button *ngIf="selectedProveedor" type="button" class="btn-clear"
                                 (click)="limpiarProveedor()">×</button>
 
-                            <div class="proveedor-dropdown" *ngIf="showProveedorList && proveedoresFiltrados.length > 0">
+                            <div class="proveedor-dropdown"
+                                *ngIf="showProveedorList && proveedoresFiltrados.length > 0">
                                 <div class="prov-item" *ngFor="let p of proveedoresFiltrados"
                                     (click)="seleccionarProveedor(p)">
                                     <strong>{{ p.razonSocial }}</strong>
@@ -115,7 +118,7 @@
         <!-- ===== PRODUCTOS DE LA COMPRA ===== -->
         <div class="seccion-card">
             <div class="seccion-titulo">
-                <span class="icono">📦</span>
+                <!--<span class="icono">📦</span>-->
                 <h3>Productos de la Compra</h3>
             </div>
             <hr class="linea-roja" />
@@ -128,22 +131,27 @@
                         <div class="field detalle-producto" *ngIf="!esCompraSimple">
                             <label>Producto</label>
                             <select class="campo-input" formControlName="idProducto" (change)="onProductoChange(i)">
-                                <option [ngValue]="null">{{ selectedProveedor ? 'Seleccionar producto...' : 'Primero seleccione un proveedor' }}</option>
-                                <option *ngFor="let p of productosFiltrados" [ngValue]="p.idProducto">{{ p.nombreProducto }}</option>
+                                <option [ngValue]="null">{{ selectedProveedor ? 'Seleccionar producto...' : 'Primero
+                                    seleccione un proveedor' }}</option>
+                                <option *ngFor="let p of productosFiltrados" [ngValue]="p.idProducto">{{
+                                    p.nombreProducto }}</option>
                             </select>
                         </div>
 
                         <!-- Producto Libre (Informal) -->
-                        <div class="field detalle-producto" *ngIf="esCompraSimple" style="display: flex; gap: 0.5rem; width: 100%;">
+                        <div class="field detalle-producto" *ngIf="esCompraSimple"
+                            style="display: flex; gap: 0.5rem; width: 100%;">
                             <div style="flex: 1;">
                                 <label>Producto a Crear</label>
-                                <input type="text" class="campo-input" formControlName="nombreProductoNuevo" placeholder="Nombre completo..." />
+                                <input type="text" class="campo-input" formControlName="nombreProductoNuevo"
+                                    placeholder="Nombre completo..." />
                             </div>
                             <div style="flex: 1;">
                                 <label>Categoría</label>
                                 <select class="campo-input" formControlName="idCategoriaNuevoProducto">
                                     <option [ngValue]="null">Seleccionar...</option>
-                                    <option *ngFor="let cat of categorias" [ngValue]="cat.idCategoria">{{ cat.nombreCategoria }}</option>
+                                    <option *ngFor="let cat of categorias" [ngValue]="cat.idCategoria">{{
+                                        cat.nombreCategoria }}</option>
                                 </select>
                             </div>
                         </div>

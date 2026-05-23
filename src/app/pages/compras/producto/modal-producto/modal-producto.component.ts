@@ -27,74 +27,94 @@ import Swal from 'sweetalert2';
     template: `
     <div class="card p-4" style="max-width: 800px; margin: 2rem auto;">
         <p-toast></p-toast>
-        <h2>{{ isEditing ? 'Editar' : 'Nuevo' }} Producto</h2>
+        
+        <div class="seccion-card">
+            <div class="seccion-titulo">
+                <!--<span class="icono">📦</span>-->
+                <h3>{{ isEditing ? 'Editar' : 'Nuevo' }} Producto</h3>
+            </div>
+            <hr class="linea-roja" />
 
-        <form [formGroup]="form" style="display:flex;flex-direction:column;gap:1rem;">
-
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+            <form [formGroup]="form" class="form-grid">
 
                 <!-- Nombre -->
-                <div>
-                    <label style="display:block;font-weight:600;margin-bottom:.3rem;">Nombre del Producto *</label>
-                    <input type="text" formControlName="nombreProducto" style="width:100%;padding:.5rem;border:1px solid #ced4da;border-radius:6px;" placeholder="Ej: Coca-Cola 500ml"/>
+                <div class="field col-2">
+                    <label>Nombre del Producto *</label>
+                    <input type="text" class="campo-input" formControlName="nombreProducto" placeholder="Ej: Coca-Cola 500ml"/>
                 </div>
 
                 <!-- Categoría -->
-                <div>
-                    <label style="display:block;font-weight:600;margin-bottom:.3rem;">Categoría *</label>
-                    <select formControlName="idCategoria" style="width:100%;padding:.5rem;border:1px solid #ced4da;border-radius:6px;height:2.4rem;" (change)="onCategoriaChange($event)">
+                <div class="field col-2">
+                    <label>Categoría *</label>
+                    <select class="campo-input" formControlName="idCategoria" (change)="onCategoriaChange($event)">
                         <option [ngValue]="null">-- Seleccione --</option>
                         <option *ngFor="let c of categorias" [value]="c.idCategoria">{{ c.nombreCategoria }}</option>
                     </select>
                 </div>
 
                 <!-- Tipos (multiselect nativo) -->
-                <div>
-                    <label style="display:block;font-weight:600;margin-bottom:.3rem;">Tipos de Producto</label>
-                    <select formControlName="idTipos" multiple style="width:100%;padding:.5rem;border:1px solid #ced4da;border-radius:6px;height:5rem;">
+                <div class="field col-2">
+                    <label>Tipos de Producto</label>
+                    <select class="campo-input" formControlName="idTipos" multiple style="height: 100px;">
                         <option *ngFor="let t of filteredTipos" [value]="t.idTipo">{{ t.nombreTipo }}</option>
                     </select>
-                    <small style="color:#6c757d;">Ctrl+clic para seleccionar varios</small>
+                    <small style="color:#6c757d; font-size: 0.75rem;">Ctrl+clic para seleccionar varios</small>
                 </div>
 
                 <!-- Proveedor -->
-                <div>
-                    <label style="display:block;font-weight:600;margin-bottom:.3rem;">Proveedor</label>
-                    <select formControlName="idProveedor" style="width:100%;padding:.5rem;border:1px solid #ced4da;border-radius:6px;height:2.4rem;">
+                <div class="field col-2">
+                    <label>Proveedor</label>
+                    <select class="campo-input" formControlName="idProveedor">
                         <option [ngValue]="null">-- Seleccione --</option>
                         <option *ngFor="let p of proveedores" [value]="p.idProveedor">{{ p.razonSocial }}</option>
                     </select>
                 </div>
 
                 <!-- Precio Venta -->
-                <div>
-                    <label style="display:block;font-weight:600;margin-bottom:.3rem;">Precio Venta (S/) *</label>
-                    <input type="number" formControlName="precioVenta" style="width:100%;padding:.5rem;border:1px solid #ced4da;border-radius:6px;" placeholder="0.00" step="0.01" min="0"/>
+                <div class="field col-2">
+                    <label>Precio Venta (S/) *</label>
+                    <input type="number" class="campo-input" formControlName="precioVenta" placeholder="0.00" step="0.01" min="0"/>
                 </div>
 
                 <!-- Costo Compra -->
-                <div>
-                    <label style="display:block;font-weight:600;margin-bottom:.3rem;">Costo Compra (S/)</label>
-                    <input type="number" formControlName="costoCompra" style="width:100%;padding:.5rem;border:1px solid #ced4da;border-radius:6px;" placeholder="0.00" step="0.01" min="0"/>
+                <div class="field col-2">
+                    <label>Costo Compra (S/)</label>
+                    <input type="number" class="campo-input" formControlName="costoCompra" placeholder="0.00" step="0.01" min="0"/>
                 </div>
 
                 <!-- Stock -->
-                <div>
-                    <label style="display:block;font-weight:600;margin-bottom:.3rem;">Stock Inicial</label>
-                    <input type="number" formControlName="stock" style="width:100%;padding:.5rem;border:1px solid #ced4da;border-radius:6px;" placeholder="0" min="0"/>
+                <div class="field col-2">
+                    <label>Stock Inicial</label>
+                    <input type="number" class="campo-input" formControlName="stock" placeholder="0" min="0"/>
                 </div>
 
-            </div>
+                <!-- Espaciador para alinear el grid de botones abajo a la derecha -->
+                <div class="col-full" style="display:flex;justify-content:flex-end;gap:.8rem;margin-top:1rem;">
+                    <button type="button" class="btn-cancel" (click)="onCancel()">Cancelar</button>
+                    <button type="button" class="btn-save" (click)="onSubmit()">{{ isEditing ? 'Actualizar' : 'Guardar' }}</button>
+                </div>
 
-            <div style="display:flex;justify-content:flex-end;gap:.8rem;margin-top:1rem;">
-                <button type="button" (click)="onCancel()" style="padding:.5rem 1.5rem;border-radius:6px;border:1px solid #6c757d;background:#fff;color:#6c757d;cursor:pointer;">Cancelar</button>
-                <button type="button" (click)="onSubmit()" style="padding:.5rem 1.5rem;border-radius:6px;border:none;background:#3b82f6;color:#fff;cursor:pointer;font-weight:600;">{{ isEditing ? 'Actualizar' : 'Guardar' }}</button>
-            </div>
-
-        </form>
+            </form>
+        </div>
     </div>
     `,
-    styles: [`:host { display: block; }`]
+    styles: [`
+        :host { display: block; }
+        .seccion-card { background:#fff; border:1px solid #dee2e6; border-radius:10px; padding:1.5rem; }
+        .seccion-titulo { display:flex; align-items:center; gap:.6rem; margin-bottom:.5rem; }
+        .seccion-titulo h3 { margin:0; font-size:1.1rem; }
+        .linea-roja { border:none; border-top:2px solid #a9b9b9ee; margin-bottom:1.2rem; }
+        .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+        .field { display:flex; flex-direction:column; gap:.3rem; }
+        .field label { font-weight:600; font-size:.85rem; color:#495057; }
+        .col-2 { grid-column: span 1; }
+        .col-full { grid-column: 1 / -1; }
+        .campo-input { border:1px solid #ced4da; border-radius:6px; padding:.5rem .75rem; font-size:.9rem; width:100%; box-sizing:border-box; }
+        .campo-input:focus { outline:none; border-color:#c0392b; box-shadow:0 0 0 2px rgba(192,57,43,.15); }
+        .btn-cancel { padding:.5rem 1.5rem; border-radius:6px; border:1px solid #6c757d; background:#fff; color:#6c757d; cursor:pointer; }
+        .btn-save { padding:.5rem 1.5rem; border-radius:6px; border:none; background:#3b82f6; color:#fff; cursor:pointer; font-weight:600; }
+        .btn-save:hover { background:#2563eb; }
+    `]
 })
 export class ModalProductoComponent implements OnInit {
     private fb = inject(FormBuilder);
