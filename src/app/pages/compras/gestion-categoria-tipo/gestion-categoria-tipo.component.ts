@@ -108,13 +108,13 @@ import { HasPermissionDirective } from '../../../core/directives/has-permission.
         <!-- Dialog Categoria -->
         <p-dialog [(visible)]="categoriaDialog" [style]="{width: '400px'}" header="Categoría" [modal]="true">
             <form [formGroup]="categoriaForm" (ngSubmit)="saveCategoria()">
-                <div class="field">
-                    <label for="catNombre">Nombre</label>
+                <div class="flex flex-column gap-2 mb-4 mt-2">
+                    <label for="catNombre" class="font-semibold">Nombre</label>
                     <input type="text" pInputText id="catNombre" formControlName="nombre" class="w-full" autofocus />
                 </div>
-                <div class="flex justify-content-end gap-2 mt-4">
-                    <button pButton label="Cancelar" class="p-button-text" (click)="categoriaDialog = false"></button>
-                    <button pButton label="Guardar" type="submit" [disabled]="categoriaForm.invalid"></button>
+                <div class="flex justify-content-end gap:0.5rem mt-4">
+                    <button pButton type="button" label="Cancelar" class="p-button-text" (click)="categoriaDialog = false"></button>
+                    <button pButton type="submit" label="Guardar" [disabled]="categoriaForm.invalid"></button>
                 </div>
             </form>
         </p-dialog>
@@ -122,17 +122,17 @@ import { HasPermissionDirective } from '../../../core/directives/has-permission.
         <!-- Dialog Tipo -->
         <p-dialog [(visible)]="tipoDialog" [style]="{width: '400px'}" header="Tipo de Producto" [modal]="true">
              <form [formGroup]="tipoForm" (ngSubmit)="saveTipo()">
-                <div class="field">
-                    <label for="tipoNombre">Nombre</label>
+                <div class="flex flex-column gap-2 mb-4 mt-2">
+                    <label for="tipoNombre" class="font-semibold">Nombre</label>
                     <input type="text" pInputText id="tipoNombre" formControlName="nombreTipo" class="w-full" autofocus />
                 </div>
-                 <div class="field">
-                    <label for="tipoCat">Categoría</label>
+                 <div class="flex flex-column gap-2 mb-4">
+                    <label for="tipoCat" class="font-semibold">Categoría</label>
                     <p-dropdown [options]="categorias" formControlName="idCategoria" optionLabel="nombreCategoria" optionValue="idCategoria" placeholder="Seleccione Categoría" [style]="{width: '100%'}" appendTo="body"></p-dropdown>
                 </div>
                 <div class="flex justify-content-end gap-2 mt-4">
-                    <button pButton label="Cancelar" class="p-button-text" (click)="tipoDialog = false"></button>
-                    <button pButton label="Guardar" type="submit" [disabled]="tipoForm.invalid"></button>
+                    <button pButton type="button" label="Cancelar" class="p-button-text" (click)="tipoDialog = false"></button>
+                    <button pButton type="submit" label="Guardar" [disabled]="tipoForm.invalid"></button>
                 </div>
             </form>
         </p-dialog>
