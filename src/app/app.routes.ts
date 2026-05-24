@@ -155,7 +155,7 @@ export const routes: Routes = [
       // --- ALMACÉN ---
       {
         path: 'almacen',
-        canActivate: [restaurantGuard], // asumiendo permisos
+        // canActivate: [restaurantGuard],  asumiendo permisos
         children: [
           {
             path: 'stock',
