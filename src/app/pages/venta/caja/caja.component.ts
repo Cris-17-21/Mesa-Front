@@ -140,6 +140,13 @@ export class CajaComponent implements OnInit {
     this.router.navigate(['/ventas/pos']);
   }
 
+  descargarReportePdf(cajaId: string | null = null) {
+    const id = cajaId || this.cajaService.cajaIdActual();
+    if (!id) return;
+
+    this.cajaService.descargarReportePdf(id);
+  }
+
   // ===============================
   // Callback de Modales
   // ===============================

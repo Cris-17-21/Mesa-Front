@@ -6,8 +6,9 @@ import {
   PedidoResponseDto,
   PedidoResumenDto,
   PedidoDetalleRequestDto,
+  PagoMixtoItem,
   SepararCuentaRequestDto,
-  UnionMesaRequestDto // Asegúrate de importar esto
+  UnionMesaRequestDto
 } from '../../models/venta/pedido.model';
 import { Observable, tap } from 'rxjs';
 
@@ -98,13 +99,13 @@ export class PedidoService {
   }
 
   /**
-   * Registrar Pago (Cierre).
-   * Nota: Si decides usar el DTO completo en el backend, cambia null por el objeto body.
+   * Registrar Pago Mixto.
+   * Endpoint: POST /api/ventas/pedidos/{pedidoId}/pagar
+   * Envía un array de pagos [{medioPagoId, monto}] para registrar
+   * pagos con múltiples métodos (efectivo + tarjeta, etc.)
    */
-  registrarPago(pedidoId: string, metodoPago: string, sucursalId: string): Observable<void> {
-    const params = new HttpParams().set('metodoPago', metodoPago);
-
-    return this.http.post<void>(`${this.apiUrl}/${pedidoId}/pagar`, null, { params }).pipe(
+  registrarPago(pedidoId: string, pagos: PagoMixtoItem[], sucursalId: string): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/${pedidoId}/pagar`, pagos).pipe(
       tap(() => {
         // Optimistic UI: Remover de la lista activa
         this._pedidosActivos.update(lista => lista.filter(p => p.id !== pedidoId));

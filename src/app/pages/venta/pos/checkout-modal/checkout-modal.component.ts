@@ -10,6 +10,7 @@ import { ClienteService } from '../../../../services/maestro/cliente.service';
 import { MetodoPago } from '../../../../models/maestro/metodo-pago.model';
 import { TipoComprobante, GenerarComprobanteRequest } from '../../../../models/venta/facturacion.model';
 import { Cliente } from '../../../../models/maestro/cliente.model';
+import { PagoMixtoItem } from '../../../../models/venta/pedido.model';
 
 interface PagoRow {
   metodoId: string;
@@ -146,6 +147,20 @@ export class CheckoutModalComponent implements OnInit {
     });
   }
 
+  actualizarMetodoPagoFila(index: number, metodoId: string) {
+    const metodo = this.metodosPago().find(m => m.id === metodoId);
+    if (!metodo) return;
+
+    this.pagos.update(prev => {
+      const copy = [...prev];
+      if (copy[index]) {
+        copy[index].metodoId = metodo.id;
+        copy[index].nombre = metodo.nombre;
+      }
+      return copy;
+    });
+  }
+
   actualizarEfectivoRapido(monto: number) {
     // Sincroniza el input de "Monto Efectivo" con la primera fila si es Efectivo
     this.pagos.update(prev => {
@@ -222,10 +237,12 @@ export class CheckoutModalComponent implements OnInit {
   }
 
   private ejecutarPagoFinal(sucursalId: string, comprobanteRes?: any) {
-    const metodosUnicos = [...new Set(this.pagos().map(p => p.nombre))];
-    const metodoString = metodosUnicos.join(', ');
+    const pagosMixtos: PagoMixtoItem[] = this.pagos().map(p => ({
+      medioPagoId: p.metodoId,
+      monto: p.monto
+    }));
 
-    this.pedidoService.registrarPago(this.pedidoId, metodoString, sucursalId).subscribe({
+    this.pedidoService.registrarPago(this.pedidoId, pagosMixtos, sucursalId).subscribe({
       next: () => {
         this.procesando.set(false);
 

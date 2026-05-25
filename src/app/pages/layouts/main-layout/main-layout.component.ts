@@ -22,18 +22,39 @@ export class MainLayoutComponent {
     this.userService.getUserMe().subscribe({
       next: (profile) => {
         this.userProfile = profile;
-        // Inyectamos manualmente el acceso al historial de facturación para pruebas
-        const ventas = this.userProfile.navigation.find(n => n.name === 'Ventas');
+        // Forzamos el menú de Ventas con todos sus hijos válidos del frontend
+        const ventas = this.userProfile.navigation.find(n => 
+          n.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") === 'ventas'
+        );
         if (ventas) {
-          if (!ventas.children) ventas.children = [];
-          if (!ventas.children.some(c => c.urlPath === '/ventas/facturacion-historial')) {
-            ventas.children.push({
+          ventas.name = 'Ventas';
+          ventas.urlPath = '';
+          ventas.children = [
+            {
+              name: 'Caja',
+              urlPath: '/ventas/caja',
+              iconName: 'bi bi-cash-register',
+              order: 1
+            },
+            {
+              name: 'Punto de Venta',
+              urlPath: '/ventas/pos',
+              iconName: 'bi bi-shop',
+              order: 2
+            },
+            {
+              name: 'Despachos / Delivery',
+              urlPath: '/ventas/pre-cuenta',
+              iconName: 'bi bi-truck',
+              order: 3
+            },
+            {
               name: 'Historial Facturación',
               urlPath: '/ventas/facturacion-historial',
-              iconName: 'bi bi-clipboard-data-fill',
-              order: 99
-            });
-          }
+              iconName: 'bi bi-file-earmark-bar-graph',
+              order: 4
+            }
+          ];
         }
 
         // Forzamos el módulo de Almacén para que tenga Stock y Movimientos

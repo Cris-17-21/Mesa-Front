@@ -1,4 +1,4 @@
-import { Component, inject, signal, input, output, model, WritableSignal, DestroyRef, effect, computed } from '@angular/core';
+import { Component, inject, signal, input, output, model, DestroyRef, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, NonNullableFormBuilder, Validators } from '@angular/forms';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
@@ -12,7 +12,7 @@ import { TextareaModule } from 'primeng/textarea';
 
 // Servicios
 import { CajaService } from '../../../../services/venta/caja.service';
-import { AbrirCajaDto, CerrarCajaDto } from '../../../../models/venta/caja.model';
+import { AbrirCajaDto, CerrarCajaDto, CajaResumenDto } from '../../../../models/venta/caja.model';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -36,36 +36,61 @@ export class CajaControlModalComponent {
   private cajaService = inject(CajaService);
   private destroyRef = inject(DestroyRef);
 
-  // SIGNAL INPUTS (modern)
+  // SIGNAL INPUTS
   visible = model<boolean>(false);
   type = input<'OPEN' | 'CLOSE'>('OPEN');
   cajaActivaId = input<string | null>(null);
-  saldoEsperado = input<number>(0);
+  arqueo = input<CajaResumenDto | null>(null);  // Para mostrar valores esperados al cerrar
   sucursalId = input<string | null>(null);
   usuarioId = input<string | null>(null);
 
   // OUTPUT
   saved = output<void>();
 
-  // FORM
+  // ================================================================
+  // FORMULARIO — Apertura (2 campos) y Cierre (4 campos + observación)
+  // ================================================================
   form = this.fb.group({
-    monto: [0, [Validators.required, Validators.min(0)]],
+    // Apertura
+    efectivoApertura: [0, [Validators.required, Validators.min(0)]],
+    virtualApertura:  [0, [Validators.required, Validators.min(0)]],
+    // Cierre
+    efectivoCierreReal: [0, [Validators.required, Validators.min(0)]],
+    virtualCierreReal:  [0, [Validators.required, Validators.min(0)]],
+    // Observaciones (cierre)
     observacion: ['']
   });
 
-  // REACTIVE STATE (Derived from Form)
-  private montoSignal = toSignal(this.form.controls.monto.valueChanges, { initialValue: 0 });
+  // ================================================================
+  // COMPUTED — Diferencia en tiempo real para el cierre
+  // ================================================================
 
-  diferencia = computed(() => {
+  private efectivoCierreRealSignal = toSignal(
+    this.form.controls.efectivoCierreReal.valueChanges, { initialValue: 0 }
+  );
+  private virtualCierreRealSignal = toSignal(
+    this.form.controls.virtualCierreReal.valueChanges, { initialValue: 0 }
+  );
+
+  efectivoEsperado = computed(() => this.arqueo()?.saldoEsperadoEnCaja ?? 0);
+  virtualEsperado  = computed(() => 0); // El backend puede añadir esto en el futuro
+
+  diferenciaEfectivo = computed(() => {
     if (this.type() !== 'CLOSE') return 0;
-    const monto = this.montoSignal() ?? 0;
-    return monto - this.saldoEsperado();
+    return (this.efectivoCierreRealSignal() ?? 0) - this.efectivoEsperado();
   });
+
+  diferenciaVirtual = computed(() => {
+    if (this.type() !== 'CLOSE') return 0;
+    return (this.virtualCierreRealSignal() ?? 0) - this.virtualEsperado();
+  });
+
+  hayDiferencia = computed(() =>
+    Math.abs(this.diferenciaEfectivo()) > 0.01 || Math.abs(this.diferenciaVirtual()) > 0.01
+  );
 
   // STATE
   loading = signal(false);
-
-  constructor() { }
 
   submit(): void {
     if (this.form.invalid) {
@@ -73,26 +98,38 @@ export class CajaControlModalComponent {
       return;
     }
 
+    if (this.type() === 'CLOSE' && this.hayDiferencia() && !this.form.value.observacion?.trim()) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Observación requerida',
+        text: 'Hay diferencia en el arqueo. Debes indicar el motivo en las observaciones.',
+        confirmButtonColor: '#18181b'
+      });
+      return;
+    }
+
     this.loading.set(true);
-    const { monto, observacion } = this.form.getRawValue();
 
     if (this.type() === 'OPEN') {
-      this.abrirCaja(monto);
+      this.abrirCaja();
     } else {
-      this.cerrarCaja(monto, observacion);
+      this.cerrarCaja();
     }
   }
 
-  private abrirCaja(monto: number): void {
+  private abrirCaja(): void {
     if (!this.sucursalId() || !this.usuarioId()) {
       this.showError('Faltan datos de sesión');
       return;
     }
 
+    const { efectivoApertura, virtualApertura } = this.form.getRawValue();
+
     const payload: AbrirCajaDto = {
       sucursalId: this.sucursalId()!,
       usuarioId: this.usuarioId()!,
-      montoApertura: monto
+      efectivoApertura,
+      virtualApertura
     };
 
     this.cajaService.abrirCaja(payload)
@@ -103,16 +140,20 @@ export class CajaControlModalComponent {
       });
   }
 
-  private cerrarCaja(monto: number, observacion: string): void {
+  private cerrarCaja(): void {
     if (!this.cajaActivaId()) {
       this.showError('No hay caja activa');
       return;
     }
 
+    const { efectivoCierreReal, virtualCierreReal, observacion } = this.form.getRawValue();
+
     const payload: CerrarCajaDto = {
       id: this.cajaActivaId()!,
-      efectivoReal: monto,
-      tarjetaReal: 0,
+      efectivoCierreReal,
+      virtualCierreReal,
+      efectivoCierreEsperado: this.efectivoEsperado(),
+      virtualCierreEsperado:  this.virtualEsperado(),
       comentario: observacion ?? ''
     };
 

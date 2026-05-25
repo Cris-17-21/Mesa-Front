@@ -18,13 +18,19 @@ export interface PedidoDetalleRequestDto {
     observaciones?: string;
 }
 
-export interface RegistrarPagoDto {
-    pedidoId: string;
-    monto: number;       // Vital para validar montos en backend
-    metodoPago: string;
-    referencia?: string; // Opcional (ej: Numero de operación Yape)
-    detalleIds?: string[]; // Opcional (Si quisieras pagar solo ciertos items)
+/**
+ * Un pago individual en un cobro mixto.
+ * El backend espera un array de estos en POST /{pedidoId}/pagar
+ */
+export interface PagoMixtoItem {
+    medioPagoId: string;  // UUID del MedioPago (EFECTIVO, YAPE, TARJETA, etc.)
+    monto: number;
 }
+
+/**
+ * Body del endpoint POST /api/ventas/pedidos/{pedidoId}/pagar
+ */
+export type RegistrarPagosMixtosDto = PagoMixtoItem[];
 
 export interface SepararCuentaRequestDto {
     pedidoOrigenId: string;

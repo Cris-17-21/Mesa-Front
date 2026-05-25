@@ -1,9 +1,50 @@
 <div class="history-container">
     <div class="history-header">
         <h1>Historial de Comprobantes Electrónicos</h1>
-        <button class="btn-refresh" (click)="cargarHistorial()" [disabled]="cargando()">
+        <button class="btn-refresh" (click)="buscar()" [disabled]="cargando()">
             <i class="bi bi-arrow-clockwise" [class.spin]="cargando()"></i> Actualizar
         </button>
+    </div>
+
+    <!-- PANEL DE FILTROS -->
+    <div class="filters-panel">
+        <div class="filter-group">
+            <label>Estado SUNAT</label>
+            <select class="filter-input" [ngModel]="filtroEstado()" (ngModelChange)="filtroEstado.set($event)">
+                <option value="">Todos</option>
+                <option value="ACEPTADO">Aceptado</option>
+                <option value="PENDIENTE_ENVIO">Pendiente Envío</option>
+                <option value="RECHAZADO">Rechazado</option>
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <label>Tipo Comprobante</label>
+            <select class="filter-input" [ngModel]="filtroTipo()" (ngModelChange)="filtroTipo.set($event)">
+                <option value="">Todos</option>
+                <option value="FACTURA">Factura</option>
+                <option value="BOLETA">Boleta</option>
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <label>Fecha Desde</label>
+            <input type="date" class="filter-input" [ngModel]="filtroFechaDesde()" (ngModelChange)="filtroFechaDesde.set($event)">
+        </div>
+
+        <div class="filter-group">
+            <label>Fecha Hasta</label>
+            <input type="date" class="filter-input" [ngModel]="filtroFechaHasta()" (ngModelChange)="filtroFechaHasta.set($event)">
+        </div>
+
+        <div class="filter-actions">
+            <button class="btn-search" (click)="buscar()" [disabled]="cargando()">
+                <i class="bi bi-search"></i> Buscar
+            </button>
+            <button class="btn-clear" (click)="limpiarFiltros()" [disabled]="cargando()">
+                Limpiar
+            </button>
+        </div>
     </div>
 
     <div class="table-responsive">
@@ -15,6 +56,7 @@
                     <th>Serie-Número</th>
                     <th>RUC/Emisor</th>
                     <th>Total</th>
+                    <th>Estado SUNAT</th>
                     <th>Acciones</th>
                 </tr>
             </thead>
@@ -22,23 +64,36 @@
                 @for (c of comprobantes(); track c.id) {
                 <tr>
                     <td>{{ c.fechaEmision | date:'dd/MM/yyyy HH:mm' }}</td>
-                    <td>{{ (c.tipoComprobante === '01' || c.tipoComprobante === 'FACTURA') ? 'Factura' : 'Boleta' }}
-                    </td>
+                    <td>{{ (c.tipoComprobante === '01' || c.tipoComprobante === 'FACTURA') ? 'Factura' : 'Boleta' }}</td>
                     <td>{{ c.serie }}-{{ c.correlativo }}</td>
                     <td>{{ c.rucEmisor }}</td>
                     <td>S/ {{ c.totalVenta | number:'1.2-2' }}</td>
+                    <td>
+                        <span class="badge-sunat" [ngClass]="{
+                            'aceptado': c.estadoSunat === 'ACEPTADO',
+                            'pendiente': c.estadoSunat === 'PENDIENTE_ENVIO' || !c.estadoSunat,
+                            'rechazado': c.estadoSunat === 'RECHAZADO'
+                        }">
+                            {{ c.estadoSunat || 'PENDIENTE_ENVIO' }}
+                        </span>
+                    </td>
                     <td class="actions">
-                        <button class="btn-action pdf" (click)="verPdf(c.archivoPdf)" title="Ver PDF">
+                        <button class="btn-action pdf" (click)="verPdf(c.archivoPdf)" title="Ver PDF" [disabled]="!c.archivoPdf">
                             <i class="bi bi-file-earmark-pdf-fill"></i>
                         </button>
-                        <button class="btn-action xml" (click)="descargarXml(c.archivoXml)" title="Descargar XML">
+                        <button class="btn-action xml" (click)="descargarXml(c.archivoXml)" title="Descargar XML" [disabled]="!c.archivoXml">
                             <i class="bi bi-file-earmark-code-fill"></i>
                         </button>
+                        @if (c.estadoSunat === 'PENDIENTE_ENVIO' || !c.estadoSunat) {
+                        <button class="btn-action sunat" (click)="enviarASunat(c.id)" title="Enviar a SUNAT">
+                            <i class="bi bi-cloud-arrow-up-fill"></i>
+                        </button>
+                        }
                     </td>
                 </tr>
                 } @empty {
                 <tr>
-                    <td colspan="6" class="empty-state">No se encontraron comprobantes.</td>
+                    <td colspan="7" class="empty-state">No se encontraron comprobantes con los filtros seleccionados.</td>
                 </tr>
                 }
             </tbody>

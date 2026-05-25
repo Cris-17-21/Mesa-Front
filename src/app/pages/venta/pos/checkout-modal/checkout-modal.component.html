@@ -150,9 +150,9 @@
                     @for (pago of pagos(); track $index) {
                     <tr>
                         <td>
-                            <select [ngModel]="pago.nombre" (ngModelChange)="pago.nombre = $event">
+                            <select [ngModel]="pago.metodoId" (ngModelChange)="actualizarMetodoPagoFila($index, $event)">
                                 @for (m of metodosPago(); track m.id) {
-                                <option [value]="m.nombre">{{ m.nombre }}</option>
+                                <option [value]="m.id">{{ m.nombre }}</option>
                                 }
                             </select>
                         </td>

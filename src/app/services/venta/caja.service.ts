@@ -70,6 +70,10 @@ export class CajaService {
       });
   }
 
+  /**
+   * Abre un nuevo turno de caja con montos iniciales desglosados
+   * en efectivo (billetes/monedas) y virtual (POS/pasarela).
+   */
   abrirCaja(payload: AbrirCajaDto): Observable<CajaTurnoDto> {
     return this.http
       .post<CajaTurnoDto>(`${this.apiUrl}/abrir`, payload)
@@ -92,6 +96,9 @@ export class CajaService {
     return this.http.get<CajaResumenDto>(`${this.apiUrl}/arqueo/${cajaId}`);
   }
 
+  /**
+   * Cierra el turno activo con los montos reales contados por el cajero.
+   */
   cerrarCaja(payload: CerrarCajaDto): Observable<void> {
     return this.http
       .post<void>(`${this.apiUrl}/cerrar`, payload)
@@ -106,5 +113,22 @@ export class CajaService {
   obtenerHistorial(sucursalId: string): void {
     this.http.get<CajaTurnoDto[]>(`${this.apiUrl}/historial/${sucursalId}`)
       .subscribe(historial => this._historialTurnos.set(historial));
+  }
+
+  /**
+   * Descarga el reporte PDF del arqueo de un turno de caja.
+   * Endpoint: GET /api/ventas/caja/{cajaId}/reporte
+   */
+  descargarReportePdf(cajaId: string): void {
+    this.http
+      .get(`${this.apiUrl}/${cajaId}/reporte`, { responseType: 'blob' })
+      .subscribe((blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `arqueo-caja-${cajaId}.pdf`;
+        link.click();
+        window.URL.revokeObjectURL(url);
+      });
   }
 }
