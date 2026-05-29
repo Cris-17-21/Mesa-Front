@@ -55,15 +55,15 @@ import { MessageService } from 'primeng/api';
                     <input id="razonSocial" type="text" class="campo-input" formControlName="razonSocial"/>
                 </div>
                 <div class="field col-full">
-                    <label for="direccion">Dirección</label>
+                    <label for="direccion">Dirección <span style="color: #6c757d; font-weight: normal;">(Opcional)</span></label>
                     <input id="direccion" type="text" class="campo-input" formControlName="direccion"/>
                 </div>
                 <div class="field col-full">
-                    <label for="telefono">Teléfono</label>
+                    <label for="telefono">Teléfono <span style="color: #6c757d; font-weight: normal;">(Opcional)</span></label>
                     <input id="telefono" type="text" class="campo-input" formControlName="telefono"/>
                 </div>
                 <div class="field col-full">
-                    <label for="correo">Correo</label>
+                    <label for="correo">Correo <span style="color: #6c757d; font-weight: normal;">(Opcional)</span></label>
                     <input id="correo" type="email" class="campo-input" formControlName="correo"/>
                 </div>
 

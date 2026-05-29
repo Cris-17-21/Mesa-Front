@@ -39,8 +39,8 @@ import { PlatoDashboardComponent } from './plato-dashboard/plato-dashboard.compo
             <button *appHasPermission="'VIEW_PLATO_SALES'" pButton class="p-button p-button-outlined" [ngClass]="{'bg-cyan-100 text-cyan-900 border-cyan-500 font-bold': activeTab === 'PLATO', 'surface-100 text-500 border-transparent': activeTab !== 'PLATO'}" icon="bi bi-cup-hot" label="Plato Nuevo" (click)="activeTab = 'PLATO'"></button>
         </div>
 
-        <!-- Botón Crear (alineado a la izquierda y con margen superior) -->
-        <div class="flex justify-content-start mb-4" style="margin-top: 0.5rem;" *ngIf="activeTab === 'NUEVO'">
+        <!-- Botón Crear (alineado a la izquierda y con margen superior/inferior) -->
+        <div style="display: flex; justify-content: flex-start; margin-top: 0.5rem; margin-bottom: 0.5rem;" *ngIf="activeTab === 'NUEVO'">
             <button *appHasPermission="'CREATE_PRODUCTO'" pButton label="Crear Nuevo Producto" icon="bi bi-plus" class="p-button-sm" (click)="createProducto()"></button>
         </div>
 

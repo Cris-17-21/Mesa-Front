@@ -21,18 +21,25 @@ import { MovimientoModalComponent } from '../components/movimiento-modal/movimie
   template: `
     <div class="card p-4">
         <p-toast></p-toast>
-        <div class="flex flex-column md:flex-row justify-content-between align-items-center mb-4 gap-3">
-            <h2 class="m-0">Stock de Almacén</h2>
-            <div class="flex flex-1 gap-3 max-w-30rem">
-                <span class="p-input-icon-left flex-1">
-                    <i class="bi bi-search"></i>
-                    <input pInputText type="text" [(ngModel)]="searchTerm" (input)="dt.filterGlobal(searchTerm, 'contains')" placeholder="Buscar producto..." class="w-full">
-                </span>
-                <p-dropdown [options]="categorias" [(ngModel)]="selectedCategoria" (onChange)="dt.filter(selectedCategoria, 'nombreCategoria', 'equals')" placeholder="Categoría" [showClear]="true" class="flex-1" styleClass="w-full"></p-dropdown>
+        <div style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 0.5rem;">
+            <!-- Fila superior: Titulo y Botones -->
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h2 style="margin: 0;">Stock de Almacén</h2>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button *appHasPermission="'EDIT_INVENTARIO'" pButton label="Entrada" icon="bi bi-box-arrow-in-right" class="p-button-success" (click)="abrirModal('ENTRADA')"></button>
+                    <button *appHasPermission="'EDIT_INVENTARIO'" pButton label="Salida" icon="bi bi-box-arrow-right" class="p-button-danger" (click)="abrirModal('SALIDA')"></button>
+                </div>
             </div>
-            <div class="flex gap-2">
-                <button *appHasPermission="'EDIT_INVENTARIO'" pButton label="Entrada" icon="bi bi-box-arrow-in-right" class="p-button-success" (click)="abrirModal('ENTRADA')"></button>
-                <button *appHasPermission="'EDIT_INVENTARIO'" pButton label="Salida" icon="bi bi-box-arrow-right" class="p-button-danger" (click)="abrirModal('SALIDA')"></button>
+            
+            <!-- Fila inferior: Buscador y Filtro -->
+            <div style="display: flex; gap: 1rem; width: 100%; max-width: 600px;">
+                <span style="flex: 1; display: block; position: relative;">
+                    <i class="bi bi-search" style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: #6c757d; z-index: 1;"></i>
+                    <input pInputText type="text" [(ngModel)]="searchTerm" (input)="dt.filterGlobal(searchTerm, 'contains')" placeholder="Buscar producto..." style="width: 100%; padding-left: 2.5rem;">
+                </span>
+                <span style="flex: 1; display: block;">
+                    <p-dropdown [options]="categorias" [(ngModel)]="selectedCategoria" (onChange)="dt.filter(selectedCategoria, 'nombreCategoria', 'equals')" placeholder="Categoría" [showClear]="true" [style]="{'width':'100%'}"></p-dropdown>
+                </span>
             </div>
         </div>
 

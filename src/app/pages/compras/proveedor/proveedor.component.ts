@@ -21,8 +21,8 @@ import { HasPermissionDirective } from '../../../core/directives/has-permission.
         <p-toast></p-toast>
         <p-confirmDialog></p-confirmDialog>
         
-        <div class="flex justify-content-between align-items-center mb-4">
-            <h2 class="m-0">Gestión de Proveedores</h2>
+        <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 1rem; margin-bottom: 0.5rem;">
+            <h2 style="margin: 0;">Gestión de Proveedores</h2>
             <button *appHasPermission="'CREATE_PROVEEDOR'" pButton label="Nuevo Proveedor" icon="bi bi-plus" (click)="createProveedor()"></button>
         </div>
 
