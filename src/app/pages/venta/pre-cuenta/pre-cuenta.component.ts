@@ -43,11 +43,11 @@ export class PreCuentaComponent implements OnInit {
   pedidosActivos = this.pedidoService.pedidosActivos;
 
   pedidosMesa = computed(() =>
-    this.pedidosActivos().filter(p => !!p.codigoMesa)
+    this.pedidosActivos().filter(p => p.tipoEntrega === 'MESA')
   );
 
   pedidosDelivery = computed(() =>
-    this.pedidosActivos().filter(p => !p.codigoMesa)
+    this.pedidosActivos().filter(p => p.tipoEntrega === 'DELIVERY' || p.tipoEntrega === 'LLEVAR')
   );
 
   @ViewChildren('dt') tables!: QueryList<Table>;

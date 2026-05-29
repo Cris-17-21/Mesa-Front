@@ -1,5 +1,5 @@
 import { Router, Routes } from '@angular/router';
-import { authGuard, restaurantGuard } from './core/auth/auth.guard';
+import { authGuard, restaurantGuard, cajaGuard } from './core/auth/auth.guard';
 import { LoginComponent } from './pages/auth/login/login.component';
 import { MainLayoutComponent } from './pages/layouts/main-layout/main-layout.component';
 
@@ -80,6 +80,7 @@ export const routes: Routes = [
           },
           {
             path: 'pos',
+            canActivate: [cajaGuard],
             children: [
               {
                 path: '',

@@ -5,6 +5,7 @@ import { AuthProfile } from '../../../models/security/navigation.model';
 import { RouterModule, RouterOutlet } from '@angular/router';
 import { SidebarComponent } from '../../sidebar/sidebar.component';
 import { HeaderComponent } from '../header/header.component';
+import { AuthService } from '../../../core/auth/auth.service';
 
 @Component({
   selector: 'app-main-layout',
@@ -16,12 +17,26 @@ import { HeaderComponent } from '../header/header.component';
 export class MainLayoutComponent {
 
   private userService = inject(UserService);
+  private authService = inject(AuthService);
   userProfile?: AuthProfile;
 
   ngOnInit() {
     this.userService.getUserMe().subscribe({
       next: (profile) => {
         this.userProfile = profile;
+
+        // Si no es SuperAdmin, ocultamos el módulo de Roles de la barra lateral
+        if (!this.authService.isSuperAdmin() && this.userProfile.navigation) {
+          this.userProfile.navigation = this.userProfile.navigation.map(nav => {
+            if (nav.children) {
+              return {
+                ...nav,
+                children: nav.children.filter(child => child.urlPath !== '/config/roles')
+              };
+            }
+            return nav;
+          });
+        }
         // Forzamos el menú de Ventas con todos sus hijos válidos del frontend
         const ventas = this.userProfile.navigation.find(n => 
           n.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") === 'ventas'
@@ -33,7 +48,7 @@ export class MainLayoutComponent {
             {
               name: 'Caja',
               urlPath: '/ventas/caja',
-              iconName: 'bi bi-cash-register',
+              iconName: 'bi bi-wallet',
               order: 1
             },
             {
@@ -80,29 +95,6 @@ export class MainLayoutComponent {
               order: 2
             }
           ];
-        } else {
-          // Si no existe, lo creamos para que el usuario pueda verlo aunque no esté en el DB (como fallback)
-          this.userProfile.navigation.push({
-            name: 'Almacén',
-            urlPath: '',
-            iconName: 'bi bi-box-seam',
-            order: 5,
-            children: [
-              {
-                name: 'Stock',
-                urlPath: '/almacen/stock',
-                iconName: 'bi bi-boxes',
-                order: 1
-              },
-              {
-                name: 'Movimientos',
-                urlPath: '/almacen/movimientos',
-                iconName: 'bi bi-arrow-left-right',
-                order: 2
-              }
-            ]
-          });
-          this.userProfile.navigation.sort((a, b) => (a.order || 0) - (b.order || 0));
         }
       },
       error: (err) => console.error('Sesion Invalida', err)

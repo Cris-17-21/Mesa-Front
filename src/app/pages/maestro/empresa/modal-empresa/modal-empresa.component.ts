@@ -19,6 +19,8 @@ import { ConsultaService } from '../../../../services/auxiliar/consulta.service'
 export interface EmpresaWizardData {
   isEdit: boolean;
   data: any;
+  certificadoFile?: File | null;
+  logoFile?: File | null;
 }
 
 @Component({
@@ -52,6 +54,9 @@ export class ModalEmpresaComponent implements OnInit {
   readonly adminRoleId = signal<string | null>(null);
   readonly searchingRuc = signal(false);
   readonly searchingDni = signal(false);
+  readonly certificadoFile = signal<File | null>(null);
+  readonly selectedCertName = signal<string | null>(null);
+  readonly logoFile = signal<File | null>(null);
 
   readonly steps = signal<MenuItem[]>([
     { label: 'Empresa' },
@@ -64,15 +69,24 @@ export class ModalEmpresaComponent implements OnInit {
     { label: 'RUC', value: 'RUC' }
   ];
 
+  readonly entornosSunat = [
+    { label: 'Desarrollo / Homologación', value: false },
+    { label: 'Producción', value: true }
+  ];
+
   readonly wizardForm: FormGroup = this.fb.group({
     empresa: this.fb.group({
       ruc: ['', [Validators.required, Validators.minLength(11), Validators.maxLength(11), Validators.pattern('^[0-9]*$')]],
       razonSocial: ['', Validators.required],
-      direccionFiscal: [''],
+      direccionFiscal: ['', Validators.required],
       telefono: ['', [Validators.minLength(9), Validators.maxLength(9), Validators.pattern('^[0-9]*$')]],
       email: ['', [Validators.email]],
       logoUrl: [''],
-      fechaAfiliacion: [new Date().toISOString().split('T')[0]]
+      fechaAfiliacion: [new Date().toISOString().split('T')[0]],
+      usuarioSol: [''],
+      claveSol: [''],
+      claveCertificado: [''],
+      entorno: [false]
     }),
     sucursal: this.fb.group({
       nombre: ['Sede Principal', Validators.required],
@@ -190,6 +204,8 @@ export class ModalEmpresaComponent implements OnInit {
         return;
       }
 
+      this.logoFile.set(file);
+
       const reader = new FileReader();
       reader.onload = () => {
         this.previewLogo.set(reader.result as string);
@@ -199,13 +215,23 @@ export class ModalEmpresaComponent implements OnInit {
     }
   }
 
+  onCertificadoSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+
+    if (file) {
+      this.certificadoFile.set(file);
+      this.selectedCertName.set(file.name);
+    }
+  }
+
   // --- MODOS Y CONFIGURACIÓN ---
 
   private loadAdminRole() {
     this.roleService.getAllRoles()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(roles => {
-        const role = roles.find(r => ['ADMIN', 'ADMIN_RESTAURANTE'].includes(r.name));
+        const role = roles.find(r => ['ADMIN', 'ROLE_ADMIN_RESTAURANTE'].includes(r.name));
         if (role) {
           this.adminRoleId.set(role.id);
           this.wizardForm.get('user.role')?.setValue(role.id);
@@ -216,10 +242,16 @@ export class ModalEmpresaComponent implements OnInit {
   private resetWizard() {
     this.currentStep.set(0);
     this.previewLogo.set(null);
+    this.certificadoFile.set(null);
+    this.selectedCertName.set(null);
+    this.logoFile.set(null);
     this.wizardForm.reset({
       sucursal: { nombre: 'Sede Principal' },
       user: { tipoDocumento: 'DNI', role: this.adminRoleId() },
-      empresa: { fechaAfiliacion: new Date().toISOString().split('T')[0] }
+      empresa: {
+        fechaAfiliacion: new Date().toISOString().split('T')[0],
+        entorno: false
+      }
     });
   }
 
@@ -229,8 +261,7 @@ export class ModalEmpresaComponent implements OnInit {
     this.wizardForm.patchValue({
       empresa: data,
     });
-    this.wizardForm.get('sucursal')?.disable();
-    this.wizardForm.get('user')?.disable();
+    this.wizardForm.disable(); // Desactivamos todo el formulario en modo consulta
     if (data.logoUrl) this.previewLogo.set(data.logoUrl);
   }
 
@@ -265,7 +296,9 @@ export class ModalEmpresaComponent implements OnInit {
 
     this.onComplete.emit({
       data: finalData,
-      isEdit: !!this.dataToEdit()
+      isEdit: !!this.dataToEdit(),
+      certificadoFile: this.certificadoFile(),
+      logoFile: this.logoFile()
     });
   }
 

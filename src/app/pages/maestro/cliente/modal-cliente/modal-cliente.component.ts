@@ -52,7 +52,7 @@ export class ModalClienteComponent {
   ];
 
   readonly clienteForm: FormGroup = this.fb.group({
-    tipoDocumentoId: [this.ID_DNI, Validators.required],
+    tipoDocumento: [this.ID_DNI, Validators.required],
     numeroDocumento: ['', [Validators.required, Validators.pattern('^[0-9]*$')]],
     nombreRazonSocial: ['', Validators.required],
     direccion: [''],
@@ -62,7 +62,7 @@ export class ModalClienteComponent {
 
   constructor() {
     // Validación dinámica por tipo de documento
-    this.clienteForm.get('tipoDocumentoId')?.valueChanges
+    this.clienteForm.get('tipoDocumento')?.valueChanges
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(tipo => {
         const control = this.clienteForm.get('numeroDocumento');
@@ -82,7 +82,7 @@ export class ModalClienteComponent {
           this.clienteForm.patchValue(data);
           this.clienteForm.get('numeroDocumento')?.disable();
         } else {
-          this.clienteForm.reset({ tipoDocumentoId: this.ID_DNI });
+          this.clienteForm.reset({ tipoDocumento: this.ID_DNI });
           this.clienteForm.get('numeroDocumento')?.enable();
         }
         this.clienteForm.markAsPristine();
@@ -95,7 +95,7 @@ export class ModalClienteComponent {
 
   buscarDocumento() {
     const doc = this.clienteForm.get('numeroDocumento')?.value;
-    const tipo = this.clienteForm.get('tipoDocumentoId')?.value;
+    const tipo = this.clienteForm.get('tipoDocumento')?.value;
     if (!doc || doc.length < 8) return;
 
     this.searching.set(true);

@@ -22,6 +22,7 @@ import { Sucursal } from '../../../models/maestro/sucursal.model';
 
 // Componentes
 import { ModalUsersComponent } from "./modal-users/modal-users.component";
+import { AuthService } from '../../../core/auth/auth.service';
 
 @Component({
   selector: 'app-users',
@@ -37,6 +38,9 @@ export class UsersComponent implements OnInit {
   private readonly roleService = inject(RoleService);
   private readonly empresaService = inject(EmpresaService);
   private readonly sucursalService = inject(SucursalService);
+  private readonly authService = inject(AuthService);
+
+  readonly isSuperAdmin = this.authService.isSuperAdmin;
 
   // Datos para la tabla y modal
   readonly users = signal<User[]>([]);
@@ -60,20 +64,34 @@ export class UsersComponent implements OnInit {
 
   loadAllData(): void {
     this.loading.set(true);
-    // Cargamos todo en paralelo para alimentar el modal y la tabla
-    forkJoin({
+    const isSuper = this.isSuperAdmin();
+
+    const requests: any = {
       users: this.userService.getAllActiveUsers(),
-      roles: this.roleService.getAllRoles(),
-      empresas: this.empresaService.getAllActiveEmpresas(),
-      sucursales: this.sucursalService.getAllActiveSucursales()
-    })
+      roles: this.roleService.getAllRoles()
+    };
+
+    if (isSuper) {
+      requests.empresas = this.empresaService.getAllActiveEmpresas();
+      requests.sucursales = this.sucursalService.getAllActiveSucursales();
+    } else {
+      const empresaId = this.authService.getEmpresaId();
+      requests.sucursales = this.sucursalService.getSucursalByEmpresaId(empresaId);
+    }
+
+    forkJoin(requests)
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe({
-        next: (res) => {
+        next: (res: any) => {
           this.users.set(res.users);
           this.roles.set(res.roles);
-          this.empresas.set(res.empresas);
-          this.sucursales.set(res.sucursales);
+          if (isSuper) {
+            this.empresas.set(res.empresas);
+            this.sucursales.set(res.sucursales);
+          } else {
+            this.sucursales.set(res.sucursales);
+            this.sucursalesFiltradas.set(res.sucursales);
+          }
         },
         error: (err) => this.errorMessage('Error cargando datos iniciales', err)
       });
@@ -157,7 +175,7 @@ export class UsersComponent implements OnInit {
   }
 
   applyFilters(): void {
-    const empId = this.selectedEmpresaId();
+    const empId = this.isSuperAdmin() ? this.selectedEmpresaId() : this.authService.getEmpresaId();
     const sucId = this.selectedSucursalId();
 
     if (!empId) {

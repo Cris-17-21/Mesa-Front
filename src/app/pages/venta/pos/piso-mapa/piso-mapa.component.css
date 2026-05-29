@@ -222,6 +222,11 @@
     white-space: nowrap;
 }
 
+.currency-symbol {
+    font-weight: 900;
+    margin-right: 1px;
+}
+
 .accounts-badge {
     background: #dc3545;
     color: white;
@@ -260,6 +265,17 @@
     flex-direction: column;
     align-items: center;
     gap: 5px;
+}
+
+.table-icon-libre {
+    font-size: 2rem;
+    color: #198754;
+    opacity: 0.5;
+}
+
+.estado-badge-libre {
+    color: #198754;
+    font-weight: 500;
 }
 
 .total {
@@ -365,19 +381,41 @@
     .control-header {
         flex-direction: column;
         align-items: stretch;
+        padding: 10px;
+        gap: 10px;
     }
 
-    .selector-area,
-    .dropdown-piso {
-        width: 100%;
+    .selector-area {
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+    }
+
+    :host ::ng-deep .dropdown-piso {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    :host ::ng-deep .dropdown-piso .p-dropdown {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    :host ::ng-deep .dropdown-piso .p-dropdown-label {
+        max-width: 100% !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        white-space: nowrap !important;
     }
 
     .actions-area {
         justify-content: space-between;
+        gap: 10px;
     }
 
     .leyenda-group {
         border-right: none;
+        gap: 10px;
     }
 
     .btn-unir-responsive {
@@ -394,11 +432,36 @@
     }
 
     .mesa-card {
-        height: 120px;
+        height: 135px;
     }
 
-    .table-icon {
-        font-size: 2rem;
+    .card-header {
+        padding: 6px 10px !important;
+        font-size: 0.8rem !important;
+    }
+
+    .card-body {
+        padding: 4px 6px !important;
+    }
+
+    .precio-texto {
+        font-size: 0.95rem !important;
+    }
+
+    .precio-texto .currency-symbol {
+        font-size: 0.8em !important;
+    }
+
+    .estado-badge {
+        font-size: 0.65rem !important;
+    }
+
+    .table-icon-libre {
+        font-size: 1.5rem !important;
+    }
+
+    .estado-badge-libre {
+        font-size: 0.7rem !important;
     }
 
     .modal-content {

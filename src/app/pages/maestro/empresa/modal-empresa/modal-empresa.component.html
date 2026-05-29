@@ -45,9 +45,12 @@
             </div>
 
             <div class="field">
-                <label for="direccionFiscalInput" class="label-noir">Dirección Fiscal<span
-                        class="optional">(Opcional)</span></label>
-                <input id="direccionFiscalInput" pInputText formControlName="direccionFiscal" class="noir-input" />
+                <label for="direccionFiscalInput" class="label-noir">Dirección Fiscal*</label>
+                <input id="direccionFiscalInput" pInputText formControlName="direccionFiscal" class="noir-input"
+                    [class.ng-invalid]="isFieldInvalid('empresa.direccionFiscal')" />
+                @if (isFieldInvalid('empresa.direccionFiscal')) {
+                <small class="error-text">La dirección fiscal es obligatoria.</small>
+                }
             </div>
 
             <div class="field-row">
@@ -71,22 +74,71 @@
                 </div>
             </div>
 
-            <div class="field">
-                <label class="label-noir">Logo<span class="optional">(Opcional)</span></label>
-                <div class="logo-uploader" (click)="!isReadOnly() && fileInput.click()"
-                    (keydown.enter)="!isReadOnly() && fileInput.click()" [class.disabled]="isReadOnly()"
-                    [attr.tabindex]="isReadOnly() ? -1 : 0" role="button" aria-label="Subir logo de empresa">
+            @if (dataToEdit()) {
+                <div class="field">
+                    <label class="label-noir">Logo<span class="optional">(Opcional)</span></label>
+                    <div class="logo-uploader" (click)="!isReadOnly() && fileInput.click()"
+                        (keydown.enter)="!isReadOnly() && fileInput.click()" [class.disabled]="isReadOnly()"
+                        [attr.tabindex]="isReadOnly() ? -1 : 0" role="button" aria-label="Subir logo de empresa">
 
-                    @if (previewLogo()) {
-                    <img [src]="previewLogo()" class="preview-img" alt="Logo previsualizado">
-                    } @else {
-                    <div class="upload-placeholder">
-                        <i class="bi bi-image"></i> <span>Subir Logo</span>
+                        @if (previewLogo()) {
+                        <img [src]="previewLogo()" class="preview-img" alt="Logo previsualizado">
+                        } @else {
+                        <div class="upload-placeholder">
+                            <i class="bi bi-image"></i> <span>Subir Logo</span>
+                        </div>
+                        }
+                        <input #fileInput type="file" (change)="onFileSelected($event)" hidden accept="image/*">
                     </div>
-                    }
-                    <input #fileInput type="file" (change)="onFileSelected($event)" hidden accept="image/*">
                 </div>
-            </div>
+
+                <!-- Configuración SUNAT -->
+                <div class="sunat-divider">
+                    <span>Configuración SUNAT (Facturación Electrónica)</span>
+                </div>
+
+                <div class="field-row">
+                    <div class="field flex-1">
+                        <label for="entornoInput" class="label-noir">Entorno SUNAT</label>
+                        <p-select id="entornoInput" [options]="entornosSunat" formControlName="entorno" 
+                                  optionLabel="label" optionValue="value" class="w-full"
+                                  [disabled]="isReadOnly()"></p-select>
+                    </div>
+                    <div class="field flex-1">
+                        <label for="usuarioSolInput" class="label-noir">Usuario SOL<span class="optional">(Opcional)</span></label>
+                        <input id="usuarioSolInput" pInputText formControlName="usuarioSol" class="noir-input" 
+                               placeholder="MODDATOS" [readonly]="isReadOnly()" />
+                    </div>
+                </div>
+
+                <div class="field-row">
+                    <div class="field flex-1">
+                        <label for="claveSolInput" class="label-noir">Clave SOL<span class="optional">(Opcional)</span></label>
+                        <input id="claveSolInput" pInputText type="password" formControlName="claveSol" class="noir-input" 
+                               placeholder="••••••••" [readonly]="isReadOnly()" />
+                    </div>
+                    <div class="field flex-1">
+                        <label for="claveCertificadoInput" class="label-noir">Contraseña Certificado<span class="optional">(Opcional)</span></label>
+                        <input id="claveCertificadoInput" pInputText type="password" formControlName="claveCertificado" class="noir-input" 
+                               placeholder="••••••••" [readonly]="isReadOnly()" />
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label class="label-noir">Certificado Digital (.pfx, .p12)<span class="optional">(Opcional)</span></label>
+                    <div class="p-inputgroup">
+                        <input type="text" pInputText readonly class="noir-input" 
+                               [value]="selectedCertName() || (dataToEdit()?.certificadoDigital ? 'Certificado cargado (SUNAT)' : 'Ningún archivo seleccionado')" />
+                        <button type="button" class="btn-cert-select" (click)="certFileInput.click()" [disabled]="isReadOnly()">
+                            <i class="bi bi-file-earmark-arrow-up"></i> Seleccionar
+                        </button>
+                        <input #certFileInput type="file" (change)="onCertificadoSelected($event)" hidden accept=".pfx,.p12">
+                    </div>
+                    @if (selectedCertName()) {
+                        <small class="error-text" style="color: #10b981; animation: slideDown 0.2s ease-out;">Nuevo certificado cargado listo para guardar: {{ selectedCertName() }}</small>
+                    }
+                </div>
+            }
         </div>
         }
 

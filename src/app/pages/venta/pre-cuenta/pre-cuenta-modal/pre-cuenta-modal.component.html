@@ -5,7 +5,7 @@
     <div class="header-modal">
         <div class="mesa-info">
             <span class="modo-badge" [class.editar]="modo === 'EDITAR'">
-                {{ modo === 'NUEVO' ? 'Nueva' : 'Editando' }}
+                {{ modo === 'NUEVO' ? 'Nueva' : 'Detalle' }}
             </span>
             <h2>Delivery - {{ deliveryForm.get('nombreCliente')?.value || 'Nuevo Pedido' }}</h2>
         </div>
@@ -15,26 +15,27 @@
         </button>
     </div>
 
-    <div class="delivery-modal-body">
+    <div class="pos-container" [class.only-ticket]="modo === 'EDITAR'">
 
         <!-- SELECTOR POS (LADO IZQUIERDO) -->
-        <div class="catalog-section-pos" [class.hidden-mobile]="vistaMovil() === 'CUENTA'">
-            <div class="toolbar-catalog-pos">
-                <div class="search-box-pos">
-                    <i class="bi bi-search search-icon-pos"></i>
+        @if (modo === 'NUEVO') {
+        <div class="catalog-section" [class.hidden-mobile]="vistaMovil() === 'CUENTA'">
+            <div class="toolbar-catalog">
+                <div class="search-box">
+                    <i class="bi bi-search search-icon"></i>
                     <input type="text" placeholder="Buscar producto..." (input)="onSearch($event)"
-                        [value]="terminoBusqueda()" class="search-input-pos">
+                        [value]="terminoBusqueda()" class="search-input">
                 </div>
 
-                <div class="categories-container-pos">
-                    <button class="cat-chip-pos" [class.active]="!categoriaSeleccionada()"
+                <div class="categories-container">
+                    <button class="cat-chip" [class.active]="!categoriaSeleccionada()"
                         (click)="seleccionarCategoria(null)">
                         Todos
                     </button>
 
-                    <div class="categories-scroll-pos">
+                    <div class="categories-scroll">
                         @for (cat of categorias(); track cat.idCategoria) {
-                        <button class="cat-chip-pos"
+                        <button class="cat-chip"
                             [class.active]="categoriaSeleccionada()?.idCategoria === cat.idCategoria"
                             (click)="seleccionarCategoria(cat)">
                             {{ cat.nombreCategoria }}
@@ -44,38 +45,39 @@
                 </div>
             </div>
 
-            <div class="products-grid-pos">
+            <div class="products-grid">
                 @for (prod of productosFiltrados(); track prod.idProducto) {
-                <div class="product-card-pos" (click)="agregarAlCarrito(prod)">
-                    <div class="prod-img-pos"
+                <div class="product-card" (click)="agregarAlCarrito(prod)">
+                    <div class="prod-img"
                         [style.backgroundImage]="prod.imagen ? 'url(' + prod.imagen + ')' : 'none'">
                         @if (!prod.imagen) {
-                        <i class="bi bi-image placeholder-icon-pos"></i>
+                        <i class="bi bi-image placeholder-icon"></i>
                         }
-                        <div class="add-btn-float-pos">+</div>
+                        <div class="add-btn-float">+</div>
                     </div>
 
-                    <div class="prod-info-pos">
+                    <div class="prod-info">
                         <h4>{{ prod.nombreProducto }}</h4>
-                        <span class="price-pos">S/ {{ prod.precioVenta | number:'1.2-2' }}</span>
+                        <span class="price">S/ {{ prod.precioVenta | number:'1.2-2' }}</span>
                     </div>
                 </div>
                 } @empty {
-                <div class="empty-search-pos">
+                <div class="empty-search">
                     <i class="bi bi-basket"></i>
                     <p>No se encontraron productos.</p>
                 </div>
                 }
             </div>
         </div>
+        }
 
         <!-- REGISTRO Y COMANDA (LADO DERECHO) -->
-        <div class="ticket-section shadow-noir" [class.hidden-mobile]="vistaMovil() === 'MENU'">
+        <div class="ticket-section shadow-noir" [class.hidden-mobile]="vistaMovil() === 'MENU' && modo === 'NUEVO'">
 
             <div class="customer-registration-box">
-                <form [formGroup]="deliveryForm" class="customer-form-pos">
+                <form [formGroup]="deliveryForm" class="customer-form">
                     <span class="section-label">DATOS DE ENTREGA</span>
-                    <div class="form-grid-pos">
+                    <div class="form-grid">
                         <input pInputText formControlName="nombreCliente" placeholder="Nombre completo"
                             class="noir-input-sm" />
                         <input pInputText formControlName="telefono" placeholder="Teléfono" class="noir-input-sm" />
@@ -85,64 +87,66 @@
                 </form>
             </div>
 
-            <div class="ticket-header-pos">
+            <div class="ticket-header">
                 <h3>Comanda de Delivery</h3>
                 <span class="badge-count">{{ cart().length }} items</span>
             </div>
 
-            <div class="ticket-items-pos">
+            <div class="ticket-items">
                 @if (cart().length > 0) {
                 @for (item of cart(); track item.productoId; let i = $index) {
-                <div class="cart-item-pos" [class.item-locked]="esItemExistente(item.productoId)">
-                    <div class="item-qty-pos">
-                        <button class="btn-tiny-pos" [disabled]="esItemExistente(item.productoId)"
+                <div class="cart-item" [class.item-locked]="esItemExistente(item.productoId) || modo === 'EDITAR'">
+                    <div class="item-qty">
+                        <button class="btn-tiny" [disabled]="esItemExistente(item.productoId) || modo === 'EDITAR'"
                             (click)="updateQty(i, 1)">+</button>
                         <span>{{ item.cantidad }}</span>
-                        <button class="btn-tiny-pos" [disabled]="esItemExistente(item.productoId)"
+                        <button class="btn-tiny" [disabled]="esItemExistente(item.productoId) || modo === 'EDITAR'"
                             (click)="updateQty(i, -1)">-</button>
                     </div>
 
-                    <div class="item-detail-pos">
-                        <span class="item-name-pos">{{ item.nombre }}</span>
-                        <span class="item-subtotal-pos">S/ {{ (item.precio * item.cantidad) | number:'1.2-2' }}</span>
+                    <div class="item-detail">
+                        <span class="item-name">{{ item.nombre }}</span>
+                        <span class="item-subtotal">S/ {{ (item.precio * item.cantidad) | number:'1.2-2' }}</span>
                     </div>
 
-                    @if (esItemExistente(item.productoId)) {
-                    <span class="lock-icon-pos" title="Ya enviado a cocina"><i class="bi bi-lock-fill"></i></span>
+                    @if (esItemExistente(item.productoId) || modo === 'EDITAR') {
+                    <span class="lock-icon" title="No editable"><i class="bi bi-lock-fill"></i></span>
                     } @else {
-                    <button class="btn-delete-pos" (click)="removeItem(i)">
+                    <button class="btn-delete" (click)="removeItem(i)">
                         <i class="bi bi-trash"></i>
                     </button>
                     }
                 </div>
                 }
                 } @else {
-                <div class="empty-ticket-pos">
+                <div class="empty-ticket">
                     <i class="bi bi-cart-x"></i>
                     <p>La orden está vacía</p>
                 </div>
                 }
             </div>
 
-            <div class="ticket-footer-pos">
-                <div class="summary-row-pos big-total-pos">
+            <div class="ticket-footer">
+                <div class="summary-row big-total">
                     <span>Total Delivery</span>
                     <span>S/ {{ total() | number:'1.2-2' }}</span>
                 </div>
 
-                <div class="action-buttons-pos">
-                    <button class="btn-primary-large-pos" [disabled]="loading() || cart().length === 0"
+                <div class="action-buttons">
+                    @if (modo === 'NUEVO') {
+                    <button class="btn-primary-large" [disabled]="loading() || cart().length === 0"
                         (click)="save()">
                         <i class="bi bi-fire"></i>
-                        {{ modo === 'NUEVO' ? 'Confirmar Pedido' : 'Enviar a Cocina' }}
+                        Confirmar Pedido
                     </button>
+                    }
 
                     @if (modo === 'EDITAR' && pedidoId) {
-                    <div class="extra-actions-pos">
-                        <button class="btn-secondary-pos" (click)="imprimirPreCuenta()" pTooltip="Imprimir Pre-cuenta">
-                            <i class="bi bi-printer"></i>
+                    <div class="extra-actions">
+                        <button class="btn-secondary" (click)="imprimirPreCuenta()" pTooltip="Imprimir Pre-cuenta">
+                            <i class="bi bi-printer"></i> Imprimir
                         </button>
-                        <button class="btn-success-pos" (click)="abrirCobrar()">
+                        <button class="btn-success" (click)="abrirCobrar()">
                             <i class="bi bi-cash-stack"></i> Cobrar
                         </button>
                     </div>
@@ -153,6 +157,7 @@
     </div>
 
     <!-- NAVEGACIÓN MÓVIL (IDÉNTICO A ORDEN) -->
+    @if (modo === 'NUEVO') {
     <div class="mobile-nav">
         <button class="nav-btn" [class.active]="vistaMovil() === 'MENU'" (click)="vistaMovil.set('MENU')">
             <i class="bi bi-grid-fill"></i>
@@ -169,6 +174,7 @@
             <span>Cuenta</span>
         </button>
     </div>
+    }
 
     <!-- MODAL DE COBRO INTEGRADO -->
     @if (showCheckout() && pedidoId) {

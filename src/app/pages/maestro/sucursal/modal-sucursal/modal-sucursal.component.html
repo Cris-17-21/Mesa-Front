@@ -6,6 +6,7 @@
     @if (visible()) {
     <form [formGroup]="sucursalForm" (ngSubmit)="save()" class="form-noir mt-2">
 
+        @if (isSuperAdmin()) {
         <div class="field-noir">
             <label class="label-noir">Empresa*</label>
             <p-select [options]="empresasList()" formControlName="empresa" optionLabel="razonSocial" optionValue="id"
@@ -15,6 +16,7 @@
             <small class="error-text">{{ getErrorMessage('empresa') }}</small>
             }
         </div>
+        }
 
         <div class="field-noir">
             <label class="label-noir">Nombre de Sede*</label>

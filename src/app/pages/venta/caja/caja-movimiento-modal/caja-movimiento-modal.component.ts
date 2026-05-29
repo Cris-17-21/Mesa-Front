@@ -86,10 +86,16 @@ export class CajaMovimientoModalComponent {
       { label: 'Entrada Dinero', value: 'INGRESO', icon: 'bi bi-arrow-down-left' }
     ];
 
+  tiposFlujo = [
+    { label: 'Efectivo', value: true },
+    { label: 'Virtual/Tarjeta', value: false }
+  ];
+
   form: FormGroup = this.fb.group({
     tipo: ['EGRESO', Validators.required],
     monto: [null, [Validators.required, Validators.min(0.10)]],
-    descripcion: ['', [Validators.required]]
+    descripcion: ['', [Validators.required]],
+    esEfectivo: [true, Validators.required]
   });
 
   // ===============================
@@ -99,7 +105,7 @@ export class CajaMovimientoModalComponent {
   constructor() {
     effect(() => {
       if (this.visible()) {
-        this.form.reset({ tipo: 'EGRESO' });
+        this.form.reset({ tipo: 'EGRESO', esEfectivo: true });
         this.loading.set(false);
       }
     });
@@ -125,14 +131,15 @@ export class CajaMovimientoModalComponent {
 
     this.loading.set(true);
 
-    const { tipo, monto, descripcion } = this.form.value;
+    const { tipo, monto, descripcion, esEfectivo } = this.form.value;
 
     const payload: CreateMovimientoCajaRequest = {
       cajaId,
       tipo,
       monto,
       descripcion,
-      usuarioId: this.usuarioId() ?? ''
+      usuarioId: this.usuarioId() ?? '',
+      esEfectivo
     };
 
     this.movimientoService.registrarMovimiento(payload).subscribe({

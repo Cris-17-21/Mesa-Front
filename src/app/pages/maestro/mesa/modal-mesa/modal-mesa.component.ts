@@ -51,6 +51,10 @@ export class ModalMesaComponent implements OnInit {
 
   // Se ejecuta cada vez que el modal se abre/cambia dataToEdit
   ngOnChanges(): void {
+    if (this.visible) {
+      this.loading.set(false);
+    }
+
     if (this.dataToEdit) {
       const estadoMesa = this.dataToEdit.estado?.toUpperCase();
 
@@ -140,5 +144,6 @@ export class ModalMesaComponent implements OnInit {
   close() {
     this.visibleChange.emit(false);
     this.mesaForm.reset();
+    this.loading.set(false);
   }
 }

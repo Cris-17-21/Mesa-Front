@@ -39,6 +39,7 @@
 
         <h3 class="section-title">Asignación de Entidad</h3>
         <div class="field-row">
+            @if (isSuperAdmin()) {
             <div class="field flex-1">
                 <label class="label-noir">Empresa*</label>
                 <p-select [options]="empresas()" formControlName="empresaId" optionLabel="razonSocial" optionValue="id"
@@ -48,11 +49,12 @@
                 <small class="error-text">Debe asignar una empresa.</small>
                 }
             </div>
+            }
 
             <div class="field flex-1">
                 <label class="label-noir">Sucursal*</label>
-                @if (userForm.get('role')?.value === 'ADMIN') {
-                <input pInputText [disabled]="true" placeholder="No requiere sucursal (ADMIN)" class="noir-input"
+                @if (isRoleAdmin()) {
+                <input pInputText [disabled]="true" placeholder="No requiere sucursal" class="noir-input"
                     style="background: #f4f4f5;" />
                 } @else {
                 <p-select [options]="sucursalesPorEmpresa()" formControlName="sucursalId" optionLabel="nombre"

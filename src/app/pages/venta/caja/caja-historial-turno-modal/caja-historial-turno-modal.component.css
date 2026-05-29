@@ -134,3 +134,25 @@
     border-radius: 8px;
     cursor: pointer;
 }
+
+@media (max-width: 768px) {
+    .summary-grid {
+        grid-template-columns: 1fr !important;
+        gap: 0.75rem;
+    }
+    .detail-row {
+        flex-direction: column !important;
+        align-items: center !important;
+        gap: 1.25rem;
+    }
+    .detail-item {
+        width: 100%;
+        text-align: center;
+        border-bottom: 1px dashed #e4e4e7;
+        padding-bottom: 0.75rem;
+    }
+    .detail-item:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+}

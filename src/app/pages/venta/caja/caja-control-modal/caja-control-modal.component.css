@@ -112,7 +112,7 @@
 }
 
 .label-noir {
-    font-weight: 600;
+    font-weight: 500;
     font-size: 0.9rem;
     color: #18181b;
 }
@@ -145,7 +145,7 @@
     border: 1px solid #e4e4e7;
     border-radius: 8px;
     padding: 0.75rem;
-    font-weight: 600;
+    font-weight: 500;
     font-size: 1.1rem;
     color: #18181b;
     box-shadow: none;
@@ -206,210 +206,141 @@
     margin-top: 0.25rem;
 }
 
-/* Heredamos estilos base para el Dialog */
-:host ::ng-deep .p-dialog .p-dialog-header {
-    background-color: #ffffff;
-    padding: 1.5rem 1.5rem 0.5rem 1.5rem;
-    border-bottom: none;
-    color: #18181b;
-}
 
-:host ::ng-deep .p-dialog .p-dialog-content {
-    background-color: #ffffff;
-    padding: 0 1.5rem 1.5rem 1.5rem;
-    border-bottom-left-radius: 6px;
-    border-bottom-right-radius: 6px;
-}
-
-/* Contenedor del Formulario */
-.form-container {
+/* Contenedor de inputs en apertura con espacio vertical */
+.grid-inputs {
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
-    margin-top: 1rem;
-}
-
-/* Alertas de Contexto (Info/Warning) */
-.context-alert {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-    padding: 1rem;
-    border-radius: 8px;
-    font-size: 0.9rem;
-    line-height: 1.4;
-}
-
-.context-alert.info {
-    background-color: #f4f4f5;
-    /* Zinc 100 */
-    color: #3f3f46;
-    /* Zinc 700 */
-    border: 1px solid #e4e4e7;
-}
-
-.context-alert.warning {
-    background-color: #fff7ed;
-    /* Orange 50 */
-    color: #9a3412;
-    /* Orange 800 */
-    border: 1px solid #ffedd5;
-}
-
-.alert-text p {
-    margin: 0;
-    font-weight: 500;
 }
 
 /* Sección de Resumen (Solo para Cierre) */
-.summary-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-    background: #fafafa;
-    padding: 1.25rem;
-    border-radius: 8px;
-    border: 1px dashed #d4d4d8;
-}
-
-.summary-item {
+.summary-section {
     display: flex;
     flex-direction: column;
+    gap: 0.75rem;
 }
 
-.summary-item .label {
-    font-size: 0.75rem;
-    color: #71717a;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+.section-title {
+    font-size: 0.95rem;
     font-weight: 600;
-    margin-bottom: 0.25rem;
-}
-
-.summary-item .value {
-    font-size: 1.5rem;
-    /* Números grandes */
-    font-weight: 700;
     color: #18181b;
-    font-feature-settings: "tnum";
-    /* Números tabulares para mejor alineación */
+    margin: 0;
 }
 
-/* Colores semánticos para la Diferencia */
-.value.diff.positive {
-    color: #059669;
-}
-
-/* Verde: Sobra dinero */
-.value.diff.negative {
-    color: #dc2626;
-}
-
-/* Rojo: Falta dinero */
-.value.diff.neutral {
-    color: #52525b;
-}
-
-/* Gris: Cuadre exacto */
-
-/* Inputs y Labels */
-.field {
+.summary-table {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
-}
-
-.label-noir {
-    font-weight: 600;
-    font-size: 0.9rem;
-    color: #18181b;
-}
-
-/* Estilización del Textarea nativo/PrimeNG */
-.noir-input {
-    width: 100%;
     border: 1px solid #e4e4e7;
     border-radius: 8px;
-    padding: 0.75rem;
-    font-family: inherit;
-    font-size: 0.95rem;
-    outline: none;
-    resize: none;
+    background: #ffffff;
+    overflow: hidden;
+}
+
+.summary-table .table-header {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr 1.2fr 1fr;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    background-color: #fafafa;
+    border-bottom: 1px solid #e4e4e7;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #71717a;
+    text-transform: uppercase;
+    text-align: right;
+}
+
+.summary-table .table-header span:first-child {
+    text-align: left;
+}
+
+.summary-table .table-row {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr 1.2fr 1fr;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    align-items: center;
+    border-bottom: 1px solid #f4f4f5;
+    font-size: 0.875rem;
+    color: #18181b;
+    text-align: right;
+}
+
+.summary-table .table-row span:first-child {
+    text-align: left;
+}
+
+.summary-table .table-row:last-child {
+    border-bottom: none;
+}
+
+.summary-table .concept {
+    font-weight: 500;
+    color: #18181b;
+}
+
+.summary-table .real-input-wrapper {
+    display: flex;
+    align-items: center;
+}
+
+:host ::ng-deep .noir-input-number-small {
+    width: 100%;
+    border: 1px solid #e4e4e7;
+    border-radius: 6px;
+    padding: 0.35rem 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #18181b;
     transition: all 0.2s;
 }
 
-.noir-input:focus {
+:host ::ng-deep .noir-input-number-small:enabled:focus {
     border-color: #18181b;
     box-shadow: 0 0 0 2px rgba(24, 24, 27, 0.05);
 }
 
-/* Estilos profundos para p-inputNumber */
-:host ::ng-deep .p-inputnumber {
-    width: 100%;
-}
-
-:host ::ng-deep .noir-input-number {
-    width: 100%;
-    border: 1px solid #e4e4e7;
-    border-radius: 8px;
-    padding: 0.75rem;
+.diff-value {
     font-weight: 600;
-    font-size: 1.1rem;
-    color: #18181b;
-    box-shadow: none;
-    transition: all 0.2s;
 }
 
-:host ::ng-deep .noir-input-number:enabled:focus {
-    border-color: #18181b;
-    box-shadow: 0 0 0 2px rgba(24, 24, 27, 0.1);
+.diff-value.positive {
+    color: #059669;
 }
 
-/* Footer Buttons */
-.footer-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 0.75rem;
-    margin-top: 0.5rem;
-}
-
-.btn-save {
-    background-color: #18181b;
-    color: white;
-    border: none;
-    padding: 0.75rem 1.5rem;
-    border-radius: 8px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-
-.btn-save:hover:not(:disabled) {
-    background-color: #3f3f46;
-}
-
-.btn-save:disabled {
-    background-color: #a1a1aa;
-    cursor: not-allowed;
-}
-
-.btn-cancel {
-    background-color: transparent;
-    border: 1px solid #e4e4e7;
-    padding: 0.75rem 1.25rem;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 500;
-    color: #18181b;
-    transition: background-color 0.2s;
-}
-
-.btn-cancel:hover {
-    background-color: #f4f4f5;
-}
-
-.error-text {
+.diff-value.negative {
     color: #dc2626;
-    font-size: 0.8rem;
-    margin-top: 0.25rem;
+}
+
+.diff-value.neutral {
+    color: #52525b;
+}
+
+.difference-alert {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: #fef2f2;
+    border: 1px solid #fee2e2;
+    color: #b91c1c;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    font-size: 0.825rem;
+    font-weight: 500;
+}
+
+@media (max-width: 480px) {
+    .summary-table .table-header,
+    .summary-table .table-row {
+        grid-template-columns: 1.2fr 1fr 1.3fr 1fr;
+        gap: 0.25rem;
+        padding: 0.5rem;
+        font-size: 0.8rem;
+    }
+    
+    :host ::ng-deep .noir-input-number-small {
+        padding: 0.25rem 0.4rem;
+        font-size: 0.8rem;
+    }
 }

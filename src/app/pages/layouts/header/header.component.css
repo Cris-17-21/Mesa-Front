@@ -120,14 +120,6 @@
   line-height: 1.2;
 }
 
-.u-role { 
-  font-size: 0.65rem; 
-  color: #71717a; 
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  font-weight: 500;
-}
-
 .logout-btn {
   background: #18181b;
   border: none;
@@ -236,12 +228,5 @@
     width: 90vw !important;
     left: 5vw !important;
     right: 5vw !important;
-  }
-}
-
-/* Ajuste para tablets (opcional) */
-@media (min-width: 769px) and (max-width: 1024px) {
-  .u-role {
-    display: none; /* Ocultamos solo el rol en tablets para que no se vea apretado */
   }
 }

@@ -13,6 +13,7 @@ import { SelectModule } from 'primeng/select';
 import { CreateSucursalDto, Sucursal } from '../../../../models/maestro/sucursal.model';
 import { Empresa } from '../../../../models/maestro/empresa.model';
 import Swal from 'sweetalert2';
+import { AuthService } from '../../../../core/auth/auth.service';
 
 export interface SucursalModalData {
   isEdit: boolean;
@@ -32,6 +33,9 @@ export class ModalSucursalComponent {
   private readonly fb = inject(FormBuilder);
   private readonly destroyRef = inject(DestroyRef);
   private readonly cdr = inject(ChangeDetectorRef);
+  private readonly authService = inject(AuthService);
+
+  readonly isSuperAdmin = this.authService.isSuperAdmin;
 
   readonly visible = model(false);
   readonly dataToEdit = input<Sucursal | null>(null);
@@ -50,18 +54,17 @@ export class ModalSucursalComponent {
   constructor() {
     effect(() => {
       const isVisible = this.visible();
-      const lista = this.empresasList();
       const data = this.dataToEdit();
       const defaultId = this.defaultEmpresaId();
 
-      if (isVisible && lista.length > 0) {
+      if (isVisible) {
         if (data) {
           this.patchForm(data);
         } else {
           this.setupCreateMode(defaultId);
         }
         this.cdr.markForCheck();
-      } else if (!isVisible) {
+      } else {
         this.sucursalForm.reset();
       }
     });
@@ -70,8 +73,9 @@ export class ModalSucursalComponent {
 
 
   private patchForm(data: Sucursal) {
-    // El padre ya nos pasa empresa como el ID (string) al llamar openEdit()
-    const empresaId = typeof data.empresa === 'string' ? data.empresa : (data.empresa as any)?.id ?? null;
+    const empresaId = this.authService.isSuperAdmin()
+      ? (typeof data.empresa === 'string' ? data.empresa : (data.empresa as any)?.id ?? null)
+      : this.authService.getEmpresaId();
 
     this.sucursalForm.patchValue({
       nombre: data.nombre,
@@ -84,8 +88,9 @@ export class ModalSucursalComponent {
   }
 
   private setupCreateMode(defaultId: string | null) {
+    const defaultEmp = this.authService.isSuperAdmin() ? defaultId : this.authService.getEmpresaId();
     this.sucursalForm.reset({
-      empresa: defaultId, // Auto-selecciona si hay un filtro activo o llega del padre
+      empresa: defaultEmp,
       nombre: '',
       direccion: '',
       telefono: ''

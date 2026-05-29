@@ -70,6 +70,26 @@ export class CajaService {
       });
   }
 
+  obtenerEstadoCaja(
+    sucursalId: string,
+    usuarioId: string
+  ): Observable<CajaTurnoDto | null> {
+    this.loading.set(true);
+    return this.http
+      .get<CajaTurnoDto>(`${this.apiUrl}/activa/${sucursalId}/${usuarioId}`)
+      .pipe(
+        tap((caja) => {
+          this._cajaActiva.set(caja);
+          this.loading.set(false);
+        }),
+        catchError(() => {
+          this._cajaActiva.set(null);
+          this.loading.set(false);
+          return of(null);
+        })
+      );
+  }
+
   /**
    * Abre un nuevo turno de caja con montos iniciales desglosados
    * en efectivo (billetes/monedas) y virtual (POS/pasarela).

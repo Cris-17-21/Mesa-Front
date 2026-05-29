@@ -6,6 +6,7 @@ export interface MovimientoCaja {
     monto: number;
     descripcion: string;
     usuarioId: string;
+    esEfectivo?: boolean;
 }
 
 export interface CreateMovimientoCajaRequest {
@@ -14,6 +15,7 @@ export interface CreateMovimientoCajaRequest {
     descripcion: string;
     tipo: TipoMovimiento;
     usuarioId: string;
+    esEfectivo?: boolean;
 }
 
 export interface MovimientoCajaResponse {
@@ -23,4 +25,5 @@ export interface MovimientoCajaResponse {
     descripcion: string;
     fecha: string;
     usuarioNombre: string;
+    esEfectivo?: boolean;
 }

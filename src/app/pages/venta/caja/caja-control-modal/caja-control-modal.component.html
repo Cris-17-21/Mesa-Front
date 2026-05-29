@@ -1,5 +1,5 @@
 <p-dialog [header]="type() === 'OPEN' ? 'Aperturar Caja' : 'Cerrar Turno'" [(visible)]="visible" [modal]="true"
-    [style]="{ width: '32rem', maxWidth: '95vw' }" [draggable]="false" [resizable]="false">
+    [style]="{ width: '30rem', maxWidth: '95vw' }" [contentStyle]="{ 'max-height': '80vh', 'overflow-y': 'auto' }" [draggable]="false" [resizable]="false">
 
     <form [formGroup]="form" (ngSubmit)="submit()" class="form-container">
 
@@ -10,11 +10,12 @@
             <div class="alert-text">
                 @if (type() === 'OPEN') {
                 <p>
-                    Ingrese el monto base con el que inicia el turno, desglosado por tipo de pago.
+                    Ingrese el monto base con el que inicia el turno
                 </p>
                 } @else {
                 <p>
-                    Cuente el dinero físico (efectivo) y cuadre los pagos virtuales (tarjetas/transferencias). El sistema calculará el arqueo automáticamente.
+                    Cuente el dinero físico (efectivo) y cuadre los pagos virtuales (tarjetas/transferencias). El
+                    sistema calculará el arqueo automáticamente.
                 </p>
                 }
             </div>
@@ -25,11 +26,11 @@
         <div class="grid-inputs">
             <div class="field">
                 <label class="label-noir">Efectivo Apertura</label>
-                <p-inputNumber formControlName="efectivoApertura" mode="currency" currency="PEN" locale="es-PE" [min]="0"
-                    styleClass="w-full" inputStyleClass="noir-input-number" placeholder="S/ 0.00">
+                <p-inputNumber formControlName="efectivoApertura" mode="currency" currency="PEN" locale="es-PE"
+                    [min]="0" styleClass="w-full" inputStyleClass="noir-input-number" placeholder="S/ 0.00">
                 </p-inputNumber>
                 @if (form.controls.efectivoApertura.invalid && form.controls.efectivoApertura.touched) {
-                <small class="error-text">El monto de efectivo es obligatorio y mayor o igual a 0.</small>
+                <small class="error-text">El monto debe ser mayor o igual a 0.</small>
                 }
             </div>
 
@@ -39,7 +40,7 @@
                     styleClass="w-full" inputStyleClass="noir-input-number" placeholder="S/ 0.00">
                 </p-inputNumber>
                 @if (form.controls.virtualApertura.invalid && form.controls.virtualApertura.touched) {
-                <small class="error-text">El monto virtual es obligatorio y mayor o igual a 0.</small>
+                <small class="error-text">El monto debe ser mayor o igual a 0.</small>
                 }
             </div>
         </div>
@@ -49,7 +50,7 @@
         @if (type() === 'CLOSE') {
         <div class="summary-section">
             <h4 class="section-title">Resumen de Arqueo</h4>
-            
+
             <div class="summary-table">
                 <div class="table-header">
                     <span>Concepto</span>
@@ -57,13 +58,14 @@
                     <span>Real</span>
                     <span>Diferencia</span>
                 </div>
-                
+
                 <div class="table-row">
                     <span class="concept">Efectivo:</span>
                     <span>{{ efectivoEsperado() | currency:'PEN':'symbol':'1.2-2':'es-PE' }}</span>
                     <span class="real-input-wrapper">
-                        <p-inputNumber formControlName="efectivoCierreReal" mode="currency" currency="PEN" locale="es-PE" [min]="0"
-                            styleClass="w-full" inputStyleClass="noir-input-number-small" placeholder="S/ 0.00">
+                        <p-inputNumber formControlName="efectivoCierreReal" mode="currency" currency="PEN"
+                            locale="es-PE" [min]="0" styleClass="w-full" inputStyleClass="noir-input-number-small"
+                            placeholder="S/ 0.00">
                         </p-inputNumber>
                     </span>
                     <span class="diff-value" [ngClass]="{
@@ -79,8 +81,9 @@
                     <span class="concept">Virtual/Tarjetas:</span>
                     <span>{{ virtualEsperado() | currency:'PEN':'symbol':'1.2-2':'es-PE' }}</span>
                     <span class="real-input-wrapper">
-                        <p-inputNumber formControlName="virtualCierreReal" mode="currency" currency="PEN" locale="es-PE" [min]="0"
-                            styleClass="w-full" inputStyleClass="noir-input-number-small" placeholder="S/ 0.00">
+                        <p-inputNumber formControlName="virtualCierreReal" mode="currency" currency="PEN" locale="es-PE"
+                            [min]="0" styleClass="w-full" inputStyleClass="noir-input-number-small"
+                            placeholder="S/ 0.00">
                         </p-inputNumber>
                     </span>
                     <span class="diff-value" [ngClass]="{
@@ -103,7 +106,8 @@
 
         <!-- OBSERVACIONES -->
         <div class="field mt-3">
-            <label class="label-noir">Observaciones {{ hayDiferencia() ? '(Obligatorio por descuadre)' : '(Opcional)' }}</label>
+            <label class="label-noir">Observaciones {{ hayDiferencia() ? '(Obligatorio por descuadre)' : '(Opcional)'
+                }}</label>
             <textarea pInputTextarea formControlName="observacion" rows="3" class="noir-input w-full"
                 [placeholder]="hayDiferencia() ? 'Indique el motivo del descuadre...' : 'Ej: Todo conforme...'"></textarea>
             @if (hayDiferencia() && !form.value.observacion?.trim() && form.controls.observacion.touched) {

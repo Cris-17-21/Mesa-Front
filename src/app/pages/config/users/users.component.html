@@ -27,14 +27,16 @@
                     </div>
 
                     <div class="filters-wrapper">
+                        @if (isSuperAdmin()) {
                         <p-select [options]="empresas()" [ngModel]="selectedEmpresaId()"
                             (onChange)="onEmpresaFilterChange($event.value)" optionLabel="razonSocial" optionValue="id"
                             placeholder="Filtrar por Empresa" [showClear]="true" class="filter-select">
                         </p-select>
+                        }
 
-                        <p-select [options]="sucursalesFiltradas()" [ngModel]="selectedSucursalId()"
+                        <p-select [options]="isSuperAdmin() ? sucursalesFiltradas() : sucursales()" [ngModel]="selectedSucursalId()"
                             (onChange)="onSucursalFilterChange($event.value)" optionLabel="nombre" optionValue="id"
-                            placeholder="Filtrar por Sucursal" [showClear]="true" [disabled]="!selectedEmpresaId()"
+                            placeholder="Filtrar por Sucursal" [showClear]="true" [disabled]="isSuperAdmin() && !selectedEmpresaId()"
                             class="filter-select">
                         </p-select>
                     </div>

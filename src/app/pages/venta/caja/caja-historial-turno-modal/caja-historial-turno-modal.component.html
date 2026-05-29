@@ -1,4 +1,5 @@
-<p-dialog [(visible)]="visible" [modal]="true" [header]="'Detalle de Turno Histórico'" [style]="{ width: '70vw' }"
+<p-dialog [(visible)]="visible" [modal]="true" [header]="'Detalle de Turno Histórico'"
+    [style]="{ width: '45rem', maxWidth: '95vw' }" [contentStyle]="{ 'max-height': '80vh', 'overflow-y': 'auto' }"
     [draggable]="false" [resizable]="false" styleClass="noir-dialog">
 
     @if (loading() && !resumen()) {
@@ -14,33 +15,43 @@
             <div class="summary-card">
                 <span class="label">Monto Apertura</span>
                 <span class="value">{{ resumen()?.montoInicial | currency:'PEN':'symbol' }}</span>
+                <div class="breakdown-details" style="font-size: 0.75rem; color: #71717a; margin-top: 4px; display: flex; gap: 8px;">
+                    <span>Ef: {{ resumen()?.montoAperturaEfectivo | currency:'PEN':'symbol' }}</span>
+                    <span>Vir: {{ resumen()?.montoAperturaVirtual | currency:'PEN':'symbol' }}</span>
+                </div>
             </div>
             <div class="summary-card">
                 <span class="label">Monto Cierre</span>
-                <span class="value">{{ resumen()?.saldoRealEnCaja | currency:'PEN':'symbol' }}</span>
+                <span class="value">{{ ((resumen()?.montoCierreRealEfectivo ?? 0) + (resumen()?.montoCierreRealVirtual ?? 0)) | currency:'PEN':'symbol' }}</span>
+                <div class="breakdown-details" style="font-size: 0.75rem; color: #71717a; margin-top: 4px; display: flex; gap: 8px;">
+                    <span>Ef: {{ resumen()?.montoCierreRealEfectivo | currency:'PEN':'symbol' }}</span>
+                    <span>Vir: {{ resumen()?.montoCierreRealVirtual | currency:'PEN':'symbol' }}</span>
+                </div>
             </div>
             <div class="summary-card" [class.negative]="(resumen()?.diferencia || 0) < 0"
                 [class.positive]="(resumen()?.diferencia || 0) > 0">
                 <span class="label">Diferencia</span>
                 <span class="value">{{ resumen()?.diferencia | currency:'PEN':'symbol' }}</span>
+                <div class="breakdown-details" style="font-size: 0.75rem; color: #71717a; margin-top: 4px; display: flex; gap: 8px;">
+                    <span>Ef: {{ ((resumen()?.montoCierreRealEfectivo ?? 0) - (resumen()?.saldoEsperadoEnCaja ?? 0)) | currency:'PEN':'symbol' }}</span>
+                    <span>Vir: {{ ((resumen()?.montoCierreRealVirtual ?? 0) - (resumen()?.saldoEsperadoVirtual ?? 0)) | currency:'PEN':'symbol' }}</span>
+                </div>
             </div>
         </div>
 
         <div class="details-section">
             <div class="detail-row">
                 <div class="detail-item">
-                    <span class="label">Ventas Totales</span>
-                    <span class="value text-income">{{ resumen()?.totalVentasGlobal | currency:'PEN':'symbol' }}</span>
+                    <span class="label">Entrada Caja Chica</span>
+                    <span class="value text-income">{{ ((resumen()?.totalVentasGlobal ?? 0) + (resumen()?.totalIngresosCajaChica ?? 0)) | currency:'PEN':'symbol' }}</span>
                 </div>
                 <div class="detail-item">
-                    <span class="label">Ingresos Externos</span>
-                    <span class="value text-income">{{ resumen()?.totalIngresosCajaChica | currency:'PEN':'symbol'
-                        }}</span>
+                    <span class="label">Ingresos Manuales</span>
+                    <span class="value text-income">{{ resumen()?.totalIngresosCajaChica | currency:'PEN':'symbol' }}</span>
                 </div>
                 <div class="detail-item">
-                    <span class="label">Egresos</span>
-                    <span class="value text-expense">{{ resumen()?.totalEgresosCajaChica | currency:'PEN':'symbol'
-                        }}</span>
+                    <span class="label">Gastos Caja Chica</span>
+                    <span class="value text-expense">{{ resumen()?.totalEgresosCajaChica | currency:'PEN':'symbol' }}</span>
                 </div>
             </div>
         </div>
@@ -48,8 +59,8 @@
         <!-- TABLA DE MOVIMIENTOS -->
         <div class="movements-container">
             <h3 class="section-title"><i class="bi bi-list-ul"></i> Movimientos del Turno</h3>
-            <p-table [value]="movimientos()" [rows]="5" [paginator]="true"
-                styleClass="p-datatable-sm p-datatable-gridlines noir-table">
+            <p-table [value]="movimientos()" [rows]="5" [rowsPerPageOptions]="[5, 10, 25]" [paginator]="true"
+                styleClass="p-datatable-sm" [responsiveLayout]="'scroll'">
                 <ng-template pTemplate="header">
                     <tr>
                         <th style="width: 100px">Hora</th>

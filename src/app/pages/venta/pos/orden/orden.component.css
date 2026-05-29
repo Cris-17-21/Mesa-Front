@@ -1,425 +1,434 @@
-/* =========================================
-   0. HOST — el componente ocupa todo el contenedor del modal
-   ========================================= */
 :host {
     display: flex;
     flex-direction: column;
     height: 100%;
     overflow: hidden;
     position: relative;
-    /* Permitir overlays absolutos dentro */
 }
-
-
 @keyframes fadeIn {
     from {
         opacity: 0;
     }
-
     to {
         opacity: 1;
     }
 }
-
-/* =========================================
-   1. ESTRUCTURA Y HEADER (FIJO)
-   ========================================= */
 .header-modal {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 0 20px;
-    background: #fff;
-    border-bottom: 1px solid #eee;
+    background: #ffffff;
+    border-bottom: 1px solid #e4e4e7;
     height: 60px;
     flex-shrink: 0;
 }
-
 .header-left-group {
     display: flex;
     align-items: center;
     gap: 15px;
 }
-
 .btn-back-header {
-    background: #1a1a1a;
-    color: white;
+    background: #18181b;
+    color: #ffffff;
     border: none;
-    width: 38px;
-    height: 38px;
-    border-radius: 8px;
+    width: 34px;
+    height: 34px;
+    border-radius: 6px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.1rem;
-    transition: all 0.2s;
+    font-size: 1rem;
+    transition: all 0.2s ease;
 }
-
 .btn-back-header:hover {
-    background: #333;
-    transform: translateX(-3px);
+    background: #27272a;
+    transform: translateX(-2px);
 }
-
 .mesa-info {
     display: flex;
     align-items: center;
     gap: 12px;
 }
-
 .mesa-info h2 {
     margin: 0;
-    font-size: 1.1rem;
-    color: #1a1a1a;
+    font-size: 1rem;
+    color: #18181b;
     font-weight: 700;
 }
-
 .modo-badge {
-    background: #28a745;
-    color: white;
-    font-size: 0.65rem;
-    padding: 4px 10px;
-    border-radius: 20px;
+    background: #f4f4f5;
+    color: #27272a;
+    font-size: 0.7rem;
+    padding: 3px 8px;
+    border-radius: 6px;
     text-transform: uppercase;
-    font-weight: 700;
+    font-weight: 600;
+    border: 1px solid #e4e4e7;
 }
-
 .modo-badge.editar {
-    background: #f39c12;
+    background: #fffbeb;
+    color: #b45309;
+    border-color: #fde68a;
 }
-
 .btn-close {
-    background: #f5f5f5;
+    background: transparent;
     border: none;
-    width: 34px;
-    height: 34px;
-    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s;
+    color: #71717a;
+    transition: all 0.2s ease;
 }
-
 .btn-close:hover {
-    background: #ff4d4f;
-    color: white;
+    background: #f4f4f5;
+    color: #18181b;
 }
-
-/* =========================================
-   2. CONTENEDOR POS (DISTRIBUCIÓN)
-   ========================================= */
 .pos-container {
     display: grid;
     grid-template-columns: 1fr 400px;
     flex: 1;
-    /* Ocupa el espacio restante después del header */
     min-height: 0;
-    /* Permite que flex-children hagan scroll correctamente */
     background-color: #f8f9fa;
     overflow: hidden;
 }
-
-/* =========================================
-   3. SECCIÓN CATÁLOGO (IZQUIERDA)
-   ========================================= */
 .catalog-section {
     padding: 20px;
     display: flex;
     flex-direction: column;
     overflow: hidden;
 }
-
 .toolbar-catalog {
-    background: white;
-    padding: 15px;
-    border-radius: 12px;
+    background: #ffffff;
+    padding: 12px;
+    border-radius: 10px;
     display: flex;
     flex-direction: column;
-    gap: 15px;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+    gap: 12px;
+    margin-bottom: 16px;
+    border: 1px solid #e4e4e7;
     flex-shrink: 0;
 }
-
 .search-box {
     position: relative;
     width: 100%;
 }
-
 .search-icon {
     position: absolute;
-    left: 15px;
+    left: 14px;
     top: 50%;
     transform: translateY(-50%);
-    /* Centrado vertical exacto */
-    color: #adb5bd;
-    font-size: 1.1rem;
+    color: #a1a1aa;
+    font-size: 1rem;
     z-index: 2;
 }
-
 .search-input {
     width: 100%;
-    padding: 12px 15px 12px 45px;
-    border: 1.5px solid #eee;
-    border-radius: 10px;
-    background: #fcfcfc;
+    padding: 10px 14px 10px 40px;
+    border: 1px solid #e4e4e7;
+    border-radius: 8px;
+    background: #fafafa;
     outline: none;
-    font-size: 0.95rem;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+    color: #18181b;
 }
-
+.search-input:focus {
+    border-color: #18181b;
+    background: #ffffff;
+}
 .categories-container {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     width: 100%;
     overflow: hidden;
 }
-
 .categories-scroll {
     display: flex;
-    gap: 8px;
+    gap: 6px;
     overflow-x: auto;
     scrollbar-width: none;
     flex: 1;
 }
-
 .categories-scroll::-webkit-scrollbar {
     display: none;
 }
-
 .cat-chip {
-    padding: 8px 18px;
-    border-radius: 25px;
-    border: 1.5px solid #eee;
-    background: #fff;
+    padding: 6px 14px;
+    border-radius: 8px;
+    border: 1px solid #e4e4e7;
+    background: #ffffff;
+    color: #71717a;
     cursor: pointer;
-    white-space: nowrap;
     font-size: 0.85rem;
     font-weight: 500;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    white-space: nowrap;
 }
-
+.cat-chip:hover {
+    border-color: #18181b;
+    background: #fafafa;
+    color: #18181b;
+}
 .cat-chip.active {
-    background: #1a1a1a;
-    color: #fff;
-    border-color: #1a1a1a;
+    background: #18181b;
+    color: #ffffff;
+    border-color: #18181b;
 }
-
 .products-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: 16px;
     overflow-y: auto;
-    /* Scroll solo en productos */
     padding-bottom: 20px;
 }
-
 .product-card {
-    background: white;
-    border-radius: 15px;
+    background: #ffffff;
+    border: 1px solid #e4e4e7;
+    border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
     cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.01), 0 10px 20px -15px rgba(0,0,0,0.03);
 }
-
+.product-card:hover {
+    border-color: #18181b;
+    transform: translateY(-3px);
+    box-shadow: 0 12px 24px -10px rgba(24, 24, 27, 0.08);
+}
 .prod-img {
-    height: 120px;
+    height: 115px;
     background-size: cover;
     background-position: center;
-    background-color: #f1f3f5;
+    background: linear-gradient(135deg, #fafafa 0%, #eaeaea 100%);
     position: relative;
+    border-bottom: 1px solid #f4f4f5;
 }
-
 .add-btn-float {
     position: absolute;
-    bottom: 10px;
-    right: 10px;
-    background: #222;
-    color: #fff;
-    width: 28px;
-    height: 28px;
+    bottom: 8px;
+    right: 8px;
+    background: #18181b;
+    color: #ffffff;
+    width: 26px;
+    height: 26px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: bold;
+    font-size: 0.95rem;
+    font-weight: 500;
+    opacity: 0;
+    transform: scale(0.9);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
 }
-
+.product-card:hover .add-btn-float {
+    opacity: 1;
+    transform: scale(1);
+}
 .prod-info {
     padding: 12px;
 }
-
 .prod-info h4 {
-    margin: 0 0 5px;
-    font-size: 0.9rem;
+    margin: 0 0 6px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #18181b;
+    line-height: 1.3;
 }
-
 .prod-info .price {
-    font-weight: 800;
-    color: #1a1a1a;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #71717a;
 }
-
-/* =========================================
-   4. SECCIÓN TICKET / COMANDA (DERECHA)
-   ========================================= */
 .ticket-section {
-    background: #fff;
-    border-left: 1px solid #eee;
+    background: #ffffff;
+    border-left: 1px solid #e4e4e7;
     display: flex;
     flex-direction: column;
     overflow: hidden;
 }
-
-/* Nav móvil: oculta en escritorio */
 .mobile-nav {
     display: none;
 }
-
 .ticket-header {
-    padding: 20px;
-    border-bottom: 1px solid #eee;
+    padding: 16px 20px;
+    border-bottom: 1px solid #e4e4e7;
     display: flex;
     justify-content: space-between;
+    align-items: center;
     flex-shrink: 0;
-    /* No se encoge */
 }
-
+.ticket-header h3 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #18181b;
+    margin: 0;
+}
+.badge-count {
+    font-size: 0.75rem;
+    background: #f4f4f5;
+    color: #71717a;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-weight: 600;
+}
 .ticket-items {
     flex: 1;
-    /* Estira para ocupar el espacio central */
     overflow-y: auto;
-    /* ACTIVA EL SCROLL AQUÍ */
-    padding: 15px;
-    background: #fcfcfc;
+    padding: 12px;
+    background: #fafafa;
 }
-
 .cart-item {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 12px;
-    background: #fff;
-    border-radius: 12px;
-    margin-bottom: 10px;
-    border: 1px solid #f1f1f1;
+    padding: 10px 12px;
+    background: #ffffff;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    border: 1px solid #e4e4e7;
+    transition: all 0.2s ease;
 }
-
+.cart-item:hover {
+    border-color: #d4d4d8;
+}
 .item-qty {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
-    gap: 4px;
-}
-
-.btn-tiny {
-    width: 24px;
-    height: 24px;
-    border: 1px solid #ddd;
+    gap: 6px;
+    background: #f4f4f5;
+    padding: 2px 4px;
     border-radius: 6px;
-    background: #fff;
-    cursor: pointer;
+    border: 1px solid #e4e4e7;
 }
-
+.btn-tiny {
+    width: 22px;
+    height: 22px;
+    border: none;
+    border-radius: 4px;
+    background: transparent;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: #71717a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+}
+.btn-tiny:hover:not(:disabled) {
+    background: #ffffff;
+    color: #18181b;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+.btn-tiny:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+.item-qty span {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #18181b;
+    min-width: 14px;
+    text-align: center;
+}
 .item-detail {
     flex: 1;
 }
-
 .item-name {
     font-weight: 600;
-    font-size: 0.9rem;
-    display: block;
-}
-
-.item-subtotal {
-    color: #666;
     font-size: 0.85rem;
+    display: block;
+    color: #27272a;
 }
-
+.item-subtotal {
+    color: #71717a;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
 .btn-delete {
-    color: #ff4d4f;
+    color: #ef4444;
     border: none;
     background: none;
     cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    opacity: 0.7;
+    transition: all 0.2s ease;
 }
-
-/* Ítem del pedido original: bloqueado, no editable */
+.btn-delete:hover {
+    opacity: 1;
+    transform: scale(1.1);
+}
 .cart-item.item-locked {
     background: #fafafa;
-    border-color: #e8e8e8;
-    opacity: 0.85;
+    border-color: #e4e4e7;
+    opacity: 0.8;
 }
-
 .cart-item.item-locked .btn-tiny:disabled {
-    color: #bbb;
+    color: #a1a1aa;
     cursor: not-allowed;
-    border-color: #eee;
 }
-
 .lock-icon {
-    color: #f39c12;
-    font-size: 0.95rem;
+    color: #eab308;
+    font-size: 0.85rem;
     flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.8;
 }
-
-/* =========================================
-   5. FOOTER (OPTIMIZADO Y COMPACTO)
-   ========================================= */
 .ticket-footer {
     flex-shrink: 0;
-    /* No se encoge */
-    background: #fff;
-    border-top: 1px solid #e0e0e0;
-    padding: 12px 16px;
-    /* Reducido de 20px */
-    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.08);
-    /* Sombra más elegante */
+    background: #ffffff;
+    border-top: 1px solid #e4e4e7;
+    padding: 16px;
     z-index: 10;
 }
-
-/* Filas de resumen (Total, Consumo previo) */
 .summary-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 4px;
-    /* Menos separación */
-    font-size: 0.9rem;
-    /* Fuente más legible pero contenida */
-    color: #555;
+    font-size: 0.85rem;
+    color: #71717a;
 }
-
 .summary-row.total {
-    margin-top: 8px;
-    font-size: 1rem;
+    margin-top: 6px;
+    font-size: 0.95rem;
     font-weight: 700;
-    color: #333;
+    color: #18181b;
 }
-
 .summary-row.big-total {
     margin-top: 8px;
     padding-top: 8px;
-    border-top: 1px dashed #ccc;
-    font-size: 1.2rem;
-    /* Destacado pero no gigante */
+    border-top: 1px dashed #e4e4e7;
+    font-size: 1.15rem;
     font-weight: 800;
-    color: #d63384;
-    /* Un color que resalte (o usa tu rojo #dc3545) */
+    color: #18181b;
 }
-
 .text-bold {
     font-weight: 700;
-    color: #000;
+    color: #18181b;
 }
-
-/* Botones de acción */
 .action-buttons {
     display: flex;
     flex-direction: column;
     gap: 8px;
-    /* Menos espacio entre botones */
     margin-top: 12px;
 }
-
 .ticket-footer button {
     display: flex;
     align-items: center;
@@ -427,78 +436,68 @@
     gap: 8px;
     border: none;
     border-radius: 8px;
-    /* Bordes un poco menos redondos ahorran espacio visual */
     cursor: pointer;
     font-family: inherit;
-    transition: transform 0.1s, opacity 0.2s;
+    transition: all 0.2s ease;
 }
-
 .ticket-footer button:active {
     transform: scale(0.98);
 }
-
 .btn-primary-large {
     width: 100%;
-    padding: 12px;
-    /* Reducido de 16px */
-    background: #1a1a1a;
-    color: #fff;
+    padding: 11px;
+    background: #18181b;
+    color: #ffffff;
     font-weight: 600;
-    font-size: 1rem;
+    font-size: 0.95rem;
 }
-
 .btn-primary-large:disabled {
     background: #ccc;
     cursor: not-allowed;
 }
-
 .extra-actions {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    /* 50% cada uno exacto */
     gap: 8px;
 }
-
 .btn-secondary {
-    background: #f1f3f5;
-    color: #333;
+    background: #f4f4f5;
+    color: #18181b;
+    border: 1px solid #e4e4e7;
+    border-radius: 8px;
     padding: 10px;
-    /* Más compacto */
     font-weight: 600;
     font-size: 0.9rem;
+    transition: all 0.2s ease;
 }
-
+.btn-secondary:hover {
+    background: #e4e4e7;
+}
 .btn-success {
-    background: #28a745;
-    color: #fff;
+    background: #10b981;
+    color: #ffffff;
+    border-radius: 8px;
     padding: 10px;
     font-weight: 600;
     font-size: 0.9rem;
+    transition: all 0.2s ease;
 }
-
-/* =========================================
-   6. RESPONSIVE MÓVIL (MAX-WIDTH: 900px)
-   ========================================= */
+.btn-success:hover {
+    background: #059669;
+}
 @media (max-width: 900px) {
-
-    /* Ajuste del contenedor principal */
-    /* El :host en móvil deja 60px para la nav bar inferior */
     :host {
         padding-bottom: 60px;
     }
-
     .pos-container {
         display: block;
         flex: 1;
         min-height: 0;
         background: #fff;
     }
-
     .hidden-mobile {
         display: none !important;
     }
-
-    /* catalog-section también ocupa todo en móvil (vista MENU) */
     .catalog-section {
         height: 100%;
         display: flex;
@@ -506,76 +505,54 @@
         overflow: hidden;
         padding: 10px;
     }
-
-    /* El grid en móvil: columnas más chicas y tarjetas con su altura natural */
     .products-grid {
         grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
         gap: 10px;
         align-content: start;
         align-items: start;
     }
-
     .prod-img {
         height: 90px;
     }
-
-    /* ticket-section ocupa todo el pos-container en móvil */
     .ticket-section {
         height: 100%;
         display: flex;
         flex-direction: column;
         overflow: hidden;
     }
-
     .ticket-header {
         padding: 10px 15px;
-        /* Cabecera más delgada */
     }
-
     .ticket-items {
         padding: 10px;
-        /* Menos padding lateral para ganar ancho */
     }
-
-    /* FOOTER ULTRA COMPACTO PARA MÓVIL */
     .ticket-footer {
         padding: 8px 12px;
-        /* Padding mínimo */
     }
-
     .summary-row {
         font-size: 0.85rem;
         margin-bottom: 2px;
     }
-
     .summary-row.big-total {
         font-size: 1.1rem;
         padding-top: 4px;
         margin-top: 4px;
     }
-
     .action-buttons {
         margin-top: 8px;
         gap: 6px;
     }
-
     .btn-primary-large {
         padding: 10px;
-        /* Botón más delgado */
         font-size: 0.95rem;
     }
-
     .btn-secondary,
     .btn-success {
         padding: 8px;
-        /* Botones secundarios delgados */
         font-size: 0.85rem;
     }
-
-    /* BARRA DE NAVEGACIÓN INFERIOR */
     .mobile-nav {
         display: flex;
-        /* Activar aquí, dentro del media query */
         position: fixed;
         bottom: 0;
         left: 0;
@@ -586,7 +563,6 @@
         z-index: 1000;
         box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
     }
-
     .nav-btn {
         flex: 1;
         border: none;
@@ -599,24 +575,18 @@
         color: #999;
         font-size: 0.75rem;
     }
-
     .nav-btn i {
         font-size: 1.2rem;
         margin-bottom: 2px;
     }
-
     .nav-btn.active {
-        color: #1a1a1a;
+        color: #18181b;
         font-weight: 700;
-        background-color: #f8f9fa;
-        /* Sutil fondo al activo */
+        background-color: #f4f4f5;
     }
-
-    /* Ajuste burbuja notificación */
     .icon-container {
         position: relative;
     }
-
     .badge-bubble {
         position: absolute;
         top: -5px;
@@ -633,7 +603,6 @@
         border: 2px solid #fff;
     }
 }
-
 .ticket-preview-overlay {
     position: fixed;
     top: 0;
@@ -647,4 +616,48 @@
     justify-content: center;
     overflow-y: auto;
     padding: 20px;
+}
+
+/* Estado Vacío de Comanda */
+.empty-ticket {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    min-height: 280px;
+    text-align: center;
+    padding: 30px 20px;
+    background: transparent;
+}
+
+.empty-ticket i {
+    font-size: 2.8rem;
+    color: #a1a1aa;
+    margin-bottom: 16px;
+    animation: floatEmpty 4s ease-in-out infinite;
+    display: inline-block;
+}
+
+.empty-ticket p {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #18181b;
+    margin: 0 0 6px 0;
+}
+
+.empty-ticket small {
+    font-size: 0.8rem;
+    color: #71717a;
+    max-width: 180px;
+    line-height: 1.4;
+}
+
+@keyframes floatEmpty {
+    0%, 100% {
+        transform: translateY(0) rotate(0deg);
+    }
+    50% {
+        transform: translateY(-8px) rotate(-3deg);
+    }
 }

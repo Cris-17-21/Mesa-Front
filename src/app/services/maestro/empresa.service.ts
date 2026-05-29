@@ -44,4 +44,18 @@ export class EmpresaService {
   deleteEmpresa(id: string): Observable<void> {
     return this.http.delete<void>(`${this.API_URL}/${id}`);
   }
+
+  // SUBIR CERTIFICADO DIGITAL SUNAT
+  subirCertificado(id: string, file: File): Observable<Empresa> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<Empresa>(`${this.API_URL}/${id}/certificado`, formData);
+  }
+
+  // SUBIR LOGO DE EMPRESA
+  subirLogo(id: string, file: File): Observable<Empresa> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<Empresa>(`${this.API_URL}/${id}/logo`, formData);
+  }
 }

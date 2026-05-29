@@ -161,55 +161,65 @@
 
 .kpi-section {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1rem;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0.75rem;
 }
 
 .kpi-card {
     background: white;
     border: 1px solid #e4e4e7;
-    border-radius: 12px;
-    padding: 1.25rem;
+    border-radius: 8px;
+    padding: 1rem;
     display: flex;
     align-items: center;
-    gap: 1rem;
-    transition: transform 0.2s ease;
+    gap: 0.75rem;
+    transition: all 0.2s ease;
 }
 
 .kpi-card:hover {
-    border-color: #d4d4d8;
+    border-color: #a1a1aa;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
 }
 
-/* Estilo especial para saldo principal */
+/* Bordes de color minimalistas para destacar saldos principales */
 .kpi-card.main-kpi {
-    background: #18181b;
-    color: white;
-    border: none;
+    border-left: 4px solid #18181b;
 }
 
-.kpi-card.main-kpi .label {
-    color: #a1a1aa;
+.kpi-card.virtual-kpi {
+    border-left: 4px solid #2563eb;
 }
 
-.kpi-card.main-kpi .value {
-    color: white;
+.kpi-card.income-kpi {
+    border-left: 4px solid #059669;
 }
 
-.kpi-card.main-kpi .kpi-icon {
-    background: rgba(255, 255, 255, 0.1);
-    color: white;
+.kpi-card.expense-kpi {
+    border-left: 4px solid #dc2626;
+}
+
+.kpi-card.action-card {
+    background: #fafafa;
+    border: 1px dashed #d4d4d8;
+    cursor: pointer;
+    justify-content: center;
+}
+
+.kpi-card.action-card:hover {
+    background: #f4f4f5;
+    border-color: #18181b;
 }
 
 .kpi-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 10px;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
     background: #f4f4f5;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.25rem;
-    color: #18181b;
+    font-size: 1.1rem;
+    color: #52525b;
 }
 
 .kpi-icon.income {
@@ -222,13 +232,18 @@
     color: #dc2626;
 }
 
+.kpi-icon.virtual {
+    background: #eff6ff;
+    color: #2563eb;
+}
+
 .kpi-info {
     display: flex;
     flex-direction: column;
 }
 
 .kpi-info .label {
-    font-size: 0.75rem;
+    font-size: 0.65rem;
     color: #71717a;
     text-transform: uppercase;
     font-weight: 600;
@@ -236,33 +251,26 @@
 }
 
 .kpi-info .value {
-    font-size: 1.5rem;
-    font-weight: 700;
+    font-size: 1.25rem;
+    font-weight: 600;
     color: #18181b;
     line-height: 1.2;
 }
 
-/* Action Card (Ir al POS) */
-.action-card {
-    background: linear-gradient(135deg, #f4f4f5 0%, #ffffff 100%);
-    cursor: pointer;
-    border: 1px dashed #a1a1aa;
-    justify-content: center;
-}
-
-.action-card:hover {
-    background: #f4f4f5;
-    transform: translateY(-2px);
-}
-
 .action-content {
     display: flex;
-    flex-direction: column;
     align-items: center;
     gap: 0.5rem;
     color: #18181b;
-    font-weight: 600;
+    font-weight: 500;
+    font-size: 0.85rem;
 }
+
+.action-content i {
+    font-size: 1.1rem;
+}
+
+
 
 /* --- TABLA --- */
 .table-container {
@@ -372,12 +380,60 @@
     background: #18181b;
     color: white;
     border-color: #18181b;
-}
-
-.text-red-500 {
+}.text-red-500 {
     color: #dc2626;
 }
 
 .text-green-500 {
     color: #059669;
+}
+
+/* Responsividad para pantallas medianas y pequeñas */
+@media (max-width: 1200px) {
+    .kpi-section {
+        grid-template-columns: repeat(3, 1fr) !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .kpi-section {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .kpi-section {
+        grid-template-columns: 1fr !important;
+    }
+    
+    .table-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .header-actions {
+        width: 100%;
+        justify-content: flex-start;
+    }
+}
+/* Badges para diferenciar tipo de dinero en movimientos */
+.badge-type {
+    font-size: 0.65rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.badge-type.badge-cash {
+    background-color: #f0fdf4;
+    color: #166534;
+    border: 1px solid #bbf7d0;
+}
+
+.badge-type.badge-virtual {
+    background-color: #eff6ff;
+    color: #1e40af;
+    border: 1px solid #bfdbfe;
 }

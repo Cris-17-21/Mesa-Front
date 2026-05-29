@@ -90,7 +90,7 @@
 
                     <div class="total-row">
                         <span class="precio-texto" [style.color]="mesa.textStyle">
-                            {{ mesa.total | currency:'PEN':'S/ ' }}
+                            <span class="currency-symbol">S/.</span> {{ mesa.total | number:'1.2-2' }}
                         </span>
                         @if (mesa.cantidadCuentas > 1) {
                         <span class="accounts-badge" [pTooltip]="mesa.cantidadCuentas + ' cuentas en esta mesa'">
@@ -112,8 +112,8 @@
                 </div>
                 } @else {
                 <div class="info-libre">
-                    <i class="bi bi-display" style="font-size: 2rem; color: #198754; opacity: 0.5;"></i>
-                    <span style="color: #198754; font-weight: 500;">Libre</span>
+                    <i class="bi bi-display table-icon-libre"></i>
+                    <span class="estado-badge-libre">Libre</span>
                 </div>
                 }
             </div>
@@ -140,7 +140,7 @@
     <div class="modal-overlay">
         <div class="modal-content">
             <app-orden [codigoMesaInput]="mesaSeleccionadaParaModal().codigoMesa"
-                [mesaIdInput]="mesaSeleccionadaParaModal().id" [pedidoIdInput]="mesaSeleccionadaParaModal().pedidoId"
+                [mesaIdInput]="mesaSeleccionadaParaModal().idPrincipal || mesaSeleccionadaParaModal().id" [pedidoIdInput]="mesaSeleccionadaParaModal().pedidoId"
                 [modoInput]="mesaSeleccionadaParaModal().esOcupada ? 'EDITAR' : 'NUEVO'" (onCerrar)="cerrarModalOrden()"
                 (onEditarPedidoViaCuentas)="onEditarPedidoDesdeCuentas($any($event))"
                 (onOpenCuentas)="handleOpenCuentasDesdeOrden()"

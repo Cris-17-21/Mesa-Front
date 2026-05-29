@@ -12,9 +12,8 @@ export interface Cliente {
 }
 
 // CREATE DTO
-export type CreateClienteDto = Omit<Cliente, 'id' | 'tipoDocumento' | 'isActive'> & {
+export type CreateClienteDto = Omit<Cliente, 'id' | 'isActive'> & {
     empresaId: string;
-    tipoDocumentoId: string;
 }
 
 // UPDATE DTO

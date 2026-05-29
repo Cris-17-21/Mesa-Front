@@ -17,6 +17,7 @@ import { Empresa } from '../../../models/maestro/empresa.model';
 
 // Componente Modal y su Interfaz
 import { ModalSucursalComponent, SucursalModalData } from './modal-sucursal/modal-sucursal.component';
+import { AuthService } from '../../../core/auth/auth.service';
 
 @Component({
   selector: 'app-sucursal',
@@ -32,6 +33,9 @@ export class SucursalComponent implements OnInit {
 
   private readonly sucursalService = inject(SucursalService);
   private readonly empresaService = inject(EmpresaService);
+  private readonly authService = inject(AuthService);
+
+  readonly isSuperAdmin = this.authService.isSuperAdmin;
 
   readonly sucursales = signal<Sucursal[]>([]);
   readonly empresas = signal<Empresa[]>([]);
@@ -48,14 +52,26 @@ export class SucursalComponent implements OnInit {
 
   loadInitialData(): void {
     this.loading.set(true);
-    // Cargamos las empresas para el filtro superior
-    this.empresaService.getAllActiveEmpresas().subscribe({
-      next: (data) => {
-        this.empresas.set(data);
-        this.loadAllSucursales();
-      },
-      error: () => this.loading.set(false)
-    });
+    if (this.isSuperAdmin()) {
+      // Cargamos las empresas para el filtro superior
+      this.empresaService.getAllActiveEmpresas().subscribe({
+        next: (data) => {
+          this.empresas.set(data);
+          this.loadAllSucursales();
+        },
+        error: () => this.loading.set(false)
+      });
+    } else {
+      const empresaId = this.authService.getEmpresaId();
+      this.selectedEmpresaId.set(empresaId);
+      this.sucursalService.getSucursalByEmpresaId(empresaId).subscribe({
+        next: (data) => {
+          this.sucursales.set(data);
+          this.loading.set(false);
+        },
+        error: () => this.loading.set(false)
+      });
+    }
   }
 
   loadAllSucursales(): void {
@@ -86,7 +102,11 @@ export class SucursalComponent implements OnInit {
   }
 
   refreshData() {
-    this.onEmpresaChange(this.selectedEmpresaId());
+    if (this.isSuperAdmin()) {
+      this.onEmpresaChange(this.selectedEmpresaId());
+    } else {
+      this.loadInitialData();
+    }
   }
 
   openCreate() {
@@ -95,12 +115,17 @@ export class SucursalComponent implements OnInit {
   }
 
   openEdit(sucursal: Sucursal) {
-    // empresa llega como string (razonSocial) del backend → buscamos su ID
-    const empresaEncontrada = this.empresas().find(e => e.razonSocial === sucursal.empresa);
+    let empresaId = null;
+    if (this.isSuperAdmin()) {
+      const empresaEncontrada = this.empresas().find(e => e.razonSocial === sucursal.empresa);
+      empresaId = empresaEncontrada ? empresaEncontrada.id : null;
+    } else {
+      empresaId = this.authService.getEmpresaId();
+    }
 
     const dataParaModal = {
       ...sucursal,
-      empresa: empresaEncontrada ? empresaEncontrada.id : null
+      empresa: empresaId
     };
     this.selectedSucursal.set(dataParaModal as any);
     this.displayModal.set(true);

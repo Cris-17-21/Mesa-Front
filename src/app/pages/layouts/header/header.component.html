@@ -7,7 +7,7 @@
   </div>
 
   <div class="header-right">
-    @if (!authService.isSuperAdmin()) {
+    @if (authService.hasPermission('ROLE_ADMIN_RESTAURANTE')) {
       <div class="branch-selector" (click)="cambiarSede()">
         <i class="bi bi-geo-alt-fill"></i>
         <span class="branch-name">{{ sedeActual() }}</span>
@@ -25,7 +25,6 @@
     <div class="user-pill">
       <div class="user-data">
         <span class="u-name">{{ username() }}</span>
-        <span class="u-role">{{ authService.isSuperAdmin() ? 'SUPERADMIN' : 'ADMINISTRADOR' }}</span>
       </div>
       <button class="logout-btn" (click)="logout()">
         <i class="bi bi-power"></i>

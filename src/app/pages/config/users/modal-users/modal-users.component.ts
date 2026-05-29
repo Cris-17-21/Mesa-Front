@@ -14,6 +14,7 @@ import { Empresa } from '../../../../models/maestro/empresa.model';
 import { Sucursal } from '../../../../models/maestro/sucursal.model';
 import { SucursalService } from '../../../../services/maestro/sucursal.service';
 import { ConsultaService } from '../../../../services/auxiliar/consulta.service';
+import { AuthService } from '../../../../core/auth/auth.service';
 
 @Component({
   selector: 'app-modal-users',
@@ -29,6 +30,7 @@ export class ModalUsersComponent {
   private readonly sucursalService = inject(SucursalService);
   private readonly consultaService = inject(ConsultaService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly authService = inject(AuthService);
 
   // Modelos e Inputs/Outputs reactivos
   readonly visible = model(false);
@@ -39,9 +41,18 @@ export class ModalUsersComponent {
 
   // Signals para estado local
   readonly loading = signal(false);
-  readonly rolesFiltrados = computed(() =>
-    this.roles().filter(r => r.name !== 'SUPERADMIN')
-  );
+  readonly isSuperAdmin = this.authService.isSuperAdmin;
+  readonly rolesFiltrados = computed(() => {
+    if (!this.isSuperAdmin()) {
+      return this.roles().filter(r => r.name !== 'ROLE_SUPER_ADMIN' && r.name !== 'SUPERADMIN');
+    }
+    return this.roles();
+  });
+  readonly isRoleAdmin = computed(() => {
+    const roleValue = this.userForm.get('role')?.value;
+    const selectedRole = this.roles().find(r => r.id === roleValue || r.name === roleValue);
+    return selectedRole?.name === 'ROLE_ADMIN_RESTAURANTE' || selectedRole?.name === 'ADMIN';
+  });
   readonly sucursalesPorEmpresa = signal<Sucursal[]>([]);
 
   readonly userForm: FormGroup = this.fb.group({
@@ -92,6 +103,10 @@ export class ModalUsersComponent {
   private prepareModal(data: any): void {
     if (!data) {
       this.userForm.reset({ tipoDocumento: 'DNI' });
+      if (!this.isSuperAdmin()) {
+        const empId = this.authService.getEmpresaId();
+        this.userForm.patchValue({ empresaId: empId });
+      }
       return;
     }
 
@@ -107,7 +122,7 @@ export class ModalUsersComponent {
     const mappedData = {
       ...data,
       role: roleId,
-      empresaId: data.empresaId || data.empresa?.id || data.empresa_id,
+      empresaId: this.isSuperAdmin() ? (data.empresaId || data.empresa?.id || data.empresa_id) : this.authService.getEmpresaId(),
       sucursalId: data.sucursalId || data.sucursal?.id || data.sucursal_id
     };
 
@@ -177,7 +192,7 @@ export class ModalUsersComponent {
         const selectedRole = this.roles().find(r => r.id === roleValue || r.name === roleValue);
         const sucursalCtrl = this.userForm.get('sucursalId');
 
-        if (selectedRole?.name === 'ADMIN') {
+        if (selectedRole?.name === 'ROLE_ADMIN_RESTAURANTE' || selectedRole?.name === 'ADMIN') {
           sucursalCtrl?.disable();
           sucursalCtrl?.clearValidators();
           sucursalCtrl?.setValue(null);

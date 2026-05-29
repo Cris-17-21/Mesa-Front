@@ -368,6 +368,65 @@
 }
 
 /* ==========================================================================
+   SUNAT CONFIG DIVIDER
+   ========================================================================== */
+.sunat-divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: 1.5rem 0 1rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #18181b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.sunat-divider::before,
+.sunat-divider::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid #e4e4e7;
+}
+
+.sunat-divider::before {
+    margin-right: 1em;
+}
+
+.sunat-divider::after {
+    margin-left: 1em;
+}
+
+/* ==========================================================================
+   SUNAT CERT SELECT BUTTON
+   ========================================================================== */
+.btn-cert-select {
+    background: #18181b !important;
+    border: 1px solid #18181b !important;
+    color: white !important;
+    border-radius: 0 8px 8px 0 !important;
+    padding: 0 15px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+}
+
+.btn-cert-select:hover:not(:disabled) {
+    background: #000000 !important;
+}
+
+.btn-cert-select:disabled {
+    background: #f4f4f5 !important;
+    border-color: #e4e4e7 !important;
+    color: #a1a1aa !important;
+    cursor: not-allowed;
+}
+
+/* ==========================================================================
    ACCESIBILIDAD
    ========================================================================== */
 @media (prefers-reduced-motion: reduce) {

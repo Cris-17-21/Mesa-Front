@@ -70,17 +70,27 @@
                     </div>
                 </div>
 
-                <div class="kpi-card">
-                    <div class="kpi-icon income"><i class="bi bi-graph-up-arrow"></i></div>
+                <div class="kpi-card virtual-kpi">
+                    <div class="kpi-icon virtual"><i class="bi bi-credit-card"></i></div>
                     <div class="kpi-info">
-                        <span class="label">Ventas Totales</span>
-                        <span class="value income-text">
-                            {{ cajaService.resumenFinanciero()?.totalVentasGlobal | currency:'PEN':'symbol' }}
+                        <span class="label">Saldo Virtual (Teórico)</span>
+                        <span class="value">
+                            {{ cajaService.resumenFinanciero()?.saldoEsperadoVirtual | currency:'PEN':'symbol' }}
                         </span>
                     </div>
                 </div>
 
-                <div class="kpi-card">
+                <div class="kpi-card income-kpi">
+                    <div class="kpi-icon income"><i class="bi bi-graph-up-arrow"></i></div>
+                    <div class="kpi-info">
+                        <span class="label">Entrada Caja Chica</span>
+                        <span class="value income-text">
+                            {{ totalEntradas() | currency:'PEN':'symbol' }}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="kpi-card expense-kpi">
                     <div class="kpi-icon expense"><i class="bi bi-arrow-down-right"></i></div>
                     <div class="kpi-info">
                         <span class="label">Gastos Caja Chica</span>
@@ -105,14 +115,16 @@
                     <span class="text-sm text-secondary">{{ today | date:'fullDate' }}</span>
                 </div>
 
-                <p-table [value]="movimientoService.movimientos()" [rows]="10" [paginator]="true"
-                    styleClass="p-datatable-sm p-datatable-gridlines noir-table">
+                <p-table [value]="movimientoService.movimientos()" [rows]="10" [rowsPerPageOptions]="[10, 25, 50]" [paginator]="true"
+                    styleClass="p-datatable-sm" [responsiveLayout]="'scroll'">
 
                     <ng-template pTemplate="header">
                         <tr>
                             <th style="width: 100px">Hora</th>
                             <th>Concepto / Descripción</th>
-                            <th style="width: 120px">Tipo</th>
+                            <th style="width: 150px">Usuario</th>
+                            <th style="width: 120px">Medio</th>
+                            <th style="width: 100px">Tipo</th>
                             <th style="width: 120px" class="text-right">Monto</th>
                         </tr>
                     </ng-template>
@@ -125,9 +137,15 @@
 
                             <td>
                                 <span class="font-medium">{{ mov.descripcion }}</span>
-                                <span style="display:block;font-size:0.75rem;color:#6b7280;margin-top:4px;"
-                                    class="text-xs text-secondary block ml-1">
-                                    {{ mov.usuarioNombre }}
+                            </td>
+
+                            <td>
+                                <span class="text-sm text-secondary">{{ mov.usuarioNombre }}</span>
+                            </td>
+
+                            <td>
+                                <span class="badge-type" [ngClass]="mov.esEfectivo ? 'badge-cash' : 'badge-virtual'">
+                                    {{ mov.esEfectivo ? 'Efectivo' : 'Virtual' }}
                                 </span>
                             </td>
 
@@ -140,16 +158,14 @@
 
                             <td class="text-right font-bold" [class.text-green-600]="mov.tipo === 'INGRESO'"
                                 [class.text-red-600]="mov.tipo === 'EGRESO'">
-
                                 {{ mov.monto | currency:'PEN':'symbol' }}
-
                             </td>
                         </tr>
                     </ng-template>
 
                     <ng-template pTemplate="emptymessage">
                         <tr>
-                            <td colspan="4" class="text-center p-4 text-secondary">
+                            <td colspan="6" class="text-center p-4 text-secondary">
                                 No hay movimientos registrados en este turno aún.
                             </td>
                         </tr>
@@ -165,11 +181,10 @@
         <div class="table-container shadow-noir fade-in">
             <div class="table-header">
                 <h3>Historial de Cierres</h3>
-                <p class="text-secondary text-sm">Listado de turnos finalizados recientemente</p>
             </div>
 
-            <p-table [value]="cajaService.historialTurnos()" [rows]="10" [paginator]="true"
-                styleClass="p-datatable-sm p-datatable-gridlines noir-table">
+            <p-table [value]="cajaService.historialTurnos()" [rows]="10" [rowsPerPageOptions]="[10, 25, 50]" [paginator]="true"
+                styleClass="p-datatable-sm" [responsiveLayout]="'scroll'">
                 <ng-template pTemplate="header">
                     <tr>
                         <th>Fecha Apertura</th>
@@ -177,7 +192,7 @@
                         <th>Usuario</th>
                         <th class="text-right">Monto Inicial</th>
                         <th class="text-right">Diferencia</th>
-                        <th style="width: 80px" class="text-center">Acciones</th>
+                        <th style="width: 120px" class="text-center">Acciones</th>
                     </tr>
                 </ng-template>
                 <ng-template pTemplate="body" let-turno>
@@ -191,14 +206,16 @@
                             {{ turno.diferencia | currency:'PEN':'symbol' }}
                         </td>
                         <td class="text-center">
-                            <button class="button-icon-only" (click)="verDetalleTurno(turno)"
-                                pTooltip="Ver movimientos" style="margin-right: 8px;">
-                                <i class="bi bi-eye"></i>
-                            </button>
-                            <button class="button-icon-only text-danger" (click)="descargarReportePdf(turno.id)"
-                                pTooltip="Descargar Reporte PDF">
-                                <i class="bi bi-file-pdf"></i>
-                            </button>
+                            <div style="display: flex; justify-content: center; gap: 8px;">
+                                <button class="button-icon-only" (click)="verDetalleTurno(turno)"
+                                    pTooltip="Ver movimientos">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                                <button class="button-icon-only text-danger" (click)="descargarReportePdf(turno.id)"
+                                    pTooltip="Descargar Reporte PDF">
+                                    <i class="bi bi-file-pdf"></i>
+                                </button>
+                            </div>
                         </td>
                     </tr>
                 </ng-template>

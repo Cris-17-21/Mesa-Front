@@ -81,10 +81,10 @@
             <div class="cart-item" [class.item-locked]="esItemExistente(item.productoId)">
                 <div class="item-qty">
                     <button class="btn-tiny" [disabled]="esItemExistente(item.productoId)"
-                        (click)="updateQuantity(item.productoId, 1)">+</button>
+                        (click)="updateQuantity(item.productoId, -1)">-</button>
                     <span>{{ item.cantidad }}</span>
                     <button class="btn-tiny" [disabled]="esItemExistente(item.productoId)"
-                        (click)="updateQuantity(item.productoId, -1)">-</button>
+                        (click)="updateQuantity(item.productoId, 1)">+</button>
                 </div>
 
                 <div class="item-detail">

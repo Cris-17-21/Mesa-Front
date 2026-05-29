@@ -234,8 +234,17 @@ export class DividirCuentaModalComponent implements OnInit {
           showConfirmButton: false
         });
 
-        // En lugar de cerrar, recargamos para ver la nueva cuenta a la derecha
-        this.cargarItemsYFiltros();
+        // En lugar de cerrar, recargamos la lista activa y luego cargamos los filtros para refrescar el lateral
+        if (nuevoPedido && nuevoPedido.sucursalId) {
+          this.pedidoService.listarActivos(nuevoPedido.sucursalId).subscribe({
+            next: () => {
+              this.cargarItemsYFiltros();
+            },
+            error: () => this.cargarItemsYFiltros()
+          });
+        } else {
+          this.cargarItemsYFiltros();
+        }
       },
       error: (err) => {
         console.error(err);

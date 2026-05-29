@@ -33,7 +33,7 @@
 }
 
 .btn-back {
-    background: #1a1a1a;
+    background: #18181b;
     color: white;
     border: none;
     padding: 8px 16px;
@@ -48,7 +48,7 @@
 }
 
 .btn-back:hover {
-    background: #333;
+    background: #27272a;
     transform: translateX(-3px);
 }
 
@@ -56,7 +56,7 @@
     margin: 0;
     font-size: 1.3rem;
     font-weight: 800;
-    color: #1a1a1a;
+    color: #18181b;
 }
 
 .header-text small {
@@ -78,8 +78,8 @@
 }
 
 .btn-close:hover {
-    background: #fee2e2;
-    color: #ef4444;
+    background: #e4e4e7;
+    color: #18181b;
 }
 
 /* Grid de Columnas */
@@ -141,8 +141,8 @@
 }
 
 .split-row.selected {
-    background-color: #f0f9ff;
-    border-left: 4px solid #0ea5e9;
+    background-color: #fafafa;
+    border-left: 4px solid #18181b;
 }
 
 .item-info {
@@ -200,7 +200,7 @@
     height: 32px;
     border: none;
     background: #fff;
-    color: #0ea5e9;
+    color: #18181b;
     cursor: pointer;
 }
 
@@ -230,7 +230,7 @@
     display: block;
     font-size: 1.4rem;
     font-weight: 800;
-    color: #0ea5e9;
+    color: #18181b;
 }
 
 .btn-split {
@@ -304,14 +304,14 @@
 
 .account-card:hover {
     transform: translateY(-2px);
-    border-color: #0ea5e9;
-    box-shadow: 0 10px 15px -3px rgba(14, 165, 233, 0.1);
+    border-color: #18181b;
+    box-shadow: 0 10px 15px -3px rgba(24, 24, 27, 0.05);
 }
 
 .account-card.activa {
-    border-color: #0ea5e9;
-    background: #f0f9ff;
-    box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.2);
+    border-color: #18181b;
+    background: #fafafa;
+    box-shadow: 0 0 0 2px rgba(24, 24, 27, 0.1);
 }
 
 .acc-info {
@@ -375,7 +375,7 @@
 }
 
 .btn-acc-edit {
-    background: #1a1a1a;
+    background: #18181b;
     color: white;
     padding: 8px 12px;
     border-radius: 8px;
@@ -390,7 +390,7 @@
 }
 
 .btn-acc-edit:hover {
-    background: #333;
+    background: #27272a;
 }
 
 .btn-acc-print {

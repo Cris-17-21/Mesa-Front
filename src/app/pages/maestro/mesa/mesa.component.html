@@ -53,6 +53,12 @@
             </div>
         </div>
     </div>
+    <div *ngIf="filteredMesas().length === 0" style="grid-column: 1 / -1; width: 100%;">
+        <div class="noir-empty-state">
+            <i class="bi bi-tablet-landscape empty-icon"></i>
+            <p class="empty-text">No se encontraron mesas disponibles.</p>
+        </div>
+    </div>
 </div>
 
 <app-modal-mesa [(visible)]="displayModal" [dataToEdit]="selectedMesa" [sucursalId]="sucursalId" (onSave)="loadMesas()">

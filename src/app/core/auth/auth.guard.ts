@@ -1,6 +1,9 @@
 import { CanActivateFn, Router } from '@angular/router';
 import { inject } from '@angular/core';
 import { AuthService } from './auth.service';
+import { CajaService } from '../../services/venta/caja.service';
+import { firstValueFrom } from 'rxjs';
+import Swal from 'sweetalert2';
 
 /**
  * Guard básico de autenticación.
@@ -43,4 +46,51 @@ export const restaurantGuard: CanActivateFn = (route, state) => {
   }
   
   return true;
+};
+
+/**
+ * Guard para validar si la caja está abierta antes de ingresar a Punto de Venta.
+ */
+export const cajaGuard: CanActivateFn = async (route, state) => {
+  const authService = inject(AuthService);
+  const cajaService = inject(CajaService);
+  const router = inject(Router);
+
+  // 1. Si es SuperAdmin, no opera Punto de Venta, dejamos pasar (aunque restaurantGuard lo bloquearía antes)
+  if (authService.isSuperAdmin()) {
+    return true;
+  }
+
+  const sucursalId = authService.getSucursalId();
+  if (!sucursalId) {
+    return false;
+  }
+
+  try {
+    const usuarioId = await authService.getUserId();
+    const caja = await firstValueFrom(cajaService.obtenerEstadoCaja(sucursalId, usuarioId));
+    const abierta = !!caja && (caja.estado === 'ABIERTA' || caja.estado === 'ABIERTO');
+
+    if (!abierta) {
+      Swal.fire({
+        title: 'Caja Cerrada',
+        text: 'Debe abrir caja para poder ingresar al Punto de Venta. ¿Ir al módulo de caja?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, ir a caja',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#18181b',
+        cancelButtonColor: '#d33'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          router.navigate(['/ventas/caja']);
+        }
+      });
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error('Error validando caja en guard:', error);
+    return true; // Dejamos pasar como fallback ante fallos de red
+  }
 };

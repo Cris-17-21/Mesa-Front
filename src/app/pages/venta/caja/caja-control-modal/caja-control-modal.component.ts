@@ -1,4 +1,4 @@
-import { Component, inject, signal, input, output, model, DestroyRef, computed } from '@angular/core';
+import { Component, inject, signal, input, output, model, DestroyRef, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, NonNullableFormBuilder, Validators } from '@angular/forms';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
@@ -52,14 +52,28 @@ export class CajaControlModalComponent {
   // ================================================================
   form = this.fb.group({
     // Apertura
-    efectivoApertura: [0, [Validators.required, Validators.min(0)]],
-    virtualApertura:  [0, [Validators.required, Validators.min(0)]],
+    efectivoApertura: [0, [Validators.min(0)]],
+    virtualApertura:  [0, [Validators.min(0)]],
     // Cierre
-    efectivoCierreReal: [0, [Validators.required, Validators.min(0)]],
-    virtualCierreReal:  [0, [Validators.required, Validators.min(0)]],
+    efectivoCierreReal: [0, [Validators.min(0)]],
+    virtualCierreReal:  [0, [Validators.min(0)]],
     // Observaciones (cierre)
     observacion: ['']
   });
+
+  constructor() {
+    effect(() => {
+      if (this.visible()) {
+        this.form.reset({
+          efectivoApertura: 0,
+          virtualApertura: 0,
+          efectivoCierreReal: 0,
+          virtualCierreReal: 0,
+          observacion: ''
+        });
+      }
+    });
+  }
 
   // ================================================================
   // COMPUTED — Diferencia en tiempo real para el cierre
@@ -73,7 +87,7 @@ export class CajaControlModalComponent {
   );
 
   efectivoEsperado = computed(() => this.arqueo()?.saldoEsperadoEnCaja ?? 0);
-  virtualEsperado  = computed(() => 0); // El backend puede añadir esto en el futuro
+  virtualEsperado  = computed(() => this.arqueo()?.saldoEsperadoVirtual ?? 0);
 
   diferenciaEfectivo = computed(() => {
     if (this.type() !== 'CLOSE') return 0;
@@ -124,12 +138,15 @@ export class CajaControlModalComponent {
     }
 
     const { efectivoApertura, virtualApertura } = this.form.getRawValue();
+    const ef = efectivoApertura ?? 0;
+    const vir = virtualApertura ?? 0;
 
     const payload: AbrirCajaDto = {
       sucursalId: this.sucursalId()!,
       usuarioId: this.usuarioId()!,
-      efectivoApertura,
-      virtualApertura
+      montoAperturaEfectivo: ef,
+      montoAperturaVirtual: vir,
+      montoApertura: ef + vir
     };
 
     this.cajaService.abrirCaja(payload)
@@ -150,8 +167,8 @@ export class CajaControlModalComponent {
 
     const payload: CerrarCajaDto = {
       id: this.cajaActivaId()!,
-      efectivoCierreReal,
-      virtualCierreReal,
+      efectivoCierreReal: efectivoCierreReal ?? 0,
+      virtualCierreReal: virtualCierreReal ?? 0,
       efectivoCierreEsperado: this.efectivoEsperado(),
       virtualCierreEsperado:  this.virtualEsperado(),
       comentario: observacion ?? ''

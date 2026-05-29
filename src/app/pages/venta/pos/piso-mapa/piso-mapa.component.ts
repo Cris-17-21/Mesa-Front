@@ -260,11 +260,27 @@ export class PisoMapaComponent implements OnInit {
       return;
     }
 
-    const [mesaPrincipalId, ...mesasSecundarias] = seleccion;
+    // Buscamos si hay alguna mesa ocupada entre las seleccionadas para que sea la principal
+    const listaMesas = this.mesasView();
+    const mesasSeleccionadasObj = listaMesas.filter(m => seleccion.includes(m.id));
+    const ocupada = mesasSeleccionadasObj.find(m => m.esOcupada);
+
+    let mesaPrincipalId: string;
+    let mesasSecundariasIds: string[];
+
+    if (ocupada) {
+      mesaPrincipalId = ocupada.id;
+      mesasSecundariasIds = seleccion.filter(id => id !== ocupada.id);
+    } else {
+      // Si todas están libres, la primera seleccionada es la principal
+      const [first, ...rest] = seleccion;
+      mesaPrincipalId = first;
+      mesasSecundariasIds = rest;
+    }
 
     Swal.fire({
       title: '¿Unir Mesas?',
-      text: `Se unirán las mesas seleccionadas a la primera seleccionada.`,
+      text: `Se unirán las mesas seleccionadas a la mesa principal.`,
       icon: 'question',
       showCancelButton: true,
       confirmButtonText: 'Sí, unir',
@@ -272,18 +288,18 @@ export class PisoMapaComponent implements OnInit {
       cancelButtonColor: '#d33'
     }).then((result) => {
       if (result.isConfirmed) {
-        this.ejecutarUnion(mesaPrincipalId, mesasSecundarias[0]); // Asumiendo unión de pares por ahora
+        this.ejecutarUnion(mesaPrincipalId, mesasSecundariasIds);
       }
     });
   }
 
-  private ejecutarUnion(principalId: string, secundariaId: string) {
+  private ejecutarUnion(principalId: string, secundariasIds: string[]) {
     const sucursalId = this.sucursalId();
     if (!sucursalId) return;
 
     const dto: UnionMesaRequestDto = {
       idPrincipal: principalId,
-      idsSecundarios: [secundariaId]
+      idsSecundarios: secundariasIds
     };
 
     this.pedidoService.unirMesas(dto, sucursalId).subscribe({

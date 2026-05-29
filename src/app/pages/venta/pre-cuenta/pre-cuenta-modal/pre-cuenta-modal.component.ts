@@ -77,6 +77,11 @@ export class PreCuentaModalComponent implements OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['visible']?.currentValue === true) {
       this.deliveryForm.reset();
+      if (this.modo === 'NUEVO') {
+        this.deliveryForm.enable();
+      } else {
+        this.deliveryForm.disable();
+      }
       this.cart.set([]);
       this.itemsExistentesIds.clear();
       this.categoriaSeleccionada.set(null);
@@ -117,6 +122,9 @@ export class PreCuentaModalComponent implements OnChanges {
         telefono: p.telefono,
         direccion: p.direccion
       });
+      if (this.modo === 'EDITAR') {
+        this.deliveryForm.disable();
+      }
 
       if (p.detalles && p.detalles.length > 0) {
         const itemsDelPedido: CartItem[] = p.detalles.map(d => {
@@ -164,6 +172,7 @@ export class PreCuentaModalComponent implements OnChanges {
   }
 
   agregarAlCarrito(producto: Producto) {
+    if (this.modo === 'EDITAR') return;
     const id = producto.idProducto.toString();
     this.cart.update(prev => {
       const ex = prev.find(i => i.productoId === id);
@@ -178,6 +187,7 @@ export class PreCuentaModalComponent implements OnChanges {
   }
 
   updateQty(index: number, delta: number) {
+    if (this.modo === 'EDITAR') return;
     this.cart.update(items => {
       const copy = [...items];
       const item = copy[index];
@@ -190,6 +200,7 @@ export class PreCuentaModalComponent implements OnChanges {
   }
 
   removeItem(index: number) {
+    if (this.modo === 'EDITAR') return;
     const item = this.cart()[index];
     if (this.esItemExistente(item.productoId)) return;
     this.cart.update(items => items.filter((_, i) => i !== index));

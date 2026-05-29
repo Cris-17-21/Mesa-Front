@@ -1,6 +1,6 @@
 import { Component, inject, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { finalize } from 'rxjs';
+import { finalize, concat, Observable } from 'rxjs';
 import { HttpErrorResponse } from '@angular/common/http';
 import Swal from 'sweetalert2';
 
@@ -23,6 +23,8 @@ import { ModalEmpresaComponent } from './modal-empresa/modal-empresa.component';
 export interface EmpresaWizardData {
   isEdit: boolean;
   data: any;
+  certificadoFile?: File | null;
+  logoFile?: File | null;
 }
 
 @Component({
@@ -84,21 +86,19 @@ export class EmpresaComponent implements OnInit {
         .pipe(finalize(() => this.loading.set(false)))
         .subscribe({
           next: () => {
-            this.successMessage('Empresa actualizada');
-            this.loadEmpresas();
-            this.displayModal.set(false);
+            this.ejecutarCargasYNotificar(empresaId, wizardData, 'Empresa actualizada');
           },
           error: (err) => this.errorMessage('Error al actualizar', err)
         });
     } else {
-      const { roleId, ...userData } = data.user;
+      const { role, ...userData } = data.user;
 
       const payload: CreateCompleteRestaurantDto = {
         empresa: data.empresa,
         sucursal: data.sucursal,
         user: {
           ...userData,
-          role: roleId,
+          role: role,
           direccion: userData.direccion || 'Dirección no especificada'
         }
       };
@@ -106,14 +106,54 @@ export class EmpresaComponent implements OnInit {
       this.userAccessService.registerCompleteRestaurant(payload)
         .pipe(finalize(() => this.loading.set(false)))
         .subscribe({
-          next: () => {
-            this.successMessage('Restaurante, Sucursal y Administrador creados con éxito');
-            this.loadEmpresas();
-            this.displayModal.set(false);
+          next: (res: any) => {
+            const empresaId = res?.empresaId;
+            if (empresaId) {
+              this.ejecutarCargasYNotificar(empresaId, wizardData, 'Restaurante, Sucursal y Administrador creados con éxito');
+            } else {
+              this.successMessage('Restaurante, Sucursal y Administrador creados con éxito');
+              this.loadEmpresas();
+              this.displayModal.set(false);
+            }
           },
           error: (err) => this.errorMessage('Error al registrar la empresa', err)
         });
     }
+  }
+
+  private ejecutarCargasYNotificar(empresaId: string, wizardData: EmpresaWizardData, successMsg: string): void {
+    const uploads: Observable<any>[] = [];
+
+    if (wizardData.logoFile) {
+      uploads.push(this.empresaService.subirLogo(empresaId, wizardData.logoFile));
+    }
+
+    if (wizardData.certificadoFile) {
+      uploads.push(this.empresaService.subirCertificado(empresaId, wizardData.certificadoFile));
+    }
+
+    if (uploads.length === 0) {
+      this.successMessage(successMsg);
+      this.loadEmpresas();
+      this.displayModal.set(false);
+      return;
+    }
+
+    this.loading.set(true);
+    concat(...uploads)
+      .pipe(finalize(() => {
+        this.loading.set(false);
+        this.loadEmpresas();
+        this.displayModal.set(false);
+      }))
+      .subscribe({
+        complete: () => {
+          this.successMessage(`${successMsg} y archivos cargados correctamente.`);
+        },
+        error: (err) => {
+          this.errorMessage(`${successMsg}, pero hubo un error al subir los archivos (logo/certificado).`, err);
+        }
+      });
   }
 
   deleteEmpresa(id: string): void {

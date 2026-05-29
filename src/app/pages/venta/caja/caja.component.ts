@@ -1,4 +1,4 @@
-import { Component, effect, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, effect, inject, OnInit, signal } from '@angular/core';
 import { Router } from '@angular/router';
 
 // PrimeNG
@@ -20,7 +20,7 @@ import { CajaHistorialTurnoModalComponent } from './caja-historial-turno-modal/c
 import { CajaService } from '../../../services/venta/caja.service';
 import { MovimientoCajaService } from '../../../services/venta/movimiento-caja.service';
 import { AuthService } from '../../../core/auth/auth.service';
-import { CurrencyPipe, DatePipe } from '@angular/common';
+import { CurrencyPipe, DatePipe, NgClass } from '@angular/common';
 
 @Component({
   selector: 'app-caja',
@@ -28,6 +28,7 @@ import { CurrencyPipe, DatePipe } from '@angular/common';
   imports: [
     DatePipe,
     CurrencyPipe,
+    NgClass,
     TableModule,
     ButtonModule,
     CardModule,
@@ -69,6 +70,12 @@ export class CajaComponent implements OnInit {
   activeTabIndex = signal(0);
 
   today = new Date();
+  
+  totalEntradas = computed(() => {
+    const resumen = this.cajaService.resumenFinanciero();
+    if (!resumen) return 0;
+    return (resumen.totalVentasGlobal ?? 0) + (resumen.totalIngresosCajaChica ?? 0);
+  });
 
   ngOnInit() {
     this.initCaja();

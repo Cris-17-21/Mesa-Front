@@ -3,8 +3,9 @@
 // ================================================================
 
 export interface AbrirCajaDto {
-    efectivoApertura: number;  // Billetes/monedas en caja al abrir turno
-    virtualApertura: number;   // Saldo en pasarela/POS al abrir (puede ser 0)
+    montoAperturaEfectivo: number;
+    montoAperturaVirtual: number;
+    montoApertura: number;
     sucursalId: string;
     usuarioId: string;
 }
@@ -34,8 +35,15 @@ export interface CajaResumenDto {
 
     // --- Bloque 3: Arqueo (La prueba de fuego) ---
     saldoEsperadoEnCaja: number;       // (Inicial + VentasEfectivo + Ingresos) - Egresos
-    saldoRealEnCaja: number;           // Lo que contó el cajero al cerrar
+    saldoEsperadoVirtual: number;      // Saldo virtual esperado
+    saldoRealEnCaja: number;           // Lo que contó el cajero al cerrar (Efectivo)
     diferencia: number;
+
+    // --- Nuevos campos de desglose de apertura y cierre ---
+    montoAperturaEfectivo: number;
+    montoAperturaVirtual: number;
+    montoCierreRealEfectivo?: number;
+    montoCierreRealVirtual?: number;
 }
 
 // ================================================================
