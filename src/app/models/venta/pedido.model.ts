@@ -96,3 +96,8 @@ export interface CartItem {
     observaciones: string;
     categoria?: string;
 }
+
+export interface ActualizarPrecioDetalleDto {
+    detalleId: string;
+    precioUnitario: number;
+}

@@ -1,0 +1,146 @@
+<header class="main-header">
+    <div class="header-titles">
+        <h1>Mi Empresa</h1>
+        <p class="subtitle">Gestiona la información comercial, logo y credenciales SUNAT de tu restaurante</p>
+    </div>
+</header>
+
+<main class="dashboard-container">
+    <form [formGroup]="empresaForm" (submit)="saveEmpresa()" class="form-grid">
+
+        <!-- Columna Izquierda: Datos de la Empresa -->
+        <div class="card shadow-noir">
+            <h2 class="card-title"><i class="bi bi-info-circle"></i> Información de la Empresa</h2>
+            <div class="card-content">
+                <div class="field">
+                    <label for="ruc" class="label-noir">N° Documento (RUC)</label>
+                    <input id="ruc" pInputText formControlName="ruc" class="noir-input read-only-input" />
+                </div>
+
+                <div class="field">
+                    <label for="razonSocial" class="label-noir">Razón Social*</label>
+                    <input id="razonSocial" pInputText formControlName="razonSocial" class="noir-input"
+                        [class.ng-invalid]="isFieldInvalid('razonSocial')" />
+                    @if (isFieldInvalid('razonSocial')) {
+                        <small class="error-text">La razón social es obligatoria.</small>
+                    }
+                </div>
+
+                <div class="field">
+                    <label for="direccionFiscal" class="label-noir">Dirección Fiscal*</label>
+                    <input id="direccionFiscal" pInputText formControlName="direccionFiscal" class="noir-input"
+                        [class.ng-invalid]="isFieldInvalid('direccionFiscal')" />
+                    @if (isFieldInvalid('direccionFiscal')) {
+                        <small class="error-text">La dirección fiscal es obligatoria.</small>
+                    }
+                </div>
+
+                <div class="field-row">
+                    <div class="field flex-1">
+                        <label for="telefono" class="label-noir">Teléfono Corporativo</label>
+                        <input id="telefono" pInputText formControlName="telefono" class="noir-input" placeholder="912345678" maxlength="9" />
+                        @if (isFieldInvalid('telefono')) {
+                            <small class="error-text">Debe tener 9 dígitos.</small>
+                        }
+                    </div>
+
+                    <div class="field flex-1">
+                        <label for="email" class="label-noir">Email de Contacto</label>
+                        <input id="email" pInputText formControlName="email" class="noir-input" placeholder="correo@empresa.com" />
+                        @if (isFieldInvalid('email')) {
+                            <small class="error-text">Formato de email incorrecto.</small>
+                        }
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label for="fechaAfiliacion" class="label-noir">Fecha de Registro</label>
+                    <input id="fechaAfiliacion" pInputText formControlName="fechaAfiliacion" class="noir-input read-only-input" />
+                </div>
+            </div>
+        </div>
+
+        <!-- Columna Derecha: Logo y Configuración SUNAT -->
+        <div class="column-right">
+            <!-- Card Logo -->
+            <div class="card shadow-noir logo-card">
+                <h2 class="card-title"><i class="bi bi-image"></i> Logotipo</h2>
+                <div class="card-content logo-uploader-container">
+                    <div class="logo-uploader" (click)="logoInput.click()" (keydown.enter)="logoInput.click()" tabindex="0" role="button" aria-label="Subir logo">
+                        @if (previewLogo()) {
+                            <img [src]="previewLogo()" class="preview-img" alt="Logo de la empresa">
+                        } @else {
+                            <div class="upload-placeholder">
+                                <i class="bi bi-image"></i>
+                                <span>Subir Logo</span>
+                            </div>
+                        }
+                        <input #logoInput type="file" (change)="onFileSelected($event)" hidden accept="image/*">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card SUNAT -->
+            <div class="card shadow-noir">
+                <h2 class="card-title"><i class="bi bi-shield-lock"></i> Facturación Electrónica (SUNAT)</h2>
+                <div class="card-content">
+                    <div class="field">
+                        <label for="entorno" class="label-noir">Entorno SUNAT</label>
+                        <p-select id="entorno" [options]="entornosSunat" formControlName="entorno" 
+                                  optionLabel="label" optionValue="value" class="w-full"></p-select>
+                    </div>
+
+                    <div class="field">
+                        <label for="usuarioSol" class="label-noir">Usuario SOL</label>
+                        <input id="usuarioSol" pInputText formControlName="usuarioSol" class="noir-input" placeholder="Ej: MODDATOS" />
+                    </div>
+
+                    <div class="field-row">
+                        <div class="field flex-1">
+                            <label for="claveSol" class="label-noir">Clave SOL</label>
+                            <input id="claveSol" pInputText type="password" formControlName="claveSol" class="noir-input" placeholder="••••••••" />
+                        </div>
+                        <div class="field flex-1">
+                            <label for="claveCertificado" class="label-noir">Contraseña Certificado</label>
+                            <input id="claveCertificado" pInputText type="password" formControlName="claveCertificado" class="noir-input" placeholder="••••••••" />
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <div class="flex justify-content-between align-items-center mb-1">
+                            <label class="label-noir">Certificado Digital (.pfx, .p12)</label>
+                            @if (empresaData()?.certificadoDigital) {
+                                <span class="badge badge-success"><i class="bi bi-check-circle"></i> Cargado</span>
+                            } @else {
+                                <span class="badge badge-warning"><i class="bi bi-exclamation-triangle"></i> Pendiente</span>
+                            }
+                        </div>
+                        <div class="p-inputgroup">
+                            <input type="text" pInputText readonly class="noir-input cert-name-input" 
+                                   [value]="selectedCertName() || (empresaData()?.certificadoDigital ? 'Certificado cargado (SUNAT)' : 'Ningún archivo seleccionado')" />
+                            <button type="button" class="btn-cert-select" (click)="certFileInput.click()">
+                                <i class="bi bi-file-earmark-arrow-up"></i> Seleccionar
+                            </button>
+                            <input #certFileInput type="file" (change)="onCertificadoSelected($event)" hidden accept=".pfx,.p12">
+                        </div>
+                        @if (selectedCertName()) {
+                            <small class="cert-success-text"><i class="bi bi-check-circle-fill"></i> Listo para guardar: {{ selectedCertName() }}</small>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botones de Acción -->
+            <div class="form-actions">
+                <button type="submit" class="btn-save shadow-noir" [disabled]="loading()">
+                    @if (loading()) {
+                        <i class="bi bi-arrow-repeat spin"></i> Procesando...
+                    } @else {
+                        <i class="bi bi-save"></i> Guardar Configuración
+                    }
+                </button>
+            </div>
+        </div>
+
+    </form>
+</main>

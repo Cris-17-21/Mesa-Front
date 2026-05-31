@@ -1,5 +1,8 @@
-<p-dialog [(visible)]="visible" [modal]="true" [style]="{ width: '95vw', maxWidth: '1200px' }" [draggable]="false"
-    (onHide)="close()" styleClass="noir-modal" [closable]="false">
+<p-dialog [(visible)]="visible" [modal]="true"
+    [style]="modo === 'NUEVO' ? { width: '95vw', maxWidth: '1200px' } : { width: '95vw', maxWidth: '500px' }"
+    [draggable]="false" (onHide)="close()"
+    [styleClass]="modo === 'EDITAR' ? 'noir-modal noir-modal-compact' : 'noir-modal'"
+    [closable]="false">
 
     <!-- HEADER IDÉNTICO A ORDEN -->
     <div class="header-modal">
@@ -74,21 +77,23 @@
         <!-- REGISTRO Y COMANDA (LADO DERECHO) -->
         <div class="ticket-section shadow-noir" [class.hidden-mobile]="vistaMovil() === 'MENU' && modo === 'NUEVO'">
 
+            @if (tipoEntrega !== 'MESA') {
             <div class="customer-registration-box">
                 <form [formGroup]="deliveryForm" class="customer-form">
                     <span class="section-label">DATOS DE ENTREGA</span>
                     <div class="form-grid">
                         <input pInputText formControlName="nombreCliente" placeholder="Nombre completo"
                             class="noir-input-sm" />
-                        <input pInputText formControlName="telefono" placeholder="Teléfono" class="noir-input-sm" />
+                        <input pInputText formControlName="telefono" placeholder="Teléfono" class="noir-input-sm" maxlength="9" />
                         <input pInputText formControlName="direccion" placeholder="Dirección de entrega"
                             class="noir-input-sm full-width" />
                     </div>
                 </form>
             </div>
+            }
 
             <div class="ticket-header">
-                <h3>Comanda de Delivery</h3>
+                <h3>{{ tipoEntrega === 'MESA' ? 'Comanda de Mesa' : 'Comanda de Delivery' }}</h3>
                 <span class="badge-count">{{ cart().length }} items</span>
             </div>
 

@@ -1,183 +1,258 @@
 <div class="checkout-wrapper">
     <!-- HEADER (VERDE) -->
     <div class="checkout-header">
-        <h2>COBRAR VENTA</h2>
+        <h2>{{ currentStep() === 1 ? 'EDITAR PRECIOS DEL PEDIDO' : 'COBRAR VENTA' }}</h2>
         <button class="btn-close-header" (click)="cancelar()">
             <i class="bi bi-x-circle"></i>
         </button>
     </div>
 
-    <div class="checkout-content">
-        <!-- RIEGO 1: FECHA Y TIPO DOCUMENTO -->
-        <div class="row-flex">
-            <div class="field-group flex-1">
-                <span class="field-label">Fecha</span>
-                <div class="field-container">
-                    {{ fechaVenta() }}
+    <!-- STEP 1: EDIT ORDER PRICES -->
+    @if (currentStep() === 1) {
+        <div class="checkout-content">
+            <div class="items-edit-table-container">
+                <table class="items-edit-table">
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th>Cant.</th>
+                            <th class="col-align-right" style="width: 150px;">P. Unitario (S/)</th>
+                            <th class="col-align-right" style="width: 150px;">Total (S/)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (item of itemsEditables(); track $index) {
+                            <tr>
+                                <td>
+                                    {{ item.productoNombre }}
+                                    @if (item.precioUnitario !== item.precioOriginal) {
+                                        <span class="price-edited-badge">Modificado</span>
+                                    }
+                                </td>
+                                <td>{{ item.cantidad }}</td>
+                                <td class="col-align-right">
+                                    <input type="number" [ngModel]="item.precioUnitario"
+                                        (ngModelChange)="actualizarPrecioItem($index, $event)"
+                                        min="0" step="0.10">
+                                </td>
+                                <td class="col-align-right" style="font-weight: 600;">
+                                    S/ {{ item.totalLinea | number:'1.2-2' }}
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Totals Summary Card -->
+            <div class="totals-summary-card">
+                <div class="summary-row">
+                    <span>Subtotal (Sin IGV):</span>
+                    <span>S/ {{ (editableTotal() / 1.18) | number:'1.2-2' }}</span>
+                </div>
+                <div class="summary-row">
+                    <span>IGV (18%):</span>
+                    <span>S/ {{ (editableTotal() - (editableTotal() / 1.18)) | number:'1.2-2' }}</span>
+                </div>
+                <div class="summary-row grand-total">
+                    <span>Total Pedido:</span>
+                    <span>S/ {{ editableTotal() | number:'1.2-2' }}</span>
                 </div>
             </div>
-            <div class="field-group flex-2">
-                <span class="field-label">Tipo Documento*</span>
-                <div class="field-container has-icons">
-                    <select [ngModel]="tipoComprobante()" (ngModelChange)="cambiarTipoComprobante($event)">
-                        <option value="BOLETA">BOLETA DE VENTA ELECTRONICA - B001</option>
-                        <option value="FACTURA">FACTURA ELECTRONICA - F001</option>
-                        <option value="NOTA_VENTA">NOTA DE VENTA - NV01</option>
-                    </select>
-                    <div class="status-icons">
-                        <i class="bi bi-check-square-fill text-pink"></i>
-                        <i class="bi bi-printer-fill text-yellow"></i>
+        </div>
+
+        <div class="checkout-actions">
+            <button class="btn-cancelar-clean" (click)="cancelar()">Cancelar</button>
+            <button class="btn-cancelar-clean" (click)="imprimirPreCuenta()" [disabled]="!pedido()" style="display: inline-flex; align-items: center; gap: 8px;">
+                <i class="bi bi-printer-fill"></i> Imprimir Cuenta
+            </button>
+            <button class="btn-cobrar-main" (click)="continuarAlCobro()">
+                CONTINUAR AL COBRO
+            </button>
+        </div>
+    }
+
+    <!-- STEP 2: PAYMENT & BILLING DETAILS -->
+    @if (currentStep() === 2) {
+        <div class="checkout-content">
+            <div class="row-flex">
+                <div class="field-group flex-1">
+                    <span class="field-label">Fecha Emisión*</span>
+                    <div class="field-container">
+                        <input type="date" [ngModel]="fechaEmision()" (ngModelChange)="onFechaEmisionChange($event)" [min]="minFecha()" [max]="maxFecha()" style="border: none; background: transparent; font-size: 0.95rem; outline: none; width: 100%; color: inherit;">
+                    </div>
+                </div>
+                <div class="field-group flex-2">
+                    <span class="field-label">Tipo Documento*</span>
+                    <div class="field-container has-icons">
+                        <select [ngModel]="tipoComprobante()" (ngModelChange)="cambiarTipoComprobante($event)">
+                            <option value="BOLETA">BOLETA DE VENTA ELECTRÓNICA</option>
+                            <option value="FACTURA">FACTURA ELECTRÓNICA</option>
+                            <option value="NOTA_VENTA">NOTA DE VENTA</option>
+                        </select>
+                        <div class="status-icons">
+                            <i class="bi bi-check-square-fill text-pink"></i>
+                            <i class="bi bi-printer-fill text-yellow"></i>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- RIEGO 2: CORRELATIVO Y TOGGLE -->
-        <div class="row-flex align-center">
-            <div class="correlativo-box flex-1">
-                {{ correlativo() }}
-            </div>
-            <div class="field-group flex-2 no-border-label">
-                <div class="toggle-container">
-                    <label class="switch">
-                        <input type="checkbox" [ngModel]="impresionConsumo()"
-                            (ngModelChange)="impresionConsumo.set($event)">
-                        <span class="slider round"></span>
-                    </label>
-                    <span class="toggle-text">Impresión por consumo</span>
-                </div>
-                <div class="empty-status-box"></div>
-            </div>
-        </div>
-
-        <!-- RIEGO 3: CLIENTE -->
-        <div class="row-flex">
-            <div class="field-group flex-1">
-                <span class="field-label">Cliente</span>
-                <div class="field-container has-btn">
-                    <input type="text"
-                        [ngModel]="clienteDoc()"
-                        (ngModelChange)="clienteDoc.set($event)"
-                        (keyup.enter)="buscarCliente()"
-                        placeholder="RUC / DNI">
-                    <button class="btn-add-customer" (click)="buscarCliente()">
-                        <i class="bi bi-search"></i>
-                    </button>
-                </div>
-                <div class="cliente-info" *ngIf="clienteSeleccionado()">
-                    <small>{{ clienteSeleccionado()?.nombreRazonSocial }}</small>
-                </div>
-            </div>
-        </div>
-
-        <!-- RIEGO 4: PAGO Y OBSERVACION -->
-        <div class="row-flex">
-            <div class="field-group flex-1">
-                <span class="field-label">Tipo de Pago*</span>
-                <div class="field-container">
-                    <select>
-                        <option>CONTADO</option>
-                        <option>CREDITO</option>
-                    </select>
-                </div>
-            </div>
-            <div class="field-group flex-2">
-                <span class="field-label">Observación</span>
-                <div class="field-container">
-                    <input type="text" [ngModel]="observacion()" (ngModelChange)="observacion.set($event)">
-                </div>
-            </div>
-        </div>
-
-        <!-- RIEGO 5: MONTOS -->
-        <div class="row-grid-4">
-            <div class="field-group">
-                <span class="field-label">Monto Venta</span>
-                <div class="field-container bg-grey">
-                    {{ total | number:'1.2-2' }}
-                </div>
-            </div>
-            <div class="field-group">
-                <span class="field-label">Propina (0%)</span>
-                <div class="field-container">
-                    <input type="number" [ngModel]="propina()" (ngModelChange)="propina.set($event)">
-                </div>
-            </div>
-            <div class="field-group">
-                <span class="field-label">Recargo al Consumo (0%)</span>
-                <div class="field-container">
-                    <input type="number" [ngModel]="recargoConsumo()" (ngModelChange)="recargoConsumo.set($event)">
-                </div>
-            </div>
-            <div class="field-group">
-                <span class="field-label">Total a pagar</span>
-                <div class="field-container bg-grey">
-                    {{ totalAPagar() | number:'1.2-2' }}
-                </div>
-            </div>
-        </div>
-
-        <!-- RIEGO 6: EFECTIVO Y VUELTO -->
-        <div class="row-grid-2">
-            <div class="field-group">
-                <span class="field-label">Monto Efectivo*</span>
-                <div class="field-container">
-                    <input type="number" [ngModel]="totalPagado()" (ngModelChange)="actualizarEfectivoRapido($event)">
-                </div>
-            </div>
-            <div class="field-group">
-                <span class="field-label">Vuelto</span>
-                <div class="field-container bg-grey">
-                    {{ (vuelto() > 0 ? vuelto() : 0) | number:'1.2-2' }}
-                </div>
-            </div>
-        </div>
-
-        <!-- RIEGO 7: TABLA PAGOS -->
-        <div class="payments-area">
-            <table class="image-table">
-                <thead>
-                    <tr>
-                        <th class="col-metodo">Modalidad Pago <i
-                                class="bi bi-plus-square-fill cursor-pointer text-success" (click)="agregarPago()"></i>
-                        </th>
-                        <th class="col-trans">Nº transacción</th>
-                        <th class="col-monto">Monto</th>
-                        <th class="col-del"></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @for (pago of pagos(); track $index) {
-                    <tr>
-                        <td>
-                            <select [ngModel]="pago.metodoId" (ngModelChange)="actualizarMetodoPagoFila($index, $event)">
-                                @for (m of metodosPago(); track m.id) {
-                                <option [value]="m.id">{{ m.nombre }}</option>
-                                }
-                            </select>
-                        </td>
-                        <td><input type="text" [(ngModel)]="pago.referencia"></td>
-                        <td><input type="number" [ngModel]="pago.monto"
-                                (ngModelChange)="actualizarMontoPago($index, $event)" class="text-right"></td>
-                        <td class="text-center">
-                            <i class="bi bi-trash-fill text-danger cursor-pointer" (click)="eliminarPago($index)"></i>
-                        </td>
-                    </tr>
+            <!-- RIEGO 2: CORRELATIVO Y TOGGLE -->
+            <div class="row-flex align-center">
+                <div class="correlativo-box flex-1" [class.correlativo-warning]="correlativo().startsWith('⚠')">
+                    {{ correlativo() }}
+                    @if (correlativo().startsWith('⚠')) {
+                        <div class="serie-warning-text">Configure la serie en Maestros &gt; Series SUNAT</div>
                     }
-                </tbody>
-            </table>
-            <div class="table-total-row">
-                <span>Total:</span>
-                <strong>S/ {{ totalPagado() | number:'1.2-2' }}</strong>
+                </div>
+                <div class="field-group flex-2 no-border-label">
+                    <div class="toggle-container">
+                        <label class="switch">
+                            <input type="checkbox" [ngModel]="impresionConsumo()"
+                                (ngModelChange)="onImpresionConsumoChange($event)">
+                            <span class="slider round"></span>
+                        </label>
+                        <span class="toggle-text">Impresión por consumo</span>
+                    </div>
+                    <div class="empty-status-box"></div>
+                </div>
+            </div>
+
+            <!-- RIEGO 3: CLIENTE -->
+            <div class="row-flex">
+                <div class="field-group flex-1">
+                    <span class="field-label">Cliente</span>
+                    <div class="field-container has-btn">
+                        <input type="text"
+                            [ngModel]="clienteDoc()"
+                            (ngModelChange)="clienteDoc.set($event)"
+                            (keyup.enter)="buscarCliente()"
+                            placeholder="RUC / DNI">
+                        <button class="btn-add-customer" (click)="buscarCliente()">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </div>
+                    <div class="cliente-info" *ngIf="clienteSeleccionado()">
+                        <small>{{ clienteSeleccionado()?.nombreRazonSocial }}</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIEGO 4: PAGO Y OBSERVACION -->
+            <div class="row-flex">
+                <div class="field-group flex-1">
+                    <span class="field-label">Tipo de Pago*</span>
+                    <div class="field-container">
+                        <select>
+                            <option>CONTADO</option>
+                            <option>CREDITO</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="field-group flex-2">
+                    <span class="field-label">Observación</span>
+                    <div class="field-container">
+                        <input type="text" [ngModel]="observacion()" (ngModelChange)="observacion.set($event)">
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIEGO 5: MONTOS -->
+            <div class="row-grid-4">
+                <div class="field-group">
+                    <span class="field-label">Monto Venta</span>
+                    <div class="field-container bg-grey">
+                        {{ totalVenta() | number:'1.2-2' }}
+                    </div>
+                </div>
+                <div class="field-group">
+                    <span class="field-label">Propina (0%)</span>
+                    <div class="field-container">
+                        <input type="number" [ngModel]="propina()" (ngModelChange)="propina.set($event)">
+                    </div>
+                </div>
+                <div class="field-group">
+                    <span class="field-label">Recargo al Consumo (0%)</span>
+                    <div class="field-container">
+                        <input type="number" [ngModel]="recargoConsumo()" (ngModelChange)="recargoConsumo.set($event)">
+                    </div>
+                </div>
+                <div class="field-group">
+                    <span class="field-label">Total a pagar</span>
+                    <div class="field-container bg-grey">
+                        {{ totalAPagar() | number:'1.2-2' }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIEGO 6: EFECTIVO Y VUELTO -->
+            <div class="row-grid-2">
+                <div class="field-group">
+                    <span class="field-label">Monto Efectivo*</span>
+                    <div class="field-container">
+                        <input type="number" [ngModel]="totalPagado()" (ngModelChange)="actualizarEfectivoRapido($event)">
+                    </div>
+                </div>
+                <div class="field-group">
+                    <span class="field-label">Vuelto</span>
+                    <div class="field-container bg-grey">
+                        {{ (vuelto() > 0 ? vuelto() : 0) | number:'1.2-2' }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIEGO 7: TABLA PAGOS -->
+            <div class="payments-area">
+                <table class="image-table">
+                    <thead>
+                        <tr>
+                            <th class="col-metodo">Modalidad Pago <i
+                                    class="bi bi-plus-square-fill cursor-pointer text-success" (click)="agregarPago()"></i>
+                            </th>
+                            <th class="col-trans">Nº transacción</th>
+                            <th class="col-monto">Monto</th>
+                            <th class="col-del"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (pago of pagos(); track $index) {
+                        <tr>
+                            <td>
+                                <select [ngModel]="pago.metodoId" (ngModelChange)="actualizarMetodoPagoFila($index, $event)">
+                                    @for (m of metodosPago(); track m.id) {
+                                    <option [value]="m.id">{{ m.nombre }}</option>
+                                    }
+                                </select>
+                            </td>
+                            <td><input type="text" [(ngModel)]="pago.referencia"></td>
+                            <td><input type="number" [ngModel]="pago.monto"
+                                    (ngModelChange)="actualizarMontoPago($index, $event)" class="text-right"></td>
+                            <td class="text-center">
+                                <i class="bi bi-trash-fill text-danger cursor-pointer" (click)="eliminarPago($index)"></i>
+                            </td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+                <div class="table-total-row">
+                    <span>Total:</span>
+                    <strong>S/ {{ totalPagado() | number:'1.2-2' }}</strong>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div class="checkout-actions">
-        <button class="btn-cancelar-clean" (click)="cancelar()">Cancelar</button>
-        <button class="btn-cobrar-main" [disabled]="procesando() || totalPagado() < totalAPagar()"
-            (click)="procesarPago()">
-            COBRAR
-        </button>
-    </div>
+        <div class="checkout-actions">
+            <button class="btn-cancelar-clean" (click)="regresarAPrecios()">Atrás</button>
+            <button class="btn-cobrar-main" [disabled]="procesando() || totalPagado() < totalAPagar()"
+                (click)="procesarPago()">
+                COBRAR S/ {{ totalAPagar() | number:'1.2-2' }}
+            </button>
+        </div>
+    }
+
+    <!-- PRE-CUENTA TICKET PRINT PREVIEW CONTAINER -->
+    @if (showTicketPreview() && pedido()) {
+        <app-ticket-pre-cuenta [pedido]="pedido()!"></app-ticket-pre-cuenta>
+    }
 </div>

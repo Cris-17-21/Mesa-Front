@@ -10,7 +10,8 @@ import { ClienteService } from '../../../../services/maestro/cliente.service';
 import { MetodoPago } from '../../../../models/maestro/metodo-pago.model';
 import { TipoComprobante, GenerarComprobanteRequest } from '../../../../models/venta/facturacion.model';
 import { Cliente } from '../../../../models/maestro/cliente.model';
-import { PagoMixtoItem } from '../../../../models/venta/pedido.model';
+import { PagoMixtoItem, PedidoResponseDto, ActualizarPrecioDetalleDto } from '../../../../models/venta/pedido.model';
+import { TicketPreCuentaComponent } from '../ticket-pre-cuenta/ticket-pre-cuenta.component';
 
 interface PagoRow {
   metodoId: string;
@@ -22,7 +23,7 @@ interface PagoRow {
 @Component({
   selector: 'app-checkout-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, DecimalPipe],
+  imports: [CommonModule, FormsModule, DecimalPipe, TicketPreCuentaComponent],
   templateUrl: './checkout-modal.component.html',
   styleUrl: './checkout-modal.component.css'
 })
@@ -42,16 +43,46 @@ export class CheckoutModalComponent implements OnInit {
   @Output() onPagoExitoso = new EventEmitter<boolean>();
 
   // --- SIGNALS DE ESTADO ---
+  currentStep = signal<1 | 2>(1);
+  pedido = signal<PedidoResponseDto | null>(null);
+  itemsEditables = signal<any[]>([]);
+  showTicketPreview = signal<boolean>(false);
   metodosPago = signal<MetodoPago[]>([]);
   pagos = signal<PagoRow[]>([]);
   procesando = signal<boolean>(false);
 
   // Billing & Document Signals
-  tipoComprobante = signal<TipoComprobante | 'NOTA_VENTA'>('BOLETA');
+  tipoComprobante = signal<TipoComprobante>('BOLETA');
   fechaVenta = signal<string>(new Date().toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric' }));
-  correlativo = signal<string>('B001 - 1884');
+  fechaEmision = signal<string>(new Date().toISOString().split('T')[0]);
+  minFecha = computed(() => {
+    const d = new Date();
+    d.setDate(d.getDate() - 2);
+    return d.toISOString().split('T')[0];
+  });
+  maxFecha = computed(() => {
+    return new Date().toISOString().split('T')[0];
+  });
+  correlativo = signal<string>('Cargando...');
   impresionConsumo = signal<boolean>(false);
   observacion = signal<string>('');
+
+  onFechaEmisionChange(val: string) {
+    this.fechaEmision.set(val);
+  }
+
+  onImpresionConsumoChange(val: boolean) {
+    this.impresionConsumo.set(val);
+    if (val) {
+      this.observacion.set('POR CONSUMO DE ALIMENTOS');
+    } else if (this.observacion() === 'POR CONSUMO DE ALIMENTOS') {
+      this.observacion.set('');
+    }
+  }
+
+  // Series cargadas desde la API
+  seriesDisponibles = signal<any[]>([]);
+  serieActual = signal<any | null>(null);
 
   // Cliente
   clienteDoc = signal<string>('00000000');
@@ -62,7 +93,18 @@ export class CheckoutModalComponent implements OnInit {
   recargoConsumo = signal<number>(0);
 
   // --- COMPUTED ---
-  totalAPagar = computed(() => this.total + this.propina() + this.recargoConsumo());
+  editableTotal = computed(() => {
+    return this.itemsEditables().reduce((acc, item) => acc + (item.precioUnitario * item.cantidad), 0);
+  });
+
+  totalVenta = computed(() => {
+    if (this.pedido()) {
+      return this.editableTotal();
+    }
+    return this.total;
+  });
+
+  totalAPagar = computed(() => this.totalVenta() + this.propina() + this.recargoConsumo());
 
   totalPagado = computed(() => this.pagos().reduce((acc, p) => acc + p.monto, 0));
 
@@ -85,6 +127,102 @@ export class CheckoutModalComponent implements OnInit {
   ngOnInit() {
     this.cargarMetodosPago();
     this.buscarCliente();
+    this.cargarSeries();
+    this.cargarPedido();
+  }
+
+  cargarPedido() {
+    this.pedidoService.seleccionarPedido(this.pedidoId).subscribe({
+      next: (ped) => {
+        this.pedido.set(ped);
+        const editableItems = ped.detalles.map(d => ({
+          detalleId: d.id,
+          productoNombre: d.productoNombre,
+          cantidad: d.cantidad,
+          precioOriginal: d.precioUnitario,
+          precioUnitario: d.precioUnitario,
+          totalLinea: d.totalLinea
+        }));
+        this.itemsEditables.set(editableItems);
+      }
+    });
+  }
+
+  actualizarPrecioItem(index: number, nuevoPrecio: number) {
+    this.itemsEditables.update(prev => {
+      const copy = [...prev];
+      if (copy[index]) {
+        copy[index].precioUnitario = nuevoPrecio >= 0 ? nuevoPrecio : 0;
+        copy[index].totalLinea = copy[index].precioUnitario * copy[index].cantidad;
+      }
+      return copy;
+    });
+  }
+
+  continuarAlCobro() {
+    const listDto: ActualizarPrecioDetalleDto[] = this.itemsEditables().map(item => ({
+      detalleId: item.detalleId,
+      precioUnitario: item.precioUnitario
+    }));
+
+    this.procesando.set(true);
+    this.pedidoService.actualizarPrecios(this.pedidoId, listDto).subscribe({
+      next: (ped) => {
+        this.pedido.set(ped);
+        this.procesando.set(false);
+        this.currentStep.set(2);
+        this.setMontoVentaExacto();
+      },
+      error: (err) => {
+        this.procesando.set(false);
+        Swal.fire('Error', 'No se pudieron actualizar los precios del pedido.', 'error');
+      }
+    });
+  }
+
+  regresarAPrecios() {
+    this.currentStep.set(1);
+  }
+
+  imprimirPreCuenta() {
+    if (!this.pedido()) return;
+    this.showTicketPreview.set(true);
+    setTimeout(() => {
+      window.print();
+      this.showTicketPreview.set(false);
+    }, 100);
+  }
+
+  cargarSeries() {
+    const sucursalId = this.getSucursal().sucursalId;
+    if (!sucursalId) {
+      this.correlativo.set('Sin sucursal');
+      return;
+    }
+    this.facturacionService.obtenerSeries(sucursalId).subscribe({
+      next: (series) => {
+        this.seriesDisponibles.set(series);
+        this.actualizarSerieActual(this.tipoComprobante());
+      },
+      error: () => {
+        this.correlativo.set('Error al cargar series');
+      }
+    });
+  }
+
+  private actualizarSerieActual(tipo: TipoComprobante) {
+    const tipoDocCodigo = tipo === 'FACTURA' ? '01' : tipo === 'BOLETA' ? '03' : '02';
+    const serie = this.seriesDisponibles().find(s => s.tipoDocCodigo === tipoDocCodigo);
+    this.serieActual.set(serie || null);
+    if (serie) {
+      const siguiente = (serie.ultimoCorrelativo ?? 0) + 1;
+      const numFormateado = String(siguiente).padStart(8, '0');
+      this.correlativo.set(`${serie.serie} - ${numFormateado}`);
+    } else if (tipo === 'NOTA_VENTA') {
+      this.correlativo.set('NV (local)');
+    } else {
+      this.correlativo.set('⚠ Sin serie configurada');
+    }
   }
 
   cargarMetodosPago() {
@@ -183,12 +321,9 @@ export class CheckoutModalComponent implements OnInit {
     });
   }
 
-  cambiarTipoComprobante(tipo: TipoComprobante | 'NOTA_VENTA') {
+  cambiarTipoComprobante(tipo: TipoComprobante) {
     this.tipoComprobante.set(tipo);
-    // Prefijos simulados para el diseño
-    if (tipo === 'FACTURA') this.correlativo.set('F001 - 0452');
-    else if (tipo === 'BOLETA') this.correlativo.set('B001 - 1884');
-    else this.correlativo.set('NV01 - 0982');
+    this.actualizarSerieActual(tipo);
   }
 
   setMontoVentaExacto() {
@@ -203,37 +338,43 @@ export class CheckoutModalComponent implements OnInit {
       return;
     }
 
-    if (this.tipoComprobante() === 'FACTURA' && (!this.clienteSeleccionado() || this.clienteDoc().length !== 11)) {
-      Swal.fire('RUC Inválido', 'La factura requiere un cliente con RUC (11 dígitos).', 'warning');
-      return;
+    if (this.tipoComprobante() === 'FACTURA') {
+      const doc = this.clienteSeleccionado()?.numeroDocumento || this.clienteDoc();
+      if (!doc || doc.trim().length !== 11) {
+        Swal.fire('RUC Inválido', 'La factura requiere un cliente con RUC (11 dígitos).', 'warning');
+        return;
+      }
     }
 
     this.procesando.set(true);
     const sucursalId = this.getSucursal().sucursalId || '';
 
-    if (this.tipoComprobante() === 'BOLETA' || this.tipoComprobante() === 'FACTURA') {
-      const billingReq: GenerarComprobanteRequest = {
-        pedidoId: this.pedidoId,
-        tipoComprobante: this.tipoComprobante() as TipoComprobante,
-        rucApellidos: this.clienteSeleccionado()?.numeroDocumento || this.clienteDoc(),
-        razonSocialNombres: this.clienteSeleccionado()?.nombreRazonSocial || 'CLIENTES VARIOS',
-        direccion: this.clienteSeleccionado()?.direccion || ''
-      };
+    const now = new Date();
+    const timePart = now.toTimeString().split(' ')[0]; // HH:MM:SS
+    const dateIso = `${this.fechaEmision()}T${timePart}`;
 
-      this.facturacionService.emitirComprobante(billingReq).subscribe({
-        next: (res) => {
-          this.ejecutarPagoFinal(sucursalId, res);
-        },
-        error: (err) => {
-          console.error(err);
-          this.procesando.set(false);
-          const errorMsg = err.error?.message || 'No se pudo emitir el comprobante electrónico.';
-          Swal.fire('Error Facturación', errorMsg, 'error');
-        }
-      });
-    } else {
-      this.ejecutarPagoFinal(sucursalId);
-    }
+    // Emitimos comprobante para todos (BOLETA, FACTURA y NOTA_VENTA) para que el backend lo registre y genere correlativos locales.
+    const billingReq: GenerarComprobanteRequest = {
+      pedidoId: this.pedidoId,
+      tipoComprobante: this.tipoComprobante() as TipoComprobante,
+      rucApellidos: this.clienteSeleccionado()?.numeroDocumento || this.clienteDoc(),
+      razonSocialNombres: this.clienteSeleccionado()?.nombreRazonSocial || 'CLIENTES VARIOS',
+      direccion: this.clienteSeleccionado()?.direccion || '',
+      fechaEmision: dateIso,
+      impresionConsumo: this.impresionConsumo()
+    };
+
+    this.facturacionService.emitirComprobante(billingReq).subscribe({
+      next: (res) => {
+        this.ejecutarPagoFinal(sucursalId, res);
+      },
+      error: (err) => {
+        console.error(err);
+        this.procesando.set(false);
+        const errorMsg = err.error?.message || 'No se pudo emitir el comprobante electrónico.';
+        Swal.fire('Error Facturación', errorMsg, 'error');
+      }
+    });
   }
 
   private ejecutarPagoFinal(sucursalId: string, comprobanteRes?: any) {
@@ -246,14 +387,24 @@ export class CheckoutModalComponent implements OnInit {
       next: () => {
         this.procesando.set(false);
 
-        let successHtml = 'La venta ha sido procesada correctamente.';
+        let successHtml = `
+          <div style="margin-top: 15px; font-weight: 500; font-size: 0.95rem;">La venta ha sido procesada correctamente.</div>
+        `;
         if (comprobanteRes) {
           successHtml += `
-            <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 10px;">
-              <button id="btn-ver-pdf" class="swal2-confirm swal2-styled" style="background-color: #e74c3c;">VER PDF (IMPRIMIR)</button>
-              <button id="btn-ver-xml" class="swal2-confirm swal2-styled" style="background-color: #2ecc71;">DESCARGAR XML</button>
-            </div>
+            <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 10px; width: 100%;">
           `;
+          if (comprobanteRes.tipoComprobante === '02') {
+            successHtml += `
+              <button id="btn-ver-txt" class="swal2-confirm swal2-styled" style="background-color: #18181b; margin: 0; padding: 10px; font-size: 0.9rem;">IMPRIMIR TICKET (TXT)</button>
+            `;
+          } else {
+            successHtml += `
+              <button id="btn-ver-pdf" class="swal2-confirm swal2-styled" style="background-color: #18181b; margin: 0; padding: 10px; font-size: 0.9rem;">VER PDF (IMPRIMIR)</button>
+              <button id="btn-ver-xml" class="swal2-confirm swal2-styled" style="background-color: #71717a; margin: 0; padding: 10px; font-size: 0.9rem;">DESCARGAR XML</button>
+            `;
+          }
+          successHtml += `</div>`;
         }
 
         Swal.fire({
@@ -262,15 +413,32 @@ export class CheckoutModalComponent implements OnInit {
           icon: 'success',
           showConfirmButton: true,
           confirmButtonText: 'Cerrar',
+          confirmButtonColor: '#18181b',
+          customClass: {
+            popup: 'noir-swal-popup'
+          },
           didOpen: () => {
             const btnPdf = document.getElementById('btn-ver-pdf');
             const btnXml = document.getElementById('btn-ver-xml');
+            const btnTxt = document.getElementById('btn-ver-txt');
 
             if (btnPdf) {
               btnPdf.onclick = () => this.facturacionService.abrirPdfEnNuevaPestana(comprobanteRes.archivoPdf);
             }
             if (btnXml) {
               btnXml.onclick = () => window.open(comprobanteRes.archivoXml, '_blank');
+            }
+            if (btnTxt) {
+              btnTxt.onclick = () => {
+                const blob = new Blob([comprobanteRes.archivoTxt || ''], { type: 'text/plain;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const win = window.open(url, '_blank');
+                if (win) {
+                  win.onload = () => {
+                    win.print();
+                  };
+                }
+              };
             }
           }
         }).then(() => {

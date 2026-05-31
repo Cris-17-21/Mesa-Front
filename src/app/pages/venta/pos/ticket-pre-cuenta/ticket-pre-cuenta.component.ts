@@ -1,6 +1,11 @@
-import { Component, input } from '@angular/core';
+import { Component, input, inject, OnInit, signal } from '@angular/core';
 import { CommonModule, DecimalPipe, DatePipe } from '@angular/common';
 import { PedidoResponseDto } from '../../../../models/venta/pedido.model';
+import { AuthService } from '../../../../core/auth/auth.service';
+import { SucursalService } from '../../../../services/maestro/sucursal.service';
+import { EmpresaService } from '../../../../services/maestro/empresa.service';
+import { Sucursal } from '../../../../models/maestro/sucursal.model';
+import { Empresa } from '../../../../models/maestro/empresa.model';
 
 @Component({
     selector: 'app-ticket-pre-cuenta',
@@ -9,16 +14,15 @@ import { PedidoResponseDto } from '../../../../models/venta/pedido.model';
     templateUrl: './ticket-pre-cuenta.component.html',
     styleUrl: './ticket-pre-cuenta.component.css'
 })
-export class TicketPreCuentaComponent {
+export class TicketPreCuentaComponent implements OnInit {
     pedido = input.required<PedidoResponseDto>();
 
-    // Datos constantes del restaurante (esto podría venir de un servicio de configuración)
-    restaurante = {
-        nombre: 'MI RESTAURANTE NOIR',
-        ruc: '20123456789',
-        direccion: 'Av. Las Gardenias 1234, Lima',
-        telefono: '(01) 444-5555'
-    };
+    private authService = inject(AuthService);
+    private sucursalService = inject(SucursalService);
+    private empresaService = inject(EmpresaService);
+
+    sucursalData = signal<Sucursal | null>(null);
+    empresaData = signal<Empresa | null>(null);
 
     get igv() {
         return this.pedido().totalFinal * 0.18;
@@ -26,6 +30,22 @@ export class TicketPreCuentaComponent {
 
     get subtotal() {
         return this.pedido().totalFinal - this.igv;
+    }
+
+    ngOnInit() {
+        const branchId = this.pedido().sucursalId || this.authService.getSucursalId();
+        if (branchId) {
+            this.sucursalService.getOptionalSucursal(branchId).subscribe(s => {
+                this.sucursalData.set(s);
+            });
+        }
+
+        const compId = this.authService.getEmpresaId();
+        if (compId) {
+            this.empresaService.getOptionalEmpresa(compId).subscribe(e => {
+                this.empresaData.set(e);
+            });
+        }
     }
 
     print() {

@@ -1,0 +1,59 @@
+<p-dialog header="Configurar Serie SUNAT" [visible]="visible()"
+    (visibleChange)="visible.set($event)" [modal]="true" [draggable]="false"
+    [style]="{ width: '30rem', maxWidth: '95vw' }" [contentStyle]="{'max-height': '80vh', 'overflow-y': 'auto'}"
+    (onHide)="close()">
+
+    @if (visible()) {
+    <form [formGroup]="seriesForm" (ngSubmit)="save()" class="form-noir mt-2">
+
+        <div class="field-noir">
+            <label class="label-noir">Sucursal*</label>
+            <p-select [options]="sucursalesList()" formControlName="sucursalId" optionLabel="nombre" optionValue="id"
+                placeholder="Seleccione Sucursal" [filter]="true" class="w-full">
+            </p-select>
+            @if (isInvalid('sucursalId')) {
+            <small class="error-text">{{ getErrorMessage('sucursalId') }}</small>
+            }
+        </div>
+
+        <div class="field-noir">
+            <label class="label-noir">Tipo de Comprobante*</label>
+            <p-select [options]="tipoDocumentoOptions" formControlName="tipoDoc" optionLabel="label" optionValue="value"
+                placeholder="Seleccione Tipo de Comprobante" class="w-full">
+            </p-select>
+            @if (isInvalid('tipoDoc')) {
+            <small class="error-text">{{ getErrorMessage('tipoDoc') }}</small>
+            }
+        </div>
+
+        <div class="field-noir">
+            <label class="label-noir">Serie* (4 caracteres, ej: F001)</label>
+            <input pInputText formControlName="serie" placeholder="Ej. F001" class="noir-input"
+                [class.invalid]="isInvalid('serie')" maxlength="4" style="text-transform: uppercase;" />
+            @if (isInvalid('serie')) {
+            <small class="error-text text-wrap" style="display: block; max-width: 100%;">{{ getErrorMessage('serie') }}</small>
+            }
+        </div>
+
+        <div class="field-noir">
+            <label class="label-noir">Correlativo Inicial*</label>
+            <p-inputnumber formControlName="correlativo" [min]="1" [useGrouping]="false" class="w-full noir-inputnumber-wrapper"
+                [class.invalid]="isInvalid('correlativo')">
+            </p-inputnumber>
+            @if (isInvalid('correlativo')) {
+            <small class="error-text">{{ getErrorMessage('correlativo') }}</small>
+            }
+        </div>
+
+        <div class="footer-actions mt-4">
+            <button type="button" class="btn-cancel" (click)="close()" [disabled]="loading()">Cancelar</button>
+            <button type="submit" class="btn-save" [disabled]="loading()">
+                @if (!loading()) {
+                <i class="bi bi-check2-circle mr-2"></i>
+                }
+                {{ loading() ? 'Procesando...' : 'Registrar' }}
+            </button>
+        </div>
+    </form>
+    }
+</p-dialog>

@@ -8,7 +8,8 @@ import {
   PedidoDetalleRequestDto,
   PagoMixtoItem,
   SepararCuentaRequestDto,
-  UnionMesaRequestDto
+  UnionMesaRequestDto,
+  ActualizarPrecioDetalleDto
 } from '../../models/venta/pedido.model';
 import { Observable, tap } from 'rxjs';
 
@@ -104,6 +105,14 @@ export class PedidoService {
    * Envía un array de pagos [{medioPagoId, monto}] para registrar
    * pagos con múltiples métodos (efectivo + tarjeta, etc.)
    */
+  actualizarPrecios(pedidoId: string, precios: ActualizarPrecioDetalleDto[]): Observable<PedidoResponseDto> {
+    return this.http.put<PedidoResponseDto>(`${this.apiUrl}/${pedidoId}/precios`, precios).pipe(
+      tap((pedidoActualizado) => {
+        this._pedidoSeleccionado.set(pedidoActualizado);
+      })
+    );
+  }
+
   registrarPago(pedidoId: string, pagos: PagoMixtoItem[], sucursalId: string): Observable<void> {
     return this.http.post<void>(`${this.apiUrl}/${pedidoId}/pagar`, pagos).pipe(
       tap(() => {

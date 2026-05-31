@@ -23,6 +23,10 @@ export const routes: Routes = [
         path: 'config',
         children: [
           {
+            path: 'mi-empresa',
+            loadComponent: () => import('./pages/config/mi-empresa/mi-empresa.component').then(m => m.MiEmpresaComponent)
+          },
+          {
             path: 'permission',
             loadComponent: () => import('./pages/config/permissions/permissions.component').then(m => m.PermissionsComponent)
           },
@@ -67,6 +71,10 @@ export const routes: Routes = [
           {
             path: 'metodos',
             loadComponent: () => import('./pages/maestro/metodo-pago/metodo-pago.component').then(m => m.MetodoPagoComponent)
+          },
+          {
+            path: 'series',
+            loadComponent: () => import('./pages/maestro/series/series.component').then(m => m.SeriesComponent)
           }
         ]
       },

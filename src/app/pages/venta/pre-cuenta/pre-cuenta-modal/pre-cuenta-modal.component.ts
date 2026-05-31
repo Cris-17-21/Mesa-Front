@@ -43,6 +43,7 @@ export class PreCuentaModalComponent implements OnChanges {
   @Input() usuarioId!: string;
   @Input() modo: 'NUEVO' | 'EDITAR' = 'NUEVO';
   @Input() pedidoId: string | null = null;
+  @Input() tipoEntrega: string | null = null;
   @Output() visibleChange = new EventEmitter<boolean>();
   @Output() onSave = new EventEmitter<void>();
 
@@ -69,7 +70,7 @@ export class PreCuentaModalComponent implements OnChanges {
   constructor() {
     this.deliveryForm = this.fb.group({
       nombreCliente: ['', [Validators.required]],
-      telefono: ['', [Validators.required]],
+      telefono: ['', [Validators.required, Validators.pattern('^[0-9]{1,9}$')]],
       direccion: ['', [Validators.required]]
     });
   }

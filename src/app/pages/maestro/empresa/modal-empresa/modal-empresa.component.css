@@ -427,6 +427,45 @@
 }
 
 /* ==========================================================================
+   STATUS BADGES
+   ========================================================================== */
+.badge {
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.badge-success {
+    background-color: #d1fae5 !important;
+    color: #065f46 !important;
+}
+
+.badge-warning {
+    background-color: #ffedd5 !important;
+    color: #9a3412 !important;
+}
+
+.mb-1 {
+    margin-bottom: 0.25rem;
+}
+
+.flex-1 {
+    flex: 1;
+}
+
+.justify-content-between {
+    justify-content: space-between;
+}
+
+.align-items-center {
+    align-items: center;
+}
+
+/* ==========================================================================
    ACCESIBILIDAD
    ========================================================================== */
 @media (prefers-reduced-motion: reduce) {

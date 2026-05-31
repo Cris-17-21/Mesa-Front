@@ -21,6 +21,12 @@
     margin: 0;
 }
 
+.branch-name {
+    font-size: 13px;
+    font-weight: bold;
+    margin: 2px 0;
+}
+
 .ticket-header p {
     margin: 2px 0;
 }
@@ -99,26 +105,86 @@
 
 /* MEDIA PRINT: Esta es la clave */
 @media print {
+    body {
+        background: white !important;
+    }
+
+    /* 1. Ocultar absolutamente todos los elementos por defecto */
     body * {
-        visibility: hidden;
+        display: none !important;
     }
 
-    #printable-ticket,
-    #printable-ticket * {
-        visibility: visible;
+    /* 2. Forzar que solo el ticket y sus ancestros directos se muestren y colapsen su altura */
+    html body .p-dialog-mask,
+    html body .noir-modal,
+    html body .p-dialog-content,
+    html body .ticket-preview-overlay,
+    html body app-ticket-pre-cuenta,
+    html body #printable-ticket,
+    html body #printable-ticket * {
+        display: block !important;
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        height: auto !important;
+        min-height: 0 !important;
+        max-height: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        border: none !important;
+        overflow: visible !important;
     }
 
-    #printable-ticket {
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 80mm;
-        margin: 0;
-        padding: 0;
-        border: none;
+    /* 3. Ajustar el ticket físico a su ancho real de 80mm y centrarlo */
+    html body #printable-ticket {
+        width: 80mm !important;
+        margin: 0 auto !important;
+        background: white !important;
+        box-sizing: border-box !important;
+        position: relative !important;
     }
 
-    /* Ocultar encabezados/pies de página del navegador si es posible */
+    /* 4. Restaurar los tipos de display originales para los elementos internos del ticket */
+    html body #printable-ticket span,
+    html body #printable-ticket strong,
+    html body #printable-ticket small,
+    html body #printable-ticket p {
+        display: inline !important;
+        position: static !important;
+    }
+    html body #printable-ticket tr {
+        display: table-row !important;
+        position: static !important;
+    }
+    html body #printable-ticket tbody {
+        display: table-row-group !important;
+        position: static !important;
+    }
+    html body #printable-ticket thead {
+        display: table-header-group !important;
+        position: static !important;
+    }
+    html body #printable-ticket table {
+        display: table !important;
+        position: static !important;
+        width: 100% !important;
+    }
+    html body #printable-ticket td {
+        display: table-cell !important;
+        position: static !important;
+    }
+    html body #printable-ticket th {
+        display: table-cell !important;
+        position: static !important;
+    }
+    html body #printable-ticket .divider {
+        display: block !important;
+        position: static !important;
+    }
+
     @page {
         margin: 0;
     }

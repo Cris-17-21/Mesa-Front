@@ -4,7 +4,8 @@ import { environment } from '../../core/environment/environment';
 import {
   BuscarComprobantesParams,
   ComprobanteResponse,
-  GenerarComprobanteRequest
+  GenerarComprobanteRequest,
+  NotaCreditoRequest
 } from '../../models/venta/facturacion.model';
 import { Observable, tap } from 'rxjs';
 
@@ -15,8 +16,8 @@ export class FacturacionService {
 
   constructor(private http: HttpClient) { }
 
-  // Base URL: /api/ventas/facturacion  ← CORREGIDO (antes faltaba /ventas/)
-  private readonly apiUrl = `${environment.apiUrl}/ventas/facturacion`;
+  // Base URL: /api/facturacion (Corrected to match Spring Boot backend controller)
+  private readonly apiUrl = `${environment.apiUrl}/facturacion`;
 
   // =================================================================
   // STATE (Signals)
@@ -44,6 +45,7 @@ export class FacturacionService {
       ...payload,
       tipoComprobante: payload.tipoComprobante === 'FACTURA' ? '01'
         : payload.tipoComprobante === 'BOLETA' ? '03'
+        : payload.tipoComprobante === 'NOTA_VENTA' ? '02'
         : payload.tipoComprobante
     };
 
@@ -58,11 +60,11 @@ export class FacturacionService {
    * Busca comprobantes con filtros opcionales.
    * Endpoint: GET /api/ventas/facturacion/buscar?estado=&fechaDesde=&fechaHasta=&tipo=
    */
-  buscarComprobantes(filtros: BuscarComprobantesParams = {}): Observable<ComprobanteResponse[]> {
-    let params = new HttpParams();
+  buscarComprobantes(sucursalId: string, filtros: BuscarComprobantesParams = {}): Observable<ComprobanteResponse[]> {
+    let params = new HttpParams().set('sucursalId', sucursalId);
     if (filtros.estado) params = params.set('estado', filtros.estado);
-    if (filtros.fechaDesde) params = params.set('fechaDesde', filtros.fechaDesde);
-    if (filtros.fechaHasta) params = params.set('fechaHasta', filtros.fechaHasta);
+    if (filtros.fechaDesde) params = params.set('fechaInicio', filtros.fechaDesde);
+    if (filtros.fechaHasta) params = params.set('fechaFin', filtros.fechaHasta);
     if (filtros.tipo) params = params.set('tipo', filtros.tipo);
 
     return this.http.get<ComprobanteResponse[]>(`${this.apiUrl}/buscar`, { params });
@@ -73,7 +75,41 @@ export class FacturacionService {
    * Endpoint: POST /api/ventas/facturacion/{id}/enviar
    */
   enviarASunat(comprobanteId: string): Observable<ComprobanteResponse> {
-    return this.http.post<ComprobanteResponse>(`${this.apiUrl}/${comprobanteId}/enviar`, {});
+    return this.http.post<ComprobanteResponse>(`${this.apiUrl}/comprobantes/${comprobanteId}/enviar-inmediato`, {});
+  }
+
+  /**
+   * Configura o actualiza el correlativo inicial de una serie en el facturador.
+   * Endpoint: POST /api/facturacion/series/configurar
+   */
+  configurarSeries(sucursalId: string, tipoDoc: string, serie: string, correlativo: number): Observable<void> {
+    const params = new HttpParams()
+      .set('sucursalId', sucursalId)
+      .set('tipoDoc', tipoDoc)
+      .set('serie', serie)
+      .set('correlativo', correlativo.toString());
+    return this.http.post<void>(`${this.apiUrl}/series/configurar`, {}, { params });
+  }
+
+  /**
+   * Obtiene la lista de series configuradas por sucursal en el facturador.
+   * Endpoint: GET /api/facturacion/series
+   */
+  obtenerSeries(sucursalId: string): Observable<any[]> {
+    const params = new HttpParams().set('sucursalId', sucursalId);
+    return this.http.get<any[]>(`${this.apiUrl}/series`, { params });
+  }
+
+  descargarArchivo(id: string, tipo: string): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/comprobantes/${id}/descargar/${tipo}`, { responseType: 'blob' });
+  }
+
+  eliminarComprobante(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/comprobantes/${id}`);
+  }
+
+  emitirNotaCredito(dto: NotaCreditoRequest): Observable<ComprobanteResponse> {
+    return this.http.post<ComprobanteResponse>(`${this.apiUrl}/nota-credito`, dto);
   }
 
   // =================================================================

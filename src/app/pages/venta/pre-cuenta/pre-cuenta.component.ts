@@ -9,6 +9,7 @@ import { AuthService } from '../../../core/auth/auth.service';
 import { UserService } from '../../../services/user/user.service';
 import { PedidoResumenDto } from '../../../models/venta/pedido.model';
 import { PreCuentaModalComponent } from './pre-cuenta-modal/pre-cuenta-modal.component';
+import { CheckoutModalComponent } from '../pos/checkout-modal/checkout-modal.component';
 
 interface UserResponse {
   user: {
@@ -23,7 +24,8 @@ interface UserResponse {
     TableModule,
     PreCuentaModalComponent,
     CommonModule,
-    TabViewModule
+    TabViewModule,
+    CheckoutModalComponent
   ],
   templateUrl: './pre-cuenta.component.html',
   styleUrl: './pre-cuenta.component.css'
@@ -39,6 +41,12 @@ export class PreCuentaComponent implements OnInit {
 
   modalMode = signal<'NUEVO' | 'EDITAR'>('NUEVO');
   selectedPedidoId = signal<string | null>(null);
+  selectedTipoEntrega = signal<string | null>(null);
+
+  // Signals para cobro directo
+  showCheckout = signal(false);
+  checkoutPedidoId = signal<string | null>(null);
+  checkoutTotal = signal<number>(0);
 
   pedidosActivos = this.pedidoService.pedidosActivos;
 
@@ -84,7 +92,23 @@ export class PreCuentaComponent implements OnInit {
   verDetalle(pedido: PedidoResumenDto): void {
     this.modalMode.set('EDITAR');
     this.selectedPedidoId.set(pedido.id);
+    this.selectedTipoEntrega.set(pedido.tipoEntrega);
     this.displayModal.set(true);
+  }
+
+  abrirCobrarDirecto(pedido: PedidoResumenDto): void {
+    this.checkoutPedidoId.set(pedido.id);
+    this.checkoutTotal.set(pedido.totalFinal);
+    this.showCheckout.set(true);
+  }
+
+  onCobroFinalizado(success: boolean): void {
+    if (success) {
+      this.loadDeliveries();
+    }
+    this.showCheckout.set(false);
+    this.checkoutPedidoId.set(null);
+    this.checkoutTotal.set(0);
   }
 
   private async getAuthData(): Promise<{ sucursalId: string | null; usuarioId: string | null }> {

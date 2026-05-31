@@ -36,17 +36,18 @@
 
 <!-- Template reutilizable para la tabla -->
 <ng-template #pedidosTable let-data>
-    <p-table #dt [value]="data" [rows]="10" [paginator]="true" responsiveLayout="stack" [breakpoint]="'960px'"
+    <p-table #dt [value]="data" [rows]="10" [rowsPerPageOptions]="[10, 25, 50]" [paginator]="true" [responsiveLayout]="'scroll'"
         [globalFilterFields]="['codigoPedido', 'nombreCliente', 'codigoMesa']"
-        styleClass="p-datatable-sm p-datatable-gridlines noir-table">
+        styleClass="p-datatable-sm">
 
         <ng-template pTemplate="header">
             <tr>
                 <th style="width: 140px">CÓDIGO</th>
-                <th>CLIENTE / MESA</th>
+                <th>CLIENTE</th>
+                <th style="width: 130px">MESA</th>
                 <th style="width: 150px">ESTADO</th>
                 <th style="width: 120px" class="text-right">TOTAL</th>
-                <th style="width: 100px" class="text-center">ACCIONES</th>
+                <th style="width: 140px" class="text-center">ACCIONES</th>
             </tr>
         </ng-template>
 
@@ -56,23 +57,14 @@
                     <span class="doc-badge">{{ pedido.codigoPedido }}</span>
                 </td>
                 <td>
-                    <div class="flex align-items-center gap-3">
-                        <div class="type-icon">
-                            @if (pedido.codigoMesa) {
-                            <i class="bi bi-hash-square" pTooltip="Pedido en Mesa"></i>
-                            } @else {
-                            <i class="bi bi-truck" pTooltip="Delivery / Para Llevar"></i>
-                            }
-                        </div>
-                        <div class="flex flex-column">
-                            <span class="font-bold">{{ pedido.nombreCliente || 'CLIENTE GENERAL' }}</span>
-                            @if (pedido.codigoMesa) {
-                            <small class="text-secondary">Mesa: {{ pedido.codigoMesa }}</small>
-                            } @else {
-                            <small class="text-secondary">Envío / Para Llevar</small>
-                            }
-                        </div>
-                    </div>
+                    <span>{{ pedido.nombreCliente || 'CLIENTE GENERAL' }}</span>
+                </td>
+                <td>
+                    @if (pedido.codigoMesa) {
+                    <span>{{ pedido.codigoMesa }}</span>
+                    } @else {
+                    <span class="text-secondary">{{ pedido.tipoEntrega === 'LLEVAR' ? 'Para Llevar' : 'Delivery' }}</span>
+                    }
                 </td>
                 <td>
                     <span class="status-badge" [class]="'status-' + pedido.estado.toLowerCase()">
@@ -81,13 +73,18 @@
                     </span>
                 </td>
                 <td class="text-right">
-                    <span class="font-bold price-text">S/ {{ pedido.totalFinal | number:'1.2-2' }}</span>
+                    <span class="price-text">S/ {{ pedido.totalFinal | number:'1.2-2' }}</span>
                 </td>
                 <td>
-                    <div class="flex justify-content-center gap-2">
+                    <div class="actions-wrapper">
                         <button class="button-icon-only edit" (click)="verDetalle(pedido)" pTooltip="Ver Detalle">
                             <i class="bi bi-eye"></i>
                         </button>
+                        @if (pedido.estado !== 'PAGADO' && pedido.estado !== 'ANULADO') {
+                        <button class="button-icon-only pay" (click)="abrirCobrarDirecto(pedido)" pTooltip="Cobrar Pedido">
+                            <i class="bi bi-cash-coin"></i>
+                        </button>
+                        }
                         <button class="button-icon-only delete" pTooltip="Eliminar">
                             <i class="bi bi-trash3"></i>
                         </button>
@@ -98,7 +95,7 @@
 
         <ng-template pTemplate="emptymessage">
             <tr>
-                <td colspan="5" class="empty-state">
+                <td colspan="6" class="empty-state">
                     NO SE ENCONTRARON PEDIDOS EN ESTA CATEGORÍA
                 </td>
             </tr>
@@ -106,6 +103,17 @@
     </p-table>
 </ng-template>
 
+@defer (when displayModal()) {
 <app-pre-cuenta-modal [(visible)]="displayModal" [sucursalId]="sucursalId()!" [usuarioId]="usuarioId()!"
-    [modo]="modalMode()" [pedidoId]="selectedPedidoId()" (onSave)="loadDeliveries()">
+    [modo]="modalMode()" [pedidoId]="selectedPedidoId()" [tipoEntrega]="selectedTipoEntrega()" (onSave)="loadDeliveries()">
 </app-pre-cuenta-modal>
+}
+
+<!-- MODAL DE COBRO DIRECTO INTEGRADO -->
+@if (showCheckout() && checkoutPedidoId()) {
+<div class="overlay-nested-pos">
+    <app-checkout-modal [pedidoId]="checkoutPedidoId()!" [total]="checkoutTotal()" (onCancelar)="showCheckout.set(false)"
+        (onPagoExitoso)="onCobroFinalizado($event)">
+    </app-checkout-modal>
+</div>
+}

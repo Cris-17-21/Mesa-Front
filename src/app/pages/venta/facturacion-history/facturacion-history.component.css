@@ -190,6 +190,9 @@
 .btn-action.pdf { color: #dc2626; }
 .btn-action.xml { color: #16a34a; }
 .btn-action.sunat { color: #2563eb; }
+.btn-action.edit { color: #d97706; }
+.btn-action.delete { color: #e11d48; }
+.btn-action.credit-note { color: #7c3aed; }
 
 /* BADGES SUNAT */
 .badge-sunat {
@@ -232,3 +235,50 @@
     from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }
 }
+
+/* CHECKBOX & BULK ACTIONS */
+.col-check {
+    width: 48px;
+    text-align: center;
+    padding: 14px 8px !important;
+}
+
+.checkbox-custom {
+    width: 18px;
+    height: 18px;
+    accent-color: #18181b;
+    cursor: pointer;
+    border-radius: 4px;
+    vertical-align: middle;
+}
+
+.btn-send-bulk {
+    background: #2563eb;
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background 0.2s, transform 0.1s;
+}
+
+.btn-send-bulk:hover:not(:disabled) {
+    background: #1d4ed8;
+}
+
+.btn-send-bulk:active:not(:disabled) {
+    transform: scale(0.98);
+}
+
+.btn-send-bulk:disabled {
+    background: #e4e4e7;
+    color: #a1a1aa;
+    cursor: not-allowed;
+}
+
+

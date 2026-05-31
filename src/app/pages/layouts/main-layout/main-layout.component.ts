@@ -37,6 +37,24 @@ export class MainLayoutComponent {
             return nav;
           });
         }
+
+        // Si es ROLE_ADMIN_RESTAURANTE, insertamos "Mi Empresa" como primera opción en Configuración
+        if (this.authService.permissions().includes('ROLE_ADMIN_RESTAURANTE') && this.userProfile.navigation) {
+          const configMenu = this.userProfile.navigation.find(n => 
+            n.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") === 'configuracion'
+          );
+          if (configMenu && configMenu.children) {
+            const tieneMiEmpresa = configMenu.children.some(child => child.urlPath === '/config/mi-empresa');
+            if (!tieneMiEmpresa) {
+              configMenu.children.unshift({
+                name: 'Mi Empresa',
+                urlPath: '/config/mi-empresa',
+                iconName: 'bi bi-building-gear',
+                order: 0
+              });
+            }
+          }
+        }
         // Forzamos el menú de Ventas con todos sus hijos válidos del frontend
         const ventas = this.userProfile.navigation.find(n => 
           n.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") === 'ventas'
@@ -95,6 +113,28 @@ export class MainLayoutComponent {
               order: 2
             }
           ];
+        }
+
+        // Forzamos el módulo de Maestros para incluir Series (sólo si NO es SuperAdmin)
+        const maestros = this.userProfile.navigation.find(n => 
+          n.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") === 'maestros'
+        );
+        if (maestros && maestros.children) {
+          if (!this.authService.isSuperAdmin()) {
+            // Si no está ya agregado Series, lo agregamos
+            const tieneSeries = maestros.children.some(child => child.urlPath === '/maestros/series');
+            if (!tieneSeries) {
+              maestros.children.push({
+                name: 'Series SUNAT',
+                urlPath: '/maestros/series',
+                iconName: 'bi bi-gear-wide-connected',
+                order: 7
+              });
+            }
+          } else {
+            // Si es SuperAdmin, nos aseguramos de filtrar Series SUNAT de los hijos
+            maestros.children = maestros.children.filter(child => child.urlPath !== '/maestros/series');
+          }
         }
       },
       error: (err) => console.error('Sesion Invalida', err)

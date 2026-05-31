@@ -2,7 +2,7 @@
  * Tipado estricto para evitar errores de "dedo" al asignar el tipo.
  * Coincide con tu Enum de Java.
  */
-export type TipoComprobante = 'BOLETA' | 'FACTURA' | '01' | '03';
+export type TipoComprobante = 'BOLETA' | 'FACTURA' | 'NOTA_VENTA' | '01' | '02' | '03';
 
 /**
  * Estado del comprobante ante SUNAT.
@@ -28,6 +28,9 @@ export interface GenerarComprobanteRequest {
 
     /** Fecha de emisión ISO (opcional, para emisión retroactiva ±2 días) */
     fechaEmision?: string;
+
+    /** Si se debe emitir como un único item 'CONSUMO DE ALIMENTO' */
+    impresionConsumo?: boolean;
 }
 
 /**
@@ -65,4 +68,10 @@ export interface BuscarComprobantesParams {
     fechaDesde?: string; // ISO date: "2025-01-01"
     fechaHasta?: string; // ISO date: "2025-12-31"
     tipo?: '01' | '03' | '02'; // 01=Factura, 03=Boleta, 02=Nota de Venta
+}
+
+export interface NotaCreditoRequest {
+    comprobanteId: string;
+    codMotivo: string;
+    descripcion: string;
 }

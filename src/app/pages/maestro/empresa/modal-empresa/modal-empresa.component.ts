@@ -15,6 +15,7 @@ import { MenuItem } from 'primeng/api';
 import { Empresa } from '../../../../models/maestro/empresa.model';
 import { RoleService } from '../../../../services/config/role.service';
 import { ConsultaService } from '../../../../services/auxiliar/consulta.service';
+import { AuthService } from '../../../../core/auth/auth.service';
 
 export interface EmpresaWizardData {
   isEdit: boolean;
@@ -40,6 +41,7 @@ export class ModalEmpresaComponent implements OnInit {
   private readonly roleService = inject(RoleService);
   private readonly consultaService = inject(ConsultaService);
   private readonly destroyRef = inject(DestroyRef);
+  public readonly authService = inject(AuthService);
 
   // Modelos
   readonly visible = model(false);
@@ -294,10 +296,18 @@ export class ModalEmpresaComponent implements OnInit {
 
     const finalData = this.formatDataToUppercase(this.wizardForm.getRawValue());
 
+    if (this.authService.isSuperAdmin()) {
+      delete finalData.empresa.usuarioSol;
+      delete finalData.empresa.claveSol;
+      delete finalData.empresa.claveCertificado;
+      delete finalData.empresa.entorno;
+      delete finalData.empresa.certificadoDigital;
+    }
+
     this.onComplete.emit({
       data: finalData,
       isEdit: !!this.dataToEdit(),
-      certificadoFile: this.certificadoFile(),
+      certificadoFile: this.authService.isSuperAdmin() ? null : this.certificadoFile(),
       logoFile: this.logoFile()
     });
   }

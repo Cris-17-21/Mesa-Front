@@ -1,9 +1,14 @@
 <div class="history-container">
     <div class="history-header">
         <h1>Historial de Comprobantes Electrónicos</h1>
-        <button class="btn-refresh" (click)="buscar()" [disabled]="cargando()">
-            <i class="bi bi-arrow-clockwise" [class.spin]="cargando()"></i> Actualizar
-        </button>
+        <div class="header-actions" style="display: flex; gap: 10px;">
+            <button class="btn-send-bulk" [disabled]="!isAnySelected() || cargando()" (click)="enviarSeleccionados()">
+                <i class="bi bi-cloud-arrow-up-fill"></i> Enviar Seleccionados ({{selectedIds().size}})
+            </button>
+            <button class="btn-refresh" (click)="buscar()" [disabled]="cargando()">
+                <i class="bi bi-arrow-clockwise" [class.spin]="cargando()"></i> Actualizar
+            </button>
+        </div>
     </div>
 
     <!-- PANEL DE FILTROS -->
@@ -22,8 +27,9 @@
             <label>Tipo Comprobante</label>
             <select class="filter-input" [ngModel]="filtroTipo()" (ngModelChange)="filtroTipo.set($event)">
                 <option value="">Todos</option>
-                <option value="FACTURA">Factura</option>
-                <option value="BOLETA">Boleta</option>
+                <option value="01">Factura</option>
+                <option value="03">Boleta</option>
+                <option value="02">Nota de Venta</option>
             </select>
         </div>
 
@@ -48,21 +54,31 @@
     </div>
 
     <div class="table-responsive">
-        <table class="history-table">
-            <thead>
+        <p-table [value]="comprobantes()" dataKey="id" [rows]="10" [rowsPerPageOptions]="[10, 25, 50]" [paginator]="true"
+            [responsiveLayout]="'scroll'" styleClass="p-datatable-sm" [loading]="cargando()">
+            
+            <ng-template pTemplate="header">
                 <tr>
-                    <th>Fecha</th>
-                    <th>Tipo</th>
-                    <th>Serie-Número</th>
-                    <th>RUC/Emisor</th>
-                    <th>Total</th>
-                    <th>Estado SUNAT</th>
-                    <th>Acciones</th>
+                    <th class="col-check" style="width: 5%">
+                        <input type="checkbox" class="checkbox-custom" [checked]="isAllSelected()" (change)="toggleSelectAll($any($event.target).checked)">
+                    </th>
+                    <th style="width: 15%">Fecha</th>
+                    <th style="width: 10%">Tipo</th>
+                    <th style="width: 15%">Serie-Número</th>
+                    <th style="width: 15%">RUC/Emisor</th>
+                    <th style="width: 10%">Total</th>
+                    <th style="width: 15%">Estado SUNAT</th>
+                    <th style="width: 15%">Acciones</th>
                 </tr>
-            </thead>
-            <tbody>
-                @for (c of comprobantes(); track c.id) {
+            </ng-template>
+
+            <ng-template pTemplate="body" let-c>
                 <tr>
+                    <td class="col-check">
+                        <ng-container *ngIf="c.estadoSunat === 'PENDIENTE_ENVIO' || !c.estadoSunat">
+                            <input type="checkbox" class="checkbox-custom" [checked]="selectedIds().has(c.id)" (change)="toggleSelect(c.id)">
+                        </ng-container>
+                    </td>
                     <td>{{ c.fechaEmision | date:'dd/MM/yyyy HH:mm' }}</td>
                     <td>{{ (c.tipoComprobante === '01' || c.tipoComprobante === 'FACTURA') ? 'Factura' : 'Boleta' }}</td>
                     <td>{{ c.serie }}-{{ c.correlativo }}</td>
@@ -78,25 +94,49 @@
                         </span>
                     </td>
                     <td class="actions">
-                        <button class="btn-action pdf" (click)="verPdf(c.archivoPdf)" title="Ver PDF" [disabled]="!c.archivoPdf">
+                        <button class="btn-action pdf" (click)="descargarPdf(c.id)" title="Ver PDF" [disabled]="!c.archivoPdf">
                             <i class="bi bi-file-earmark-pdf-fill"></i>
                         </button>
-                        <button class="btn-action xml" (click)="descargarXml(c.archivoXml)" title="Descargar XML" [disabled]="!c.archivoXml">
+                        <button class="btn-action xml" (click)="descargarXml(c.id)" title="Descargar XML" [disabled]="!c.archivoXml">
                             <i class="bi bi-file-earmark-code-fill"></i>
                         </button>
+                        
                         @if (c.estadoSunat === 'PENDIENTE_ENVIO' || !c.estadoSunat) {
-                        <button class="btn-action sunat" (click)="enviarASunat(c.id)" title="Enviar a SUNAT">
-                            <i class="bi bi-cloud-arrow-up-fill"></i>
-                        </button>
+                            <button class="btn-action sunat" (click)="enviarASunat(c.id)" title="Enviar a SUNAT">
+                                <i class="bi bi-cloud-arrow-up-fill"></i>
+                            </button>
+                        }
+
+                        <!-- EDIT/DELETE pending or local sales -->
+                        @if (c.estadoSunat === 'PENDIENTE_ENVIO' || !c.estadoSunat || c.tipoComprobante === '02' || c.tipoComprobante === 'NOTA_VENTA') {
+                            <button class="btn-action edit" (click)="eliminarComprobante(c, true)" title="Editar Pedido (Reabrir)">
+                                <i class="bi bi-pencil-fill"></i>
+                            </button>
+                            <button class="btn-action delete" (click)="eliminarComprobante(c, false)" title="Eliminar Comprobante (Anular/Liberar Mesa)">
+                                <i class="bi bi-trash-fill"></i>
+                            </button>
+                        }
+
+                        <!-- CREDIT NOTE for accepted bills/invoices -->
+                        @if (c.estadoSunat === 'ACEPTADO' && (c.tipoComprobante === '01' || c.tipoComprobante === '03' || c.tipoComprobante === 'FACTURA' || c.tipoComprobante === 'BOLETA')) {
+                            <button class="btn-action credit-note" (click)="solicitarNotaCredito(c)" title="Emitir Nota de Crédito">
+                                <i class="bi bi-receipt"></i>
+                            </button>
                         }
                     </td>
                 </tr>
-                } @empty {
+            </ng-template>
+
+            <ng-template pTemplate="emptymessage">
                 <tr>
-                    <td colspan="7" class="empty-state">No se encontraron comprobantes con los filtros seleccionados.</td>
+                    <td colspan="8">
+                        <div style="text-align: center; padding: 48px; color: #71717a;">
+                            <i class="bi bi-file-earmark" style="font-size: 2rem; display: block; margin-bottom: 12px; color: #a1a1aa;"></i>
+                            <p style="margin: 0;">No se encontraron comprobantes con los filtros seleccionados.</p>
+                        </div>
+                    </td>
                 </tr>
-                }
-            </tbody>
-        </table>
+            </ng-template>
+        </p-table>
     </div>
 </div>
