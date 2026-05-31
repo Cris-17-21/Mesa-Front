@@ -21,25 +21,31 @@ import { MovimientoModalComponent } from '../components/movimiento-modal/movimie
   template: `
     <div class="card p-4">
         <p-toast></p-toast>
-        <div style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 0.5rem;">
-            <!-- Fila superior: Titulo y Botones -->
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <h2 style="margin: 0;">Stock de Almacén</h2>
-                <div style="display: flex; gap: 0.5rem;">
-                    <button *appHasPermission="'EDIT_INVENTARIO'" pButton label="Entrada" icon="bi bi-box-arrow-in-right" class="p-button-success" (click)="abrirModal('ENTRADA')"></button>
-                    <button *appHasPermission="'EDIT_INVENTARIO'" pButton label="Salida" icon="bi bi-box-arrow-right" class="p-button-danger" (click)="abrirModal('SALIDA')"></button>
-                </div>
+        
+        <div class="stock-header-container">
+            <div class="stock-title-section">
+                <h2 class="stock-title">Stock de Almacén</h2>
+                <p class="stock-subtitle">Monitorea y gestiona el inventario de tus productos</p>
             </div>
             
-            <!-- Fila inferior: Buscador y Filtro -->
-            <div style="display: flex; gap: 1rem; width: 100%; max-width: 600px;">
-                <span style="flex: 1; display: block; position: relative;">
-                    <i class="bi bi-search" style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: #6c757d; z-index: 1;"></i>
-                    <input pInputText type="text" [(ngModel)]="searchTerm" (input)="dt.filterGlobal(searchTerm, 'contains')" placeholder="Buscar producto..." style="width: 100%; padding-left: 2.5rem;">
-                </span>
-                <span style="flex: 1; display: block;">
-                    <p-dropdown [options]="categorias" [(ngModel)]="selectedCategoria" (onChange)="dt.filter(selectedCategoria, 'nombreCategoria', 'equals')" placeholder="Categoría" [showClear]="true" [style]="{'width':'100%'}"></p-dropdown>
-                </span>
+            <div class="stock-actions-section">
+                <!-- Buscador Premium -->
+                <div class="filter-search-container">
+                    <i class="bi bi-search filter-search-icon"></i>
+                    <input type="text" [(ngModel)]="searchTerm" (input)="dt.filterGlobal(searchTerm, 'contains')" placeholder="Buscar producto..." class="filter-search-input">
+                    <button *ngIf="searchTerm" type="button" class="btn-clear-search" (click)="searchTerm = ''; dt.filterGlobal('', 'contains')">
+                        <i class="bi bi-x-circle-fill"></i>
+                    </button>
+                </div>
+                
+                <!-- Dropdown de Categoría -->
+                <p-dropdown [options]="categorias" [(ngModel)]="selectedCategoria" (onChange)="dt.filter(selectedCategoria, 'nombreCategoria', 'equals')" placeholder="Categoría" [showClear]="true" class="category-dropdown-wrapper" styleClass="w-full custom-dropdown"></p-dropdown>
+                
+                <!-- Botones de Acción -->
+                <div class="action-buttons-group">
+                    <button *appHasPermission="'EDIT_INVENTARIO'" pButton label="Entrada" icon="bi bi-box-arrow-in-right" class="p-button-success btn-action-in" (click)="abrirModal('ENTRADA')"></button>
+                    <button *appHasPermission="'EDIT_INVENTARIO'" pButton label="Salida" icon="bi bi-box-arrow-right" class="p-button-danger btn-action-out" (click)="abrirModal('SALIDA')"></button>
+                </div>
             </div>
         </div>
 
@@ -84,17 +90,205 @@ import { MovimientoModalComponent } from '../components/movimiento-modal/movimie
   `,
   styles: [`
     :host { display: block; }
+    
+    /* Layout Header & Actions */
+    .stock-header-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        gap: 1rem;
+    }
+    
+    .stock-title-section {
+        display: flex;
+        flex-direction: column;
+        gap: 0.15rem;
+    }
+    
+    .stock-title {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #18181b;
+    }
+    
+    .stock-subtitle {
+        margin: 0;
+        font-size: 0.85rem;
+        color: #71717a;
+    }
+    
+    .stock-actions-section {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .category-dropdown-wrapper {
+        width: 180px;
+    }
+
+    .action-buttons-group {
+        display: flex;
+        gap: 0.5rem;
+    }
+
     .product-badge {
-        border-radius: 2px;
-        padding: .25em .5rem;
+        border-radius: 4px;
+        padding: .25em .6rem;
         text-transform: uppercase;
         font-weight: 700;
-        font-size: 12px;
-        letter-spacing: .3px;
+        font-size: 11px;
+        letter-spacing: .5px;
+        display: inline-block;
     }
-    .status-instock { background: #C8E6C9; color: #256029; }
-    .status-lowstock { background: #FFEDD5; color: #C2410C; }
-    .status-outofstock { background: #FFCDD2; color: #C63737; }
+    .status-instock { background: #E8F5E9; color: #2E7D32; border: 1px solid #C8E6C9; }
+    .status-lowstock { background: #FFF3E0; color: #EF6C00; border: 1px solid #FFE0B2; }
+    .status-outofstock { background: #FFEBEE; color: #C62828; border: 1px solid #FFCDD2; }
+
+    /* Custom Premium Search Box */
+    .filter-search-container {
+        position: relative;
+        display: flex;
+        align-items: center;
+        border: 1px solid #cbd5e1;
+        border-radius: 20px;
+        background-color: #ffffff;
+        padding: 0 0.85rem;
+        transition: all 0.25s ease;
+        height: 38px;
+        width: 250px;
+    }
+    .filter-search-container:hover {
+        border-color: #94a3b8;
+    }
+    .filter-search-container:focus-within {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    }
+    .filter-search-icon {
+        color: #64748b;
+        margin-right: 0.5rem;
+        font-size: 0.95rem;
+        display: flex;
+        align-items: center;
+    }
+    .filter-search-input {
+        border: none !important;
+        outline: none !important;
+        box-shadow: none !important;
+        background: transparent !important;
+        width: 100%;
+        color: #1e293b;
+        font-size: 0.9rem;
+        padding: 0 !important;
+    }
+    .btn-clear-search {
+        background: none;
+        border: none;
+        padding: 0;
+        margin-left: 0.4rem;
+        cursor: pointer;
+        color: #94a3b8;
+        display: flex;
+        align-items: center;
+        transition: color 0.15s ease;
+    }
+    .btn-clear-search:hover {
+        color: #64748b;
+    }
+
+    /* PrimeNG Dropdown / Select Styling Override */
+    :host ::ng-deep {
+        .custom-dropdown {
+            --p-select-border-radius: 20px !important;
+            --p-dropdown-border-radius: 20px !important;
+            border-radius: 20px !important;
+        }
+        
+        .custom-dropdown.p-dropdown,
+        .custom-dropdown.p-select,
+        .custom-dropdown .p-dropdown,
+        .custom-dropdown .p-select,
+        .custom-dropdown .p-select-host,
+        .custom-dropdown .p-dropdown-trigger,
+        .custom-dropdown .p-select-trigger,
+        .custom-dropdown .p-select-overlay {
+            border-radius: 20px !important;
+            height: 38px !important;
+            display: flex !important;
+            align-items: center !important;
+            transition: all 0.25s ease !important;
+        }
+        
+        .custom-dropdown.p-dropdown,
+        .custom-dropdown.p-select {
+            border-color: #cbd5e1 !important;
+        }
+        
+        .custom-dropdown.p-dropdown:hover,
+        .custom-dropdown.p-select:hover {
+            border-color: #94a3b8 !important;
+        }
+        
+        .custom-dropdown.p-dropdown.p-focus,
+        .custom-dropdown.p-select.p-focus {
+            border-color: #3b82f6 !important;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15) !important;
+        }
+        
+        .custom-dropdown.p-dropdown .p-dropdown-label,
+        .custom-dropdown.p-select .p-select-label {
+            padding: 0.5rem 1rem !important;
+            font-size: 0.9rem !important;
+            color: #1e293b !important;
+            display: flex !important;
+            align-items: center !important;
+        }
+        
+        .custom-dropdown.p-dropdown .p-dropdown-clear-icon,
+        .custom-dropdown.p-select .p-select-clear-icon {
+            right: 2.25rem !important;
+            color: #94a3b8 !important;
+        }
+    }
+
+    /* Action Buttons styling */
+    :host ::ng-deep {
+        .btn-action-in.p-button, .btn-action-out.p-button {
+            border-radius: 20px !important;
+            padding: 0.5rem 1.25rem !important;
+            font-size: 0.9rem !important;
+            font-weight: 600 !important;
+            height: 38px !important;
+        }
+    }
+
+    /* Responsive */
+    @media (max-width: 992px) {
+        .stock-header-container {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 1rem;
+        }
+        .stock-actions-section {
+            flex-wrap: wrap;
+            width: 100%;
+        }
+        .filter-search-container {
+            width: 100%;
+            flex: 1;
+        }
+        .category-dropdown-wrapper {
+            width: 100%;
+            flex: 1;
+        }
+        .action-buttons-group {
+            width: 100%;
+            justify-content: flex-end;
+        }
+    }
   `]
 })
 export class StockComponent implements OnInit {
