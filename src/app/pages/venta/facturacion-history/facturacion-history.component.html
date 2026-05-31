@@ -94,8 +94,11 @@
                         </span>
                     </td>
                     <td class="actions">
-                        <button class="btn-action pdf" (click)="descargarPdf(c.id)" title="Ver PDF" [disabled]="!c.archivoPdf">
+                        <button class="btn-action pdf" (click)="descargarPdf(c.id, 'a4')" title="Ver PDF A4" [disabled]="!c.archivoPdf">
                             <i class="bi bi-file-earmark-pdf-fill"></i>
+                        </button>
+                        <button class="btn-action ticket" (click)="descargarPdf(c.id, 'ticket')" title="Ver PDF Ticket" [disabled]="!c.archivoPdf">
+                            <i class="bi bi-printer-fill"></i>
                         </button>
                         <button class="btn-action xml" (click)="descargarXml(c.id)" title="Descargar XML" [disabled]="!c.archivoXml">
                             <i class="bi bi-file-earmark-code-fill"></i>

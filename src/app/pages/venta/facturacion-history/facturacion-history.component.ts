@@ -199,9 +199,9 @@ export class FacturacionHistoryComponent implements OnInit {
         sendNext(0);
     }
 
-    descargarPdf(id: string) {
+    descargarPdf(id: string, formato: string = 'ticket') {
         Swal.fire({
-            title: 'Descargando PDF...',
+            title: `Descargando PDF (${formato.toUpperCase()})...`,
             text: 'Por favor espere.',
             allowOutsideClick: false,
             didOpen: () => {
@@ -209,7 +209,7 @@ export class FacturacionHistoryComponent implements OnInit {
             }
         });
 
-        this.facturacionService.descargarArchivo(id, 'pdf').subscribe({
+        this.facturacionService.descargarArchivo(id, 'pdf', formato).subscribe({
             next: (blob) => {
                 Swal.close();
                 const url = window.URL.createObjectURL(blob);

@@ -100,8 +100,12 @@ export class FacturacionService {
     return this.http.get<any[]>(`${this.apiUrl}/series`, { params });
   }
 
-  descargarArchivo(id: string, tipo: string): Observable<Blob> {
-    return this.http.get(`${this.apiUrl}/comprobantes/${id}/descargar/${tipo}`, { responseType: 'blob' });
+  descargarArchivo(id: string, tipo: string, formato?: string): Observable<Blob> {
+    let url = `${this.apiUrl}/comprobantes/${id}/descargar/${tipo}`;
+    if (formato) {
+      url += `?formato=${formato}`;
+    }
+    return this.http.get(url, { responseType: 'blob' });
   }
 
   eliminarComprobante(id: string): Observable<void> {
