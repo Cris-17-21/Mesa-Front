@@ -25,11 +25,11 @@ export class TicketPreCuentaComponent implements OnInit {
     empresaData = signal<Empresa | null>(null);
 
     get igv() {
-        return this.pedido().totalFinal * 0.18;
+        return 0;
     }
 
     get subtotal() {
-        return this.pedido().totalFinal - this.igv;
+        return this.pedido().totalFinal;
     }
 
     ngOnInit() {

@@ -121,8 +121,8 @@ export class CheckoutModalComponent implements OnInit {
     return diff > 0 ? diff : 0;
   });
 
-  subtotal = computed(() => this.totalAPagar() / 1.18);
-  igv = computed(() => this.totalAPagar() - this.subtotal());
+  subtotal = computed(() => this.totalAPagar());
+  igv = computed(() => 0);
 
   ngOnInit() {
     this.cargarMetodosPago();

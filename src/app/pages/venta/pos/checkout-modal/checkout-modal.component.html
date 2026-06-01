@@ -47,12 +47,12 @@
             <!-- Totals Summary Card -->
             <div class="totals-summary-card">
                 <div class="summary-row">
-                    <span>Subtotal (Sin IGV):</span>
-                    <span>S/ {{ (editableTotal() / 1.18) | number:'1.2-2' }}</span>
+                    <span>Subtotal:</span>
+                    <span>S/ {{ editableTotal() | number:'1.2-2' }}</span>
                 </div>
                 <div class="summary-row">
-                    <span>IGV (18%):</span>
-                    <span>S/ {{ (editableTotal() - (editableTotal() / 1.18)) | number:'1.2-2' }}</span>
+                    <span>IGV (0%):</span>
+                    <span>S/ 0.00</span>
                 </div>
                 <div class="summary-row grand-total">
                     <span>Total Pedido:</span>
