@@ -1,6 +1,9 @@
 <div id="printable-ticket" class="ticket-container">
     <!-- Header Restaurante -->
     <div class="ticket-header">
+        @if (empresaData()?.logoUrl) {
+            <img [src]="empresaData()?.logoUrl" class="ticket-logo" alt="Logo de la empresa">
+        }
         <h1 class="rest-name">{{ empresaData()?.razonSocial || 'MI RESTAURANTE' }}</h1>
         @if (sucursalData()?.nombre) {
         <h2 class="branch-name">{{ sucursalData()?.nombre }}</h2>
