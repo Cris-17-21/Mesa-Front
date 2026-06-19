@@ -1,0 +1,7 @@
+{
+  "/api": {
+    "target": "http://backend:8082",
+    "secure": false,
+    "logLevel": "debug"
+  }
+}
