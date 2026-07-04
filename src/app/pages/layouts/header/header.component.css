@@ -19,16 +19,15 @@
 .logo {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-weight: 800;
-  letter-spacing: -1px;
-  color: #09090b;
-  font-size: 1.2rem;
+  gap: 10px;
 }
 
-.zinc { 
-  color: #71717a; 
-  font-weight: 400; 
+.logo-text {
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  color: #09090b;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
 /* --- RIGHT SECTION --- */
