@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../core/auth/auth.service';
 import { Router } from '@angular/router';
 import { OverlayPanelModule } from 'primeng/overlaypanel'; // Importante
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-header',
@@ -37,7 +38,20 @@ export class HeaderComponent {
   }
 
   cambiarSede() {
-    this.router.navigate(['/login'], { queryParams: { mode: 'change-branch' } });
+    Swal.fire({
+      title: '¿Confirmas cambiar de sede?',
+      text: 'Se cerrará tu sesión de trabajo actual y volverás al selector de sedes.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, cambiar',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#18181b',
+      cancelButtonColor: '#71717a'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.router.navigate(['/login'], { queryParams: { mode: 'change-branch' } });
+      }
+    });
   }
 
   logout() {
