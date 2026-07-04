@@ -22,6 +22,14 @@ export class AuthService {
 
   public currentBranchName = signal<string>(localStorage.getItem('nombreSedeActual') || 'Sin Sede');
 
+  // Nombre de la marca o empresa para mostrar en la cabecera
+  public brandName = computed(() => {
+    if (this.isSuperAdmin()) {
+      return 'Ancris';
+    }
+    return this.getClaim('empresaNombre') || 'NoirPos';
+  });
+
   constructor() {
     this.loadInitialState();
   }

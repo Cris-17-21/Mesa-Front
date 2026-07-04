@@ -17,6 +17,7 @@ export class HeaderComponent {
   router = inject(Router);
 
   username = computed(() => this.authService.getClaim('sub') || 'Usuario');
+  brandName = computed(() => this.authService.brandName());
 
   // CONEXIÓN DIRECTA: Ahora reacciona al Signal del AuthService
   sedeActual = computed(() => this.authService.currentBranchName());
