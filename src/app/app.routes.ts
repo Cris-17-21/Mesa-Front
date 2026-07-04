@@ -94,7 +94,7 @@ export const routes: Routes = [
               {
                 path: '',
                 loadComponent: () => import('./pages/venta/pos/piso-mapa/piso-mapa.component').then(m => m.PisoMapaComponent),
-                title: 'Selección de Mesa'
+                title: 'Mancris - Sistema de Ventas'
               }
             ]
           },
@@ -105,7 +105,7 @@ export const routes: Routes = [
           {
             path: 'facturacion-historial',
             loadComponent: () => import('./pages/venta/facturacion-history/facturacion-history.component').then(m => m.FacturacionHistoryComponent),
-            title: 'Historial Facturación'
+            title: 'Mancris - Sistema de Ventas'
           }
         ]
       },
@@ -182,7 +182,7 @@ export const routes: Routes = [
         path: 'reportes',
         canActivate: [permissionGuard('read:admin-reports')],
         loadComponent: () => import('./pages/reports/reports.component').then(m => m.ReportsComponent),
-        title: 'Reportes'
+        title: 'Mancris - Sistema de Ventas'
       }
     ]
   },
