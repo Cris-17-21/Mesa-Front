@@ -57,20 +57,20 @@
 
         <!-- Right Section (Side Panel) -->
         <div class="side-column">
-          <!-- Doughnut Chart Card -->
-          <div class="card chart-card flex-center height-fit">
-            <h3 class="chart-title"><i class="bi bi-pie-chart mr-2"></i>Estado de Clientes</h3>
-            <div class="chart-wrapper doughnut-wrapper">
-              <p-chart type="doughnut" [data]="doughnutChartData" [options]="doughnutChartOptions" height="180px"></p-chart>
-            </div>
-          </div>
-
           <!-- Quick Actions Card -->
-          <div class="card action-card mt-3">
+          <div class="card action-card">
             <h3 class="chart-title"><i class="bi bi-lightning-charge mr-2"></i>Acceso Rápido</h3>
             <button class="btn-primary" routerLink="/maestros/empresa">
               <i class="bi bi-plus-lg mr-1"></i> Crear Empresa / Cliente
             </button>
+          </div>
+
+          <!-- Doughnut Chart Card -->
+          <div class="card chart-card flex-center height-fit mt-3">
+            <h3 class="chart-title"><i class="bi bi-pie-chart mr-2"></i>Estado de Clientes</h3>
+            <div class="chart-wrapper doughnut-wrapper">
+              <p-chart type="doughnut" [data]="doughnutChartData" [options]="doughnutChartOptions" height="180px"></p-chart>
+            </div>
           </div>
         </div>
 
