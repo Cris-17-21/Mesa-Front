@@ -79,11 +79,20 @@
   border-radius: 8px;
   outline: none;
   transition: all 0.2s;
+  /* Suppress browser native red :invalid outline */
+  box-shadow: none;
 }
 
 .date-picker-input:focus {
   border-color: #18181b;
   box-shadow: 0 0 0 3px rgba(24, 24, 27, 0.05);
+}
+
+/* Override browser :invalid styles so the field never turns red */
+.date-picker-input:invalid,
+.date-picker-input:-moz-ui-invalid {
+  border-color: #e4e4e7;
+  box-shadow: none;
 }
 
 .btn-filter {
