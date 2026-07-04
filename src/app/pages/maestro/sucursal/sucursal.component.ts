@@ -1,4 +1,5 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, computed } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 // PrimeNG
@@ -23,7 +24,7 @@ import { AuthService } from '../../../core/auth/auth.service';
   selector: 'app-sucursal',
   standalone: true,
   imports: [
-    TableModule, IconFieldModule, InputIconModule, MultiSelectModule,
+    CommonModule, TableModule, IconFieldModule, InputIconModule, MultiSelectModule,
     SelectModule, ModalSucursalComponent, FormsModule
   ],
   templateUrl: './sucursal.component.html',
@@ -37,10 +38,20 @@ export class SucursalComponent implements OnInit {
 
   readonly isSuperAdmin = this.authService.isSuperAdmin;
 
-  readonly sucursales = signal<Sucursal[]>([]);
+  readonly allSucursales = signal<Sucursal[]>([]);
   readonly empresas = signal<Empresa[]>([]);
   readonly selectedSucursal = signal<Sucursal | null>(null);
   readonly selectedEmpresaId = signal<string | null>(null);
+
+  readonly filteredSucursales = computed(() => {
+    const list = this.allSucursales();
+    const empId = this.selectedEmpresaId();
+    if (!empId) return list;
+    return list.filter(s => {
+      const companyId = typeof s.empresa === 'string' ? s.empresa : (s.empresa as any)?.id;
+      return companyId === empId;
+    });
+  });
 
   readonly displayModal = signal(false);
   readonly loading = signal(false); // Para la tabla
@@ -53,32 +64,22 @@ export class SucursalComponent implements OnInit {
   loadInitialData(): void {
     this.loading.set(true);
     if (this.isSuperAdmin()) {
-      // Cargamos las empresas para el filtro superior
       this.empresaService.getAllActiveEmpresas().subscribe({
-        next: (data) => {
-          this.empresas.set(data);
-          this.loadAllSucursales();
-        },
-        error: () => this.loading.set(false)
+        next: (data) => this.empresas.set(data),
+        error: () => {}
       });
     } else {
       const empresaId = this.authService.getEmpresaId();
       this.selectedEmpresaId.set(empresaId);
-      this.sucursalService.getSucursalByEmpresaId(empresaId).subscribe({
-        next: (data) => {
-          this.sucursales.set(data);
-          this.loading.set(false);
-        },
-        error: () => this.loading.set(false)
-      });
     }
+    this.loadAllSucursales();
   }
 
   loadAllSucursales(): void {
     this.loading.set(true);
-    this.sucursalService.getAllActiveSucursales().subscribe({
+    this.sucursalService.getAllSucursales().subscribe({
       next: (data) => {
-        this.sucursales.set(data);
+        this.allSucursales.set(data);
         this.loading.set(false);
       },
       error: () => this.loading.set(false)
@@ -87,26 +88,10 @@ export class SucursalComponent implements OnInit {
 
   onEmpresaChange(id: string | null): void {
     this.selectedEmpresaId.set(id);
-    if (!id) {
-      this.loadAllSucursales(); // Si limpia el filtro, carga todo
-    } else {
-      this.loading.set(true);
-      this.sucursalService.getSucursalByEmpresaId(id).subscribe({
-        next: (data) => {
-          this.sucursales.set(data);
-          this.loading.set(false);
-        },
-        error: () => this.loading.set(false)
-      });
-    }
   }
 
   refreshData() {
-    if (this.isSuperAdmin()) {
-      this.onEmpresaChange(this.selectedEmpresaId());
-    } else {
-      this.loadInitialData();
-    }
+    this.loadAllSucursales();
   }
 
   openCreate() {
@@ -201,9 +186,52 @@ export class SucursalComponent implements OnInit {
           },
           error: (err) => {
             console.error('Error al eliminar:', err);
+            const serverMessage = err?.error?.message || 'No se pudo eliminar la sucursal.';
             Swal.fire({
               title: 'Error',
-              text: 'No se pudo eliminar la sucursal.',
+              text: serverMessage,
+              icon: 'error',
+              confirmButtonColor: '#18181b'
+            });
+          }
+        });
+      }
+    });
+  }
+
+  toggleStatus(sucursal: Sucursal) {
+    const actionText = sucursal.estado ? 'desactivar' : 'activar';
+    Swal.fire({
+      title: `¿Confirmas ${actionText} la sucursal?`,
+      text: `Esta acción cambiará el estado de la sucursal ${sucursal.nombre}.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, continuar',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#18181b',
+      cancelButtonColor: '#71717a'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.loading.set(true);
+        this.sucursalService.toggleStatus(sucursal.id).subscribe({
+          next: () => {
+            this.loading.set(false);
+            Swal.fire({
+              title: '¡Éxito!',
+              text: `Sucursal ${sucursal.estado ? 'desactivada' : 'activada'} correctamente.`,
+              icon: 'success',
+              confirmButtonColor: '#18181b',
+              timer: 1500,
+              showConfirmButton: false
+            });
+            this.loadAllSucursales();
+          },
+          error: (err) => {
+            this.loading.set(false);
+            const backendMessage = err.error?.message || err.message || 'No se pudo procesar la solicitud.';
+            Swal.fire({
+              title: 'Error',
+              text: backendMessage,
               icon: 'error',
               confirmButtonColor: '#18181b'
             });

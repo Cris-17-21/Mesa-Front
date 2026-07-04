@@ -129,3 +129,29 @@
   cursor: pointer;
   transform: translateY(-5%);
 }
+
+.btn-status-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 6px;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.btn-status-toggle:hover {
+  background-color: #f4f4f5;
+  transform: scale(1.1);
+}
+
+.btn-status-toggle i {
+  font-size: 1.8rem;
+  line-height: 1;
+}
+
+.text-center {
+  text-align: center;
+}

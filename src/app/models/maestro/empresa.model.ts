@@ -20,6 +20,7 @@ export interface Empresa {
     claveCertificado?: string;
     entorno?: boolean;
     certificadoDigital?: string;
+    active?: boolean;
     sucursales?: Sucursal[]
 }
 

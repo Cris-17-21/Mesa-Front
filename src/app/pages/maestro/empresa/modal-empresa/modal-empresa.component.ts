@@ -1,4 +1,4 @@
-import { Component, effect, inject, OnInit, signal, ChangeDetectionStrategy, model, input, output, DestroyRef, ViewEncapsulation } from '@angular/core';
+import { Component, effect, inject, OnInit, signal, ChangeDetectionStrategy, model, input, output, DestroyRef, ViewEncapsulation, untracked } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -59,6 +59,7 @@ export class ModalEmpresaComponent implements OnInit {
   readonly certificadoFile = signal<File | null>(null);
   readonly selectedCertName = signal<string | null>(null);
   readonly logoFile = signal<File | null>(null);
+  private wasVisible = false;
 
   readonly steps = signal<MenuItem[]>([
     { label: 'Empresa' },
@@ -111,17 +112,25 @@ export class ModalEmpresaComponent implements OnInit {
 
   constructor() {
     effect(() => {
-      if (this.visible()) {
-        this.resetWizard();
-        const data = this.dataToEdit();
-        if (this.isReadOnly()) {
-          this.setupViewMode(data);
-        } else if (data) {
-          this.setupEditMode(data);
-        } else {
-          this.setupCreateMode();
+      const isVisible = this.visible();
+      const data = this.dataToEdit();
+      const readOnly = this.isReadOnly();
+
+      untracked(() => {
+        if (isVisible && !this.wasVisible) {
+          this.wasVisible = true;
+          this.resetWizard();
+          if (readOnly) {
+            this.setupViewMode(data);
+          } else if (data) {
+            this.setupEditMode(data);
+          } else {
+            this.setupCreateMode();
+          }
+        } else if (!isVisible) {
+          this.wasVisible = false;
         }
-      }
+      });
     });
   }
 

@@ -58,4 +58,8 @@ export class EmpresaService {
     formData.append('file', file);
     return this.http.post<Empresa>(`${this.API_URL}/${id}/logo`, formData);
   }
+
+  toggleStatus(id: string): Observable<Empresa> {
+    return this.http.put<Empresa>(`${this.API_URL}/${id}/toggle-status`, {});
+  }
 }

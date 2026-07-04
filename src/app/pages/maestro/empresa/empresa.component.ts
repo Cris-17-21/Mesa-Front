@@ -51,7 +51,7 @@ export class EmpresaComponent implements OnInit {
   }
 
   loadEmpresas(): void {
-    this.empresaService.getAllActiveEmpresas().subscribe({
+    this.empresaService.getAllEmpresas().subscribe({
       next: (data) => this.empresas.set(data), // Actualizamos el signal
       error: (err) => this.errorMessage('No se pudo cargar las empresas', err)
     });
@@ -184,6 +184,35 @@ export class EmpresaComponent implements OnInit {
             });
           },
           error: (err) => this.errorMessage('No se pudo eliminar la empresa. Es posible que esté en uso.', err)
+        });
+      }
+    });
+  }
+
+  toggleStatus(empresa: Empresa): void {
+    const actionText = empresa.active ? 'desactivar' : 'activar';
+    Swal.fire({
+      title: `¿Confirmas ${actionText} la empresa?`,
+      text: `Esta acción cambiará el estado de la empresa ${empresa.razonSocial}.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, continuar',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#18181b',
+      cancelButtonColor: '#71717a'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.loading.set(true);
+        this.empresaService.toggleStatus(empresa.id).subscribe({
+          next: () => {
+            this.loading.set(false);
+            this.successMessage(`Empresa ${empresa.active ? 'desactivada' : 'activada'} correctamente.`);
+            this.loadEmpresas();
+          },
+          error: (err) => {
+            this.loading.set(false);
+            this.errorMessage('No se pudo cambiar el estado de la empresa', err);
+          }
         });
       }
     });

@@ -49,4 +49,8 @@ export class SucursalService {
   getSucursalByEmpresaId(id: string): Observable<Sucursal[]> {
     return this.http.get<Sucursal[]>(`${this.API_URL}/empresa/${id}`)
   }
+
+  toggleStatus(id: string): Observable<Sucursal> {
+    return this.http.put<Sucursal>(`${this.API_URL}/${id}/toggle-status`, {});
+  }
 }

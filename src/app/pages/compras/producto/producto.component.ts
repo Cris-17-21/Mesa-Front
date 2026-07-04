@@ -67,8 +67,8 @@ import { PlatoDashboardComponent } from './plato-dashboard/plato-dashboard.compo
                     <td>S/ {{ producto.precioVenta | number:'1.2-2' }}</td>
                     <td>{{ producto.stock }}</td>
                     <td>
-                        <span [class]="'product-badge status-' + (producto.stock > 0 ? 'instock' : 'outofstock')">
-                            {{ producto.stock > 0 ? 'Disponible' : 'Agotado' }}
+                        <span [class]="'product-badge ' + getStockClass(producto.stock)">
+                            {{ getStockStatus(producto.stock) }}
                         </span>
                     </td>
                     <td>
@@ -242,6 +242,14 @@ export class ProductoComponent implements OnInit {
             },
             error: (err) => console.error('Error loading productos', err)
         });
+    }
+
+    getStockClass(stock: number): string {
+        return stock > 0 ? 'status-instock' : 'status-outofstock';
+    }
+
+    getStockStatus(stock: number): string {
+        return stock > 0 ? 'Disponible' : 'Agotado';
     }
 
     createProducto() {

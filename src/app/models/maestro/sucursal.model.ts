@@ -6,6 +6,7 @@ export interface Sucursal {
     direccion: string;
     telefono: string;
     empresa: string;
+    estado?: boolean;
 }
 
 // CREATE DTO

@@ -31,6 +31,7 @@
                 <th style="width:25%">Razón Social</th>
                 <th style="width:25%">Dirección Fiscal</th>
                 <th style="width:15%">Teléfono</th>
+                <th style="width:10%" class="text-center">Estado</th>
                 <th style="width:10%" class="text-center">Acciones</th>
             </tr>
         </ng-template>
@@ -41,6 +42,11 @@
                 <td>{{ empresa.razonSocial || "-" }}</td>
                 <td>{{ empresa.direccionFiscal || "-" }}</td>
                 <td>{{ empresa.telefono || "-" }}</td>
+                <td class="text-center">
+                    <button class="btn-status-toggle" (click)="toggleStatus(empresa)" [title]="empresa.active ? 'Desactivar empresa' : 'Activar empresa'">
+                        <i class="bi" [ngClass]="empresa.active ? 'bi-toggle-on text-success' : 'bi-toggle-off text-muted'"></i>
+                    </button>
+                </td>
                 <td>
                     <div class="flex justify-content-center gap-2">
                         <button class="button-action edit" (click)="openEdit(empresa)">
@@ -56,7 +62,7 @@
 
         <ng-template pTemplate="emptymessage">
             <tr>
-                <td colspan="5" class="text-center p-4">No se encontraron empresas registradas.</td>
+                <td colspan="6" class="text-center p-4">No se encontraron empresas registradas.</td>
             </tr>
         </ng-template>
     </p-table>

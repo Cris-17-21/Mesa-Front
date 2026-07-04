@@ -134,7 +134,11 @@ export class ModalSucursalComponent {
 
   getErrorMessage(name: string): string {
     const control = this.sucursalForm.get(name);
-    if (control?.hasError('required')) return 'Obligatorio';
+    if (control?.hasError('required')) {
+      if (name === 'empresa') return 'La empresa es obligatoria';
+      if (name === 'nombre') return 'La sede es obligatoria';
+      return 'Obligatorio';
+    }
     if (control?.hasError('minlength')) return 'Mínimo 3 caracteres';
     if (control?.hasError('pattern')) return 'Solo números';
     return '';
