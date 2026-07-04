@@ -5,8 +5,12 @@
 
   <div class="sidebar-header">
     <div class="user-card">
-      <div class="user-avatar">
-        {{ user().username[0] | uppercase }}
+      <div class="user-avatar" [class.has-logo]="user().empresaLogo">
+        @if (user().empresaLogo) {
+          <img [src]="'data:image/png;base64,' + user().empresaLogo" alt="Logo" class="avatar-logo">
+        } @else {
+          {{ user().username[0] | uppercase }}
+        }
       </div>
       <div class="user-text">
         <span class="u-name">{{ user().nombres }}</span>

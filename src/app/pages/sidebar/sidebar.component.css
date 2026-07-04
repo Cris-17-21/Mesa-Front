@@ -29,6 +29,20 @@
   border-radius: 8px;
   display: flex; align-items: center; justify-content: center;
   font-weight: 700;
+  box-sizing: border-box;
+}
+
+.user-avatar.has-logo {
+  background: #fff;
+  border: 1px solid #e4e4e7;
+  padding: 2px;
+}
+
+.avatar-logo {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 6px;
 }
 .u-name { display: block; font-weight: 600; font-size: 0.85rem; color: #1a1a1a; }
 .u-role { font-size: 0.7rem; color: #999; }

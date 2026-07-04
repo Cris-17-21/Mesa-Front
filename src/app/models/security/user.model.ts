@@ -19,6 +19,7 @@ export interface User {
     sucursal?: Sucursal;
     empresaId?: string;
     sucursalId?: string;
+    empresaLogo?: string;
 };
 
 // CREATE DTO
