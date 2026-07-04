@@ -1,0 +1,357 @@
+<div class="reports-dashboard">
+  <!-- Header -->
+  <header class="main-header">
+    <div class="header-titles">
+      <h1>Reportes Administrativos</h1>
+      <p class="subtitle">Visualiza y analiza el rendimiento de ventas, stock y cuadres de caja.</p>
+    </div>
+  </header>
+
+  <!-- Filter Bar -->
+  <section class="filter-bar">
+    <!-- Branch MultiSelect -->
+    <div class="filter-group">
+      <label for="branches">Sucursales</label>
+      <p-multiselect
+        id="branches"
+        [options]="sucursales()"
+        [(ngModel)]="selectedSucursalIds"
+        optionLabel="nombre"
+        optionValue="id"
+        placeholder="Seleccionar Sucursales"
+        emptyFilterMessage="No se encontraron sucursales"
+        class="w-full"
+      ></p-multiselect>
+    </div>
+
+    <!-- Date Range Option Select -->
+    <div class="filter-group">
+      <label for="rangeOption">Rango de Fecha</label>
+      <p-select
+        id="rangeOption"
+        [options]="dateRangeOptions"
+        [ngModel]="rangoOption()"
+        (onChange)="onRangoChange($event.value)"
+        optionLabel="label"
+        optionValue="value"
+        class="w-full"
+      ></p-select>
+    </div>
+
+    <!-- Start Date Picker -->
+    <div class="filter-group">
+      <label for="startDate">Fecha Inicio</label>
+      <input
+        id="startDate"
+        type="date"
+        class="date-picker-input"
+        [disabled]="rangoOption() !== 'personalizado'"
+        [ngModel]="fechaInicioInput()"
+        (ngModelChange)="fechaInicioInput.set($event)"
+      />
+    </div>
+
+    <!-- End Date Picker -->
+    <div class="filter-group">
+      <label for="endDate">Fecha Fin</label>
+      <input
+        id="endDate"
+        type="date"
+        class="date-picker-input"
+        [disabled]="rangoOption() !== 'personalizado'"
+        [ngModel]="fechaFinInput()"
+        (ngModelChange)="fechaFinInput.set($event)"
+      />
+    </div>
+
+    <!-- Action Filter Button -->
+    <div>
+      <button class="btn-filter" (click)="loadAllReports()">
+        <i class="bi bi-funnel"></i>
+        <span>Aplicar Filtros</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- Loading Spinner Overlay -->
+  <div class="loading-overlay" *ngIf="loading()">
+    <i class="bi bi-arrow-repeat spin"></i>
+    <span>Cargando datos del servidor...</span>
+  </div>
+
+  <!-- KPIs Metrics Row -->
+  <section class="kpi-row" *ngIf="!loading()">
+    <!-- Total Ventas Card -->
+    <div class="kpi-card success">
+      <span class="kpi-label">Ventas Totales</span>
+      <p class="kpi-value">
+        {{ (salesSummary()?.totalVentas || 0) | currency:'PEN':'S/.' }}
+      </p>
+      <span class="kpi-sub">En el rango seleccionado</span>
+    </div>
+
+    <!-- Ticket Promedio Card -->
+    <div class="kpi-card info">
+      <span class="kpi-label">Ticket Promedio</span>
+      <p class="kpi-value">
+        {{ (salesSummary()?.promedioTicket || 0) | currency:'PEN':'S/.' }}
+      </p>
+      <span class="kpi-sub">Valor de compra promedio</span>
+    </div>
+
+    <!-- Total Inventario Valorado Card -->
+    <div class="kpi-card warning">
+      <span class="kpi-label">Valuación Inventario</span>
+      <p class="kpi-value">
+        {{ (stockCritical()?.valoracionTotalInventario || 0) | currency:'PEN':'S/.' }}
+      </p>
+      <span class="kpi-sub">Valor total de mercadería</span>
+    </div>
+
+    <!-- Alertas Bajo Stock Card -->
+    <div class="kpi-card danger">
+      <span class="kpi-label">Alertas de Stock</span>
+      <p class="kpi-value">
+        {{ stockCritical()?.productosBajoStock?.length || 0 }}
+      </p>
+      <span class="kpi-sub">Productos bajo el mínimo</span>
+    </div>
+  </section>
+
+  <!-- Reports Visualizations Grid -->
+  <section class="reports-grid" *ngIf="!loading()">
+    <!-- Daily Sales Trend Chart -->
+    <div class="col-8">
+      <article class="report-card">
+        <div class="report-card-header">
+          <div class="report-card-title">
+            <i class="bi bi-graph-up"></i>
+            <h3>Tendencia Diaria de Ventas</h3>
+          </div>
+          <div class="export-actions">
+            <button class="btn-export" (click)="exportReport('pdf', 'sales')">
+              <i class="bi bi-file-pdf text-danger"></i> PDF
+            </button>
+            <button class="btn-export" (click)="exportReport('excel', 'sales')">
+              <i class="bi bi-file-excel text-success"></i> Excel
+            </button>
+          </div>
+        </div>
+        <div class="chart-container chart-lg" *ngIf="salesTrendChartData">
+          <p-chart type="line" [data]="salesTrendChartData" [options]="salesTrendChartOptions" height="100%"></p-chart>
+        </div>
+        <div class="noir-empty-state" *ngIf="!salesTrendChartData">
+          <i class="bi bi-bar-chart empty-icon"></i>
+          <p class="empty-text">No hay datos de ventas en este rango.</p>
+        </div>
+      </article>
+    </div>
+
+    <!-- Payment Breakdown Chart -->
+    <div class="col-4">
+      <article class="report-card">
+        <div class="report-card-header">
+          <div class="report-card-title">
+            <i class="bi bi-pie-chart"></i>
+            <h3>Desglose de Métodos de Pago</h3>
+          </div>
+        </div>
+        <div class="chart-container chart-lg" *ngIf="paymentBreakdownChartData">
+          <p-chart type="doughnut" [data]="paymentBreakdownChartData" [options]="paymentBreakdownChartOptions" height="100%"></p-chart>
+        </div>
+        <div class="noir-empty-state" *ngIf="!paymentBreakdownChartData">
+          <i class="bi bi-pie-chart empty-icon"></i>
+          <p class="empty-text">Sin información de pagos.</p>
+        </div>
+      </article>
+    </div>
+
+    <!-- Menu Ranking Chart -->
+    <div class="col-6">
+      <article class="report-card">
+        <div class="report-card-header">
+          <div class="report-card-title">
+            <i class="bi bi-award"></i>
+            <h3>Top 10 Platos Más Vendidos</h3>
+          </div>
+          <div class="export-actions">
+            <button class="btn-export" (click)="exportReport('pdf', 'menu-ranking')">
+              <i class="bi bi-file-pdf text-danger"></i> PDF
+            </button>
+            <button class="btn-export" (click)="exportReport('excel', 'menu-ranking')">
+              <i class="bi bi-file-excel text-success"></i> Excel
+            </button>
+          </div>
+        </div>
+        <div class="chart-container chart-md" *ngIf="menuRankingChartData">
+          <p-chart type="bar" [data]="menuRankingChartData" [options]="menuRankingChartOptions" height="100%"></p-chart>
+        </div>
+        <div class="noir-empty-state" *ngIf="!menuRankingChartData">
+          <i class="bi bi-egg empty-icon"></i>
+          <p class="empty-text">Sin ventas registradas de platos.</p>
+        </div>
+      </article>
+    </div>
+
+    <!-- Waiter Performance Chart -->
+    <div class="col-6">
+      <article class="report-card">
+        <div class="report-card-header">
+          <div class="report-card-title">
+            <i class="bi bi-people"></i>
+            <h3>Pedidos Atendidos por Mozos</h3>
+          </div>
+          <div class="export-actions">
+            <button class="btn-export" (click)="exportReport('pdf', 'waiter-performance')">
+              <i class="bi bi-file-pdf text-danger"></i> PDF
+            </button>
+            <button class="btn-export" (click)="exportReport('excel', 'waiter-performance')">
+              <i class="bi bi-file-excel text-success"></i> Excel
+            </button>
+          </div>
+        </div>
+        <div class="chart-container chart-md" *ngIf="waiterPerformanceChartData">
+          <p-chart type="bar" [data]="waiterPerformanceChartData" [options]="waiterPerformanceChartOptions" height="100%"></p-chart>
+        </div>
+        <div class="noir-empty-state" *ngIf="!waiterPerformanceChartData">
+          <i class="bi bi-people empty-icon"></i>
+          <p class="empty-text">No hay actividad de mozos en el rango.</p>
+        </div>
+      </article>
+    </div>
+
+    <!-- Cash Audit & Shifts Table -->
+    <div class="col-12">
+      <article class="report-card">
+        <div class="report-card-header">
+          <div class="report-card-title">
+            <i class="bi bi-wallet2"></i>
+            <h3>Auditoría de Caja y Turnos</h3>
+          </div>
+          <div class="export-actions">
+            <button class="btn-export" (click)="exportReport('pdf', 'caja-audit')">
+              <i class="bi bi-file-pdf text-danger"></i> PDF
+            </button>
+            <button class="btn-export" (click)="exportReport('excel', 'caja-audit')">
+              <i class="bi bi-file-excel text-success"></i> Excel
+            </button>
+          </div>
+        </div>
+
+        <div class="table-container shadow-noir">
+          <p-table [value]="cajaAudits()" [rows]="5" [paginator]="true" styleClass="p-datatable-sm">
+            <ng-template pTemplate="header">
+              <tr>
+                <th>ID Turno</th>
+                <th>Sucursal</th>
+                <th>Usuario</th>
+                <th>Apertura</th>
+                <th>Cierre</th>
+                <th class="text-right">Inicial</th>
+                <th class="text-right">Ingresos</th>
+                <th class="text-right">Egresos</th>
+                <th class="text-right">Esperado</th>
+                <th class="text-right">Real</th>
+                <th class="text-right">Diferencia</th>
+                <th class="text-center">Estado</th>
+              </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-turno>
+              <tr>
+                <td>{{ turno.cajaTurnoId }}</td>
+                <td>{{ turno.sucursalNombre }}</td>
+                <td>{{ turno.usuarioNombre }}</td>
+                <td>{{ turno.fechaApertura | date:'dd/MM HH:mm' }}</td>
+                <td>{{ turno.fechaCierre ? (turno.fechaCierre | date:'dd/MM HH:mm') : '-' }}</td>
+                <td class="text-right">{{ turno.montoInicial | currency:'PEN':'S/.' }}</td>
+                <td class="text-right text-success">+{{ turno.ingresosCajaChica | currency:'PEN':'S/.' }}</td>
+                <td class="text-right text-danger">-{{ turno.egresosCajaChica | currency:'PEN':'S/.' }}</td>
+                <td class="text-right">{{ turno.saldoEsperado | currency:'PEN':'S/.' }}</td>
+                <td class="text-right font-bold">{{ turno.saldoReal | currency:'PEN':'S/.' }}</td>
+                <td class="text-right" [ngClass]="{'text-danger font-bold': turno.diferencia !== 0, 'text-success': turno.diferencia === 0}">
+                  {{ turno.diferencia | currency:'PEN':'S/.' }}
+                </td>
+                <td class="text-center">
+                  <span class="status-badge" [ngClass]="{'badge-success': turno.estado === 'CERRADA' || turno.estado === 'CERRADO', 'badge-warning': turno.estado === 'ABIERTA' || turno.estado === 'ABIERTO'}">
+                    {{ turno.estado }}
+                  </span>
+                </td>
+              </tr>
+            </ng-template>
+            <ng-template pTemplate="emptymessage">
+              <tr>
+                <td colspan="12" class="text-center p-4">No se encontraron turnos de caja en este rango.</td>
+              </tr>
+            </ng-template>
+          </p-table>
+        </div>
+      </article>
+    </div>
+
+    <!-- Critical Stock Alerts Table -->
+    <div class="col-12">
+      <article class="report-card">
+        <div class="report-card-header">
+          <div class="report-card-title">
+            <i class="bi bi-exclamation-triangle"></i>
+            <h3>Alertas de Inventario Crítico</h3>
+          </div>
+          <div class="export-actions">
+            <button class="btn-export" (click)="exportReport('pdf', 'stock-critical')">
+              <i class="bi bi-file-pdf text-danger"></i> PDF
+            </button>
+            <button class="btn-export" (click)="exportReport('excel', 'stock-critical')">
+              <i class="bi bi-file-excel text-success"></i> Excel
+            </button>
+          </div>
+        </div>
+
+        <!-- Warning block if there are low stock items -->
+        <div class="alert-box alert-danger" *ngIf="stockCritical()?.productosBajoStock?.length">
+          <i class="bi bi-exclamation-octagon-fill"></i>
+          <div class="alert-content">
+            <div class="alert-title">¡Atención! Inventario Crítico Detectado</div>
+            <p>Hay {{ stockCritical()?.productosBajoStock?.length }} producto(s) por debajo del stock mínimo establecido. Se recomienda abastecimiento inmediato.</p>
+          </div>
+        </div>
+
+        <div class="table-container shadow-noir">
+          <p-table [value]="stockCritical()?.productosBajoStock || []" [rows]="5" [paginator]="true" styleClass="p-datatable-sm">
+            <ng-template pTemplate="header">
+              <tr>
+                <th>ID</th>
+                <th>Producto</th>
+                <th>Sucursal</th>
+                <th class="text-right">Stock Mínimo</th>
+                <th class="text-right font-bold">Stock Actual</th>
+                <th>Unidad</th>
+                <th class="text-center">Estado Alerta</th>
+              </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-prod>
+              <tr>
+                <td>{{ prod.productoId }}</td>
+                <td>{{ prod.nombreProducto }}</td>
+                <td>{{ prod.sucursalNombre }}</td>
+                <td class="text-right">{{ prod.stockMinimo | number:'1.0-2' }}</td>
+                <td class="text-right text-danger font-bold">{{ prod.stockActual | number:'1.0-2' }}</td>
+                <td>{{ prod.unidadMedida }}</td>
+                <td class="text-center">
+                  <!-- Custom color indicator depending on severity -->
+                  <span class="status-badge" [ngClass]="prod.stockActual <= (prod.stockMinimo / 2) ? 'badge-danger' : 'badge-warning'">
+                    {{ prod.stockActual <= (prod.stockMinimo / 2) ? 'CRÍTICO' : 'BAJO' }}
+                  </span>
+                </td>
+              </tr>
+            </ng-template>
+            <ng-template pTemplate="emptymessage">
+              <tr>
+                <td colspan="7" class="text-center p-4">Excelente. No se encontraron productos bajo el mínimo de stock.</td>
+              </tr>
+            </ng-template>
+          </p-table>
+        </div>
+      </article>
+    </div>
+  </section>
+</div>

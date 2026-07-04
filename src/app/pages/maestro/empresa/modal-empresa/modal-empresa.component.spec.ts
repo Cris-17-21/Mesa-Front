@@ -4,6 +4,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { of, throwError } from 'rxjs';
 import { RoleService } from '../../../../services/config/role.service';
 import { ConsultaService } from '../../../../services/auxiliar/consulta.service';
+import { AuthService } from '../../../../core/auth/auth.service';
 import { provideRouter } from '@angular/router';
 
 describe('ModalEmpresaComponent', () => {
@@ -20,12 +21,18 @@ describe('ModalEmpresaComponent', () => {
         consultaDni: jasmine.createSpy('consultaDni').and.returnValue(of({ first_name: 'JUAN', first_last_name: 'PEREZ', second_last_name: 'SOTO' }))
     };
 
+    const mockAuthService = {
+        isSuperAdmin: () => false,
+        getSucursalId: () => 'suc-1'
+    };
+
     beforeEach(async () => {
         await TestBed.configureTestingModule({
             imports: [ModalEmpresaComponent, ReactiveFormsModule],
             providers: [
                 { provide: RoleService, useValue: mockRoleService },
                 { provide: ConsultaService, useValue: mockConsultaService },
+                { provide: AuthService, useValue: mockAuthService },
                 // AÑADE ESTO:
                 provideRouter([])
             ]

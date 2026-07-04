@@ -1,5 +1,6 @@
 import { Router, Routes } from '@angular/router';
 import { authGuard, restaurantGuard, cajaGuard } from './core/auth/auth.guard';
+import { permissionGuard } from './core/auth/permission.guard';
 import { LoginComponent } from './pages/auth/login/login.component';
 import { MainLayoutComponent } from './pages/layouts/main-layout/main-layout.component';
 
@@ -175,6 +176,13 @@ export const routes: Routes = [
             loadComponent: () => import('./pages/almacen/movimientos/movimientos.component').then(m => m.MovimientosComponent)
           }
         ]
+      },
+      // --- REPORTES ---
+      {
+        path: 'reportes',
+        canActivate: [permissionGuard('read:admin-reports')],
+        loadComponent: () => import('./pages/reports/reports.component').then(m => m.ReportsComponent),
+        title: 'Reportes'
       }
     ]
   },
