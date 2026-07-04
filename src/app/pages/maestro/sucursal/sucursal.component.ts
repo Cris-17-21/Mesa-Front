@@ -47,10 +47,7 @@ export class SucursalComponent implements OnInit {
     const list = this.allSucursales();
     const empId = this.selectedEmpresaId();
     if (!empId) return list;
-    return list.filter(s => {
-      const companyId = typeof s.empresa === 'string' ? s.empresa : (s.empresa as any)?.id;
-      return companyId === empId;
-    });
+    return list.filter(s => (s as any).empresaId === empId);
   });
 
   readonly displayModal = signal(false);
