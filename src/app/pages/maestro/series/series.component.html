@@ -38,7 +38,7 @@
             <tr>
                 <th style="width:30%">Tipo de Comprobante</th>
                 <th style="width:15%">Serie</th>
-                <th style="width:20%">Correlativo Inicial</th>
+                <th style="width:20%">Último Emitido</th>
                 <th style="width:20%">Siguiente Correlativo</th>
                 <th style="width:15%; text-align: center;">Acciones</th>
             </tr>
@@ -60,8 +60,8 @@
                     }
                 </td>
                 <td class="font-bold">{{ item.serie }}</td>
-                <td>{{ item.ultimoCorrelativo + 1 }}</td>
-                <td>{{ item.ultimoCorrelativo + 1 }}</td>
+                <td>{{ item.ultimoCorrelativo > 0 ? item.ultimoCorrelativo : '—' }}</td>
+                <td class="font-bold">{{ item.ultimoCorrelativo + 1 }}</td>
                 <td style="text-align: center;">
                     <div class="flex justify-content-center gap-2">
                         <button class="button-action edit" (click)="openEdit(item)" pTooltip="Editar">
