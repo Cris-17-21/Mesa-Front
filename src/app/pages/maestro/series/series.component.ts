@@ -38,6 +38,7 @@ export class SeriesComponent implements OnInit {
   readonly seriesList = signal<any[]>([]);
   readonly sucursales = signal<Sucursal[]>([]);
   readonly selectedSucursalId = signal<string | null>(null);
+  readonly selectedSerie = signal<any | null>(null);
 
   readonly displayModal = signal(false);
   readonly loading = signal(false);
@@ -111,7 +112,71 @@ export class SeriesComponent implements OnInit {
   }
 
   openCreate() {
+    this.selectedSerie.set(null);
     this.displayModal.set(true);
+  }
+
+  openEdit(item: any) {
+    this.selectedSerie.set({
+      ...item,
+      sucursalId: this.selectedSucursalId()
+    });
+    this.displayModal.set(true);
+  }
+
+  deleteSerie(item: any) {
+    if (item.ultimoCorrelativo >= 0) {
+      Swal.fire({
+        title: 'Acción bloqueada',
+        text: 'No se puede eliminar la serie porque ya tiene comprobantes electrónicos emitidos.',
+        icon: 'error',
+        confirmButtonColor: '#18181b'
+      });
+      return;
+    }
+
+    Swal.fire({
+      title: '¿Estás seguro?',
+      text: `Esta acción eliminará de forma permanente la serie ${item.serie} del sistema.`,
+      icon: 'warning',
+      iconColor: '#EF4444',
+      showCancelButton: true,
+      confirmButtonColor: '#DC2626',
+      cancelButtonColor: '#27272a',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar',
+      reverseButtons: true,
+      focusCancel: true
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.loading.set(true);
+        this.facturacionService.eliminarSerie(item.id).subscribe({
+          next: () => {
+            this.loading.set(false);
+            Swal.fire({
+              title: '¡Eliminado!',
+              text: 'La serie ha sido eliminada correctamente.',
+              icon: 'success',
+              confirmButtonColor: '#18181b',
+              timer: 1500,
+              showConfirmButton: false
+            });
+            this.refreshData();
+          },
+          error: (err) => {
+            this.loading.set(false);
+            console.error('Error al eliminar serie:', err);
+            const serverMessage = err?.error?.message || 'No se pudo eliminar la serie.';
+            Swal.fire({
+              title: 'Error',
+              text: serverMessage,
+              icon: 'error',
+              confirmButtonColor: '#18181b'
+            });
+          }
+        });
+      }
+    });
   }
 
   handleGuardarSerie(event: SeriesModalData) {
@@ -127,9 +192,12 @@ export class SeriesComponent implements OnInit {
         this.isSaving.set(false);
         this.displayModal.set(false);
 
+        const isEdit = !!this.selectedSerie();
         Swal.fire({
-          title: '¡Registrado!',
-          text: 'La serie se ha configurado correctamente tanto localmente como en el facturador.',
+          title: isEdit ? '¡Actualizado!' : '¡Registrado!',
+          text: isEdit
+            ? 'La serie se ha actualizado correctamente tanto localmente como en el facturador.'
+            : 'La serie se ha configurado correctamente tanto localmente como en el facturador.',
           icon: 'success',
           confirmButtonColor: '#18181b',
           timer: 2000,

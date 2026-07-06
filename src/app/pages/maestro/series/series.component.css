@@ -114,3 +114,40 @@
     max-width: 100%;
   }
 }
+
+.btn-icon-edit, .btn-icon-delete {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-icon-edit {
+  color: #18181b;
+}
+
+.btn-icon-edit:hover {
+  background-color: #f4f4f5;
+}
+
+.btn-icon-delete {
+  color: #ef4444;
+}
+
+.btn-icon-delete:hover {
+  background-color: #fef2f2;
+}
+
+.flex.justify-content-center {
+  justify-content: center;
+}
+
+.gap-2 {
+  gap: 8px !important;
+}

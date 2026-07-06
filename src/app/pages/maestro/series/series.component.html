@@ -37,9 +37,10 @@
         <ng-template pTemplate="header">
             <tr>
                 <th style="width:30%">Tipo de Comprobante</th>
-                <th style="width:20%">Serie</th>
-                <th style="width:25%">Correlativo Inicial</th>
-                <th style="width:25%">Siguiente Correlativo</th>
+                <th style="width:15%">Serie</th>
+                <th style="width:20%">Correlativo Inicial</th>
+                <th style="width:20%">Siguiente Correlativo</th>
+                <th style="width:15%; text-align: center;">Acciones</th>
             </tr>
         </ng-template>
 
@@ -61,12 +62,22 @@
                 <td class="font-bold">{{ item.serie }}</td>
                 <td>{{ item.ultimoCorrelativo + 1 }}</td>
                 <td>{{ item.ultimoCorrelativo + 1 }}</td>
+                <td style="text-align: center;">
+                    <div class="flex justify-content-center gap-2">
+                        <button class="btn-icon-edit" (click)="openEdit(item)" title="Editar correlativo">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+                        <button class="btn-icon-delete" (click)="deleteSerie(item)" title="Eliminar serie">
+                            <i class="bi bi-trash-fill"></i>
+                        </button>
+                    </div>
+                </td>
             </tr>
         </ng-template>
 
         <ng-template pTemplate="emptymessage">
             <tr>
-                <td colspan="4">
+                <td colspan="5">
                     <div class="noir-empty-state">
                         <i class="bi bi-gear-wide-connected empty-icon"></i>
                         <p class="empty-text">No se encontraron series configuradas para esta sucursal.</p>
@@ -79,6 +90,6 @@
 
 @defer (when displayModal()) {
 <app-modal-series [(visible)]="displayModal" [sucursalesList]="sucursales()"
-    [defaultSucursalId]="selectedSucursalId()" (onComplete)="handleGuardarSerie($event)" [loading]="isSaving()">
+    [defaultSucursalId]="selectedSucursalId()" [dataToEdit]="selectedSerie()" (onComplete)="handleGuardarSerie($event)" [loading]="isSaving()">
 </app-modal-series>
 }

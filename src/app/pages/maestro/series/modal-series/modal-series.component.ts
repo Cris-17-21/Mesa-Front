@@ -37,6 +37,7 @@ export class ModalSeriesComponent {
   readonly visible = model(false);
   readonly sucursalesList = input<Sucursal[]>([]);
   readonly defaultSucursalId = input<string | null>(null);
+  readonly dataToEdit = input<any | null>(null);
   readonly loading = input(false);
   readonly onComplete = output<SeriesModalData>();
 
@@ -58,14 +59,30 @@ export class ModalSeriesComponent {
     effect(() => {
       const isVisible = this.visible();
       const defaultId = this.defaultSucursalId();
+      const toEdit = this.dataToEdit();
 
       if (isVisible) {
-        this.seriesForm.reset({
-          sucursalId: defaultId,
-          tipoDoc: '01',
-          serie: '',
-          correlativo: 1
-        });
+        if (toEdit) {
+          this.seriesForm.reset({
+            sucursalId: toEdit.sucursalId || defaultId,
+            tipoDoc: toEdit.tipoDocCodigo,
+            serie: toEdit.serie,
+            correlativo: toEdit.ultimoCorrelativo + 1
+          });
+          this.seriesForm.get('sucursalId')?.disable();
+          this.seriesForm.get('tipoDoc')?.disable();
+          this.seriesForm.get('serie')?.disable();
+        } else {
+          this.seriesForm.reset({
+            sucursalId: defaultId,
+            tipoDoc: '01',
+            serie: '',
+            correlativo: 1
+          });
+          this.seriesForm.get('sucursalId')?.enable();
+          this.seriesForm.get('tipoDoc')?.enable();
+          this.seriesForm.get('serie')?.enable();
+        }
         this.seriesForm.markAsPristine();
         this.seriesForm.markAsUntouched();
         this.cdr.markForCheck();

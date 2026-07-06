@@ -112,6 +112,10 @@ export class FacturacionService {
     return this.http.delete<void>(`${this.apiUrl}/comprobantes/${id}`);
   }
 
+  eliminarSerie(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/series/${id}`);
+  }
+
   emitirNotaCredito(dto: NotaCreditoRequest): Observable<ComprobanteResponse> {
     return this.http.post<ComprobanteResponse>(`${this.apiUrl}/nota-credito`, dto);
   }
