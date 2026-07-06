@@ -6,6 +6,7 @@ import { TableModule } from 'primeng/table';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
 import { SelectModule } from 'primeng/select';
+import { TooltipModule } from 'primeng/tooltip';
 import Swal from 'sweetalert2';
 
 // Servicios y Modelos
@@ -22,7 +23,7 @@ import { ModalSeriesComponent, SeriesModalData } from './modal-series/modal-seri
   standalone: true,
   imports: [
     TableModule, IconFieldModule, InputIconModule,
-    SelectModule, ModalSeriesComponent, FormsModule
+    SelectModule, ModalSeriesComponent, FormsModule, TooltipModule
   ],
   templateUrl: './series.component.html',
   styleUrl: './series.component.css'

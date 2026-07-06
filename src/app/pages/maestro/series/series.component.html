@@ -64,11 +64,11 @@
                 <td>{{ item.ultimoCorrelativo + 1 }}</td>
                 <td style="text-align: center;">
                     <div class="flex justify-content-center gap-2">
-                        <button class="btn-icon-edit" (click)="openEdit(item)" title="Editar correlativo">
-                            <i class="bi bi-pencil-fill"></i>
+                        <button class="button-action edit" (click)="openEdit(item)" pTooltip="Editar">
+                            <i class="bi bi-pencil-square"></i>
                         </button>
-                        <button class="btn-icon-delete" (click)="deleteSerie(item)" title="Eliminar serie">
-                            <i class="bi bi-trash-fill"></i>
+                        <button class="button-action delete" (click)="deleteSerie(item)" pTooltip="Eliminar">
+                            <i class="bi bi-trash3"></i>
                         </button>
                     </div>
                 </td>
