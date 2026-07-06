@@ -51,6 +51,20 @@ export class MesaComponent implements OnInit {
     return payload.sucursalId;
   }
 
+  private getPisoConMasMesas(pisos: Piso[]): string {
+    if (!pisos || pisos.length === 0) return '';
+    let maxMesas = -1;
+    let selectedId = pisos[0].id;
+    for (const p of pisos) {
+      const cantMesas = p.mesas ? p.mesas.length : 0;
+      if (cantMesas > maxMesas) {
+        maxMesas = cantMesas;
+        selectedId = p.id;
+      }
+    }
+    return selectedId;
+  }
+
   ngOnInit(): void {
     // 1. Capturamos si viene un ID por URL primero
     const idPisoUrl = this.route.snapshot.queryParams['piso'];
@@ -60,10 +74,10 @@ export class MesaComponent implements OnInit {
         this.pisos.set(data);
 
         if (data.length > 0) {
-          // Si hay ID en URL y existe en la lista, lo usamos. Si no, usamos el primero.
+          // Si hay ID en URL y existe en la lista, lo usamos. Si no, usamos el que tiene más mesas.
           const defaultId = idPisoUrl && data.some(p => p.id === idPisoUrl)
             ? idPisoUrl
-            : data[0].id;
+            : this.getPisoConMasMesas(data);
 
           this.pisoSeleccionado.set(defaultId);
           this.loadMesas();
@@ -81,9 +95,9 @@ export class MesaComponent implements OnInit {
       next: (data) => {
         this.pisos.set(data);
 
-        // 2. Si hay pisos, seleccionamos el primero por defecto (si no viene por URL)
+        // 2. Si hay pisos, seleccionamos el que tiene más mesas por defecto (si no viene por URL)
         if (data.length > 0) {
-          const defaultPisoId = data[0].id;
+          const defaultPisoId = this.getPisoConMasMesas(data);
           this.pisoSeleccionado.set(defaultPisoId);
           this.loadMesas(); // Cargamos las mesas del piso inicial
         }

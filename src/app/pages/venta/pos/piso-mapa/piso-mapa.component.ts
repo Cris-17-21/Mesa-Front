@@ -115,6 +115,20 @@ export class PisoMapaComponent implements OnInit {
     });
   });
 
+  private getPisoConMasMesas(pisos: Piso[]): string {
+    if (!pisos || pisos.length === 0) return '';
+    let maxMesas = -1;
+    let selectedId = pisos[0].id;
+    for (const p of pisos) {
+      const cantMesas = p.mesas ? p.mesas.length : 0;
+      if (cantMesas > maxMesas) {
+        maxMesas = cantMesas;
+        selectedId = p.id;
+      }
+    }
+    return selectedId;
+  }
+
   ngOnInit() {
     this.cargarDatosIniciales();
   }
@@ -133,7 +147,7 @@ export class PisoMapaComponent implements OnInit {
 
         // Autoselección
         if (pisosData.length > 0 && !this.pisoSeleccionado()) {
-          this.seleccionarPiso(pisosData[0].id);
+          this.seleccionarPiso(this.getPisoConMasMesas(pisosData));
         } else if (this.pisoSeleccionado()) {
           this.cargarMesas(this.pisoSeleccionado()!);
         }
